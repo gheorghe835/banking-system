@@ -1,0 +1,129 @@
+# ==============================
+# MAVEN / BUILD
+# ==============================
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+!mvnw
+!mvnw.cmd
+
+# ==============================
+# IDE
+# ==============================
+.idea/
+*.iws
+*.iml
+*.ipr
+.classpath
+.project
+.settings/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ==============================
+# OPERATING SYSTEM
+# ==============================
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+
+# Linux
+*~
+
+# ==============================
+# LOGS
+# ==============================
+logs/
+*.log
+log/
+*.pid
+*.seed
+*.pid.lock
+
+# ==============================
+# DATABASE
+# ==============================
+# H2 Database
+*.db
+*.trace.db
+*.h2.db
+
+# MySQL
+*.sql
+!src/main/resources/db/migration/*.sql
+!src/test/resources/*.sql
+
+# ==============================
+# APPLICATION
+# ==============================
+# Configurații locale/private
+application-local.yml
+application-dev.yml
+application-prod.yml
+*.properties.local
+*.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ==============================
+# DOCKER
+# ==============================
+docker-compose.override.yml
+
+# ==============================
+# BACKUP FILES
+# ==============================
+*.bak
+*.backup
+*.old
+
+# ==============================
+# TEMP FILES
+# ==============================
+*.tmp
+*.temp
+temp/
+
+# ==============================
+# EXECUTABLES
+# ==============================
+*.exe
+*.dll
+*.so
+*.dylib
+
+# ==============================
+# TEST OUTPUT
+# ==============================
+test-output/
+surefire-reports/
+failsafe-reports/
+coverage/
+*.exec
+
+# ==============================
+# DOCUMENTATION
+# ==============================
+docs/_build/
+docs/_static/
+docs/_templates/

@@ -3,14 +3,13 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
     <modelVersion>4.0.0</modelVersion>
 
     <!-- Spring Boot parent -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.1.5</version>  <!-- Sau ultima versiune stabilă -->
+        <version>3.1.5</version>
         <relativePath/>
     </parent>
 
@@ -21,14 +20,13 @@
     <description>Sistem bancar cu Spring Boot</description>
 
     <properties>
-        <java.version>19</java.version>  <!-- Java 17 recomandat -->
+        <java.version>19</java.version>
         <maven.compiler.source>19</maven.compiler.source>
         <maven.compiler.target>19</maven.compiler.target>
     </properties>
 
     <dependencies>
-        <!-- SPRING BOOT STARTERS (minim necesar) -->
-
+        <!-- SPRING BOOT STARTERS -->
         <!-- Spring Boot core -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -61,25 +59,26 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Lombok (optional, pentru getters/setters) -->
+        <!-- Lombok (optional) -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
 
-        <!-- Testing -->
+        <!-- Validation -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- TESTING - DOAR O DATA! -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
 
-        <!-- Validation (pentru validare input) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
     </dependencies>
 
     <build>

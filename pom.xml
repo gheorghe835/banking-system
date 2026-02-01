@@ -15,9 +15,9 @@
     </parent>
 
     <groupId>com.bank</groupId>
-    <artifactId>banking-spring</artifactId>
+    <artifactId>banking-system</artifactId>
     <version>1.0.0</version>
-    <name>banking-spring</name>
+    <name>banking-system</name>
     <description>Sistem bancar cu Spring Boot</description>
 
     <properties>

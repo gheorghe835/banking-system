@@ -30,17 +30,17 @@ class DomainModelTest {
     @DisplayName("Test creare Customer")
     void testCustomerCreation() {
         Customer customer = new Customer(
-                "John",
-                "Doe",
-                "john.doe@example.com",
+                "Egor",
+                "Batiri",
+                "egor_bati@gmail.com",
                 "+37369123456",
-                LocalDate.of(1990, 1, 1),
+                LocalDate.of(2000, 12, 17),
                 "1234567890123"
         );
 
-        assertEquals("John", customer.getFirstName());
-        assertEquals("Doe", customer.getLastName());
-        assertEquals("john.doe@example.com", customer.getEmail());
+        assertEquals("Egor", customer.getFirstName());
+        assertEquals("Batiri", customer.getLastName());
+        assertEquals("egor_bati@gmail.com", customer.getEmail());
         assertTrue(customer.isActive());
         assertNotNull(customer.getCustomerId());
     }
@@ -49,8 +49,8 @@ class DomainModelTest {
     @DisplayName("Test creare Account")
     void testAccountCreation() {
         Customer customer = new Customer(
-                "Jane", "Smith", "jane@example.com",
-                "+37369234567", LocalDate.of(1985, 5, 15), "9876543210987"
+                "Iulia", "Batiri", "iulia2006@gmail.com",
+                "+37369234567", LocalDate.of(2006, 2, 28), "9876543210987"
         );
 
         Account account = new Account(
@@ -89,14 +89,14 @@ class DomainModelTest {
     void testBankManagerCreation() {
         BankManager manager = new BankManager(
                 "admin123",
-                "Alice",
-                "Johnson",
-                "alice.johnson@bank.com",
+                "Oxana",
+                "Batiri",
+                "axana_batiri@bank.com",
                 BankManager.AccessLevel.ADMIN
         );
 
         assertEquals("admin123", manager.getUsername());
-        assertEquals("Alice Johnson", manager.getFullName());
+        assertEquals("Oxana Batiri", manager.getFullName());
         assertEquals(BankManager.AccessLevel.ADMIN, manager.getAccessLevel());
         assertTrue(manager.isActive());
         assertTrue(manager.hasAdminAccess());

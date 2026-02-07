@@ -119,6 +119,29 @@ public class Account {
         return dailyWithdrawalUsed;
     }
 
+
+    public void setOwnerName(String ownerName) {
+        if (ownerName == null || ownerName.trim().length() < 2) {
+            throw new IllegalArgumentException("Numele trebuie să aibă minim 2 caractere");
+        }
+
+        // Actualizează numele clientului
+        if (this.owner != null) {
+
+            String[] names = ownerName.trim().split(" ", 2);
+            if (names.length >= 2) {
+                this.owner.setFirstName(names[0]);
+                this.owner.setLastName(names[1]);
+            } else {
+                this.owner.setFirstName(ownerName);
+                this.owner.setLastName("");
+            }
+        } else {
+
+            this.owner = new Customer(ownerName, "", "", "", null, "");
+        }
+    }
+
     //resetare limita zilnica
     private void resetDailyLimitIfNeeded(){
         LocalDate today = LocalDate.now();
@@ -135,7 +158,7 @@ public class Account {
     public Map<Currency,BigDecimal> getAllBalances(){
         return new HashMap<>(balances);
     }
-    public BigDecimal getTotalBalancesMDL(){
+    public BigDecimal getTotalBalancesInMDL(){
         BigDecimal total = BigDecimal.ZERO;
         for (Map.Entry<Currency,BigDecimal> entry : balances.entrySet()){
             BigDecimal amountInMDL = entry.getValue()
@@ -196,11 +219,51 @@ public class Account {
         return getBalance(currency).compareTo(amount) >= 0;
     }
 
+
     //metode utilitare
     public int getAccountAgeInDays(){
         return (int) ChronoUnit.DAYS.between(creationDate,LocalDate.now());
     }
 
+    public boolean transferTo(Account targetAccount, BigDecimal amount,
+                              Currency currency, String description) {
+        // 1. Validări
+        if (targetAccount == null) {
+            throw new IllegalArgumentException("Contul destinație nu poate fi null");
+        }
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Suma transferului trebuie să fie pozitivă");
+        }
+
+        // 2. Verifică starea conturilor
+        if (!this.isActive() || !targetAccount.isActive()) {
+            throw new IllegalStateException("Unul dintre conturi este inactiv");
+        }
+
+        // 3. Verifică dacă nu e același cont
+        if (this.equals(targetAccount)) {
+            throw new IllegalArgumentException("Nu puteți transfera către același cont");
+        }
+
+        // 4. Efectuează transferul
+        try {
+            // Retrage din contul curent
+            this.withdraw(amount, currency);
+
+            // Depune în contul destinație
+            targetAccount.deposit(amount, currency);
+
+            return true;
+
+        } catch (Exception e) {
+            try {
+                this.deposit(amount, currency); // Readuce banii
+            }
+            catch (Exception rollbackEx) {
+            }
+            throw e; // Aruncă eroarea originală
+        }
+    }
     //override metode
     @Override
     public boolean equals(Object o){
@@ -220,6 +283,6 @@ public class Account {
                 owner != null ? owner.getFullName() : "N/A",
                 accountType,
                 isActive,
-                getTotalBalancesMDL());
+                getTotalBalancesInMDL());
     }
 }

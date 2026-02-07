@@ -55,7 +55,14 @@ public class Transaction {
     public Transaction(TransactionType type,BigDecimal amount,Currency currency,String description){
         this();
         this.type = Objects.requireNonNull(type,"Tipul tranzactiei este obligatoriu.");
-        setAmount(amount);
+        if (amount == null){
+            throw new IllegalArgumentException("Suma nu pate fi null");
+        }
+        if (amount.compareTo(BigDecimal.ZERO) < 0){
+            throw new IllegalArgumentException("Suma nu poate fi negativa");
+        }
+        //setAmount(amount);
+        this.amount = amount;
         this.currency = Objects.requireNonNull(currency,"Moneda este obligatorie.");
         setDescription(description);
     }

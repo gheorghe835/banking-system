@@ -37,14 +37,6 @@ public enum Currency {
 
 
     // Metode utilitare
-    public static Currency fromCode(String code) {
-        for (Currency currency : values()) {
-            if (currency.getCode().equalsIgnoreCase(code)) {
-                return currency;
-            }
-        }
-        throw new IllegalArgumentException("Cod valutar necunoscut: " + code);
-    }
 
     public static boolean isValidCurrency(String code) {
         for (Currency currency : values()) {
@@ -57,12 +49,13 @@ public enum Currency {
     // Verifică dacă un cod de monedă este valid
     public static boolean isValid(String code) {
         if (code == null) return false;
-        for (Currency currency : values()) {
-            if (currency.getCode().equalsIgnoreCase(code.trim())) {
-                return true;
-            }
+
+        try {
+            Currency.valueOf(code.toUpperCase());
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
         }
-        return false;
     }
 
     public double convertTo(Currency target, double amount) {
@@ -70,6 +63,23 @@ public enum Currency {
         // Convertim prin MDL ca monedă intermediară
         double amountInMDL = amount * this.exchangeRateToMDL;
         return amountInMDL / target.exchangeRateToMDL;
+    }
+    public static Currency fromCode(String code){
+        if (code == null) {
+            throw new IllegalArgumentException("Codul valutar nu poate fi null");
+        }
+
+        // Folosește valueOf care există implicit pentru toate enum-urile
+        try {
+            return Currency.valueOf(code.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Cod valutar necunoscut: " + code +
+                    ". Valide: MDL, EUR, USD, GBP, RON");
+        }
+    }
+
+    public static Currency[] getAllCurrencies(){
+        return Currency.values();
     }
 
     @Override

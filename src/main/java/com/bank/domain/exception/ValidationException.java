@@ -18,7 +18,7 @@ public class ValidationException extends BankingException{
 
         public ValidationError(String field,String message,Object invalidValue){
             this.field = field;
-            this.message =message;
+            this.message = message;
             this.invalidValue = invalidValue;
         }
 
@@ -41,7 +41,7 @@ public class ValidationException extends BankingException{
     public ValidationException(List<ValidationError> errors){
         super(BankingErrorCode.VALIDATION_ERROR,
                 "Validare esuata cu " + errors.size() + " erori.");
-        this.errors = new ArrayList<>();
+        this.errors = new ArrayList<>(errors);
     }
 
     //metode pentru adaugare erori
@@ -54,11 +54,22 @@ public class ValidationException extends BankingException{
         this.errors.add(error);
         return this;
     }
+    public ValidationException addErrors(List<ValidationError> errors) {
+        this.errors.addAll(errors);
+        return this;
+    }
+
+    public ValidationException addErrors(ValidationException other) {
+        this.errors.addAll(other.errors);
+        return this;
+    }
     public boolean hasErrors(){return !errors.isEmpty();}
 
     //getteri
-    public List<ValidationError> getErrors(){return new ArrayList<>();}
-    public boolean hasError(){return !errors.isEmpty();}
+    public List<ValidationError> getErrors() {
+        return new ArrayList<>(errors);
+    }
+    //public boolean hasError(){return !errors.isEmpty();}
     public int getErrorCount(){return errors.size();}
 
     /**

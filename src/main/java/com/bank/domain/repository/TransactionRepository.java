@@ -178,4 +178,11 @@ public interface TransactionRepository {
      * @return lista tranzactiilor care detin descrierea
      */
     List<Transaction> findByDescriptionContaining(String descriptionPart);
+
+    /**
+     * Găsește tranzacțiile după tip
+     * @param type Tipul tranzacției (enum value)
+     * @return Lista tranzacțiilor filtrate
+     */
+    List<Transaction> findByType(Transaction.TransactionType type);
 }

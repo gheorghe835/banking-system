@@ -39,6 +39,7 @@ public interface TransactionRepository {
      * @return lista tuturor tranzactiilor
      */
     List<Transaction> findAll();
+    boolean existsById(String transactionId);
 
     /**
      * returneaza numarul total de tranzactii
@@ -125,7 +126,7 @@ public interface TransactionRepository {
      * @param accountNumber numarul contului
      * @return suma totala retrasa
      */
-    double getTotalaWithdrawalsForAccount(String accountNumber);
+    double getTotalWithdrawalsForAccount(String accountNumber);
 
     /**
      * returneaza numarul de tranzactii pentru un cont
@@ -177,8 +178,10 @@ public interface TransactionRepository {
      * @param descriptionPart parte din descriere
      * @return lista tranzactiilor care detin descrierea
      */
+
     List<Transaction> findByDescriptionContaining(String descriptionPart);
 
+    boolean markAsCancelled(String transactionId);
     /**
      * Găsește tranzacțiile după tip
      * @param type Tipul tranzacției (enum value)

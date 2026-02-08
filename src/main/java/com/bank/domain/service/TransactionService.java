@@ -105,7 +105,7 @@ public class TransactionService {
      * returneaza suma totala retrasa dintr-un cont
      */
     public double getTotalWithdrawals(String accountNumber){
-        return transactionRepository.getTotalaWithdrawalsForAccount(accountNumber);
+        return transactionRepository.getTotalWithdrawalsForAccount(accountNumber);
     }
 
     /**

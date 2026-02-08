@@ -52,7 +52,10 @@ public class Transaction {
         this.timestamp = LocalDateTime.now();
         this.status = TransactionStatus.PENDING;
     }
-    public Transaction(TransactionType type,BigDecimal amount,Currency currency,String description){
+    public Transaction(TransactionType type,
+                       BigDecimal amount,
+                       Currency currency,
+                       String description){
         this();
         this.type = Objects.requireNonNull(type,"Tipul tranzactiei este obligatoriu.");
         if (amount == null){
@@ -66,21 +69,42 @@ public class Transaction {
         this.currency = Objects.requireNonNull(currency,"Moneda este obligatorie.");
         setDescription(description);
     }
-    public Transaction(String sourceAccountNumber,String targetAccountNumber,TransactionType type,
-                       BigDecimal amount,Currency currency,String description){
-        this(type,amount,currency,description);
+    public Transaction(String transactionId,
+                       String sourceAccountNumber,
+                       String targetAccountNumber,
+                       TransactionType type,
+                       BigDecimal amount,
+                       Currency currency,
+                       String description,
+                       LocalDateTime timestamp,
+                       TransactionStatus status) {
+        this.transactionId = transactionId;
         this.sourceAccountNumber = sourceAccountNumber;
         this.targetAccountNumber = targetAccountNumber;
+        this.type = Objects.requireNonNull(type, "Tipul tranzacției este obligatoriu.");
+
+        if (amount == null) {
+            throw new IllegalArgumentException("Suma nu poate fi null");
+        }
+        if (amount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Suma nu poate fi negativă");
+        }
+        this.amount = amount;
+
+        this.currency = Objects.requireNonNull(currency, "Moneda este obligatorie.");
+        this.description = description != null ? description.trim() : "";
+        this.timestamp = timestamp != null ? timestamp : LocalDateTime.now();
+        this.status = status != null ? status : TransactionStatus.PENDING;
     }
 
     //validari
-    private void setAmount(BigDecimal amount){
+    public void setAmount(BigDecimal amount){
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0){
             throw new IllegalArgumentException("Suma trebuie sa fie pozitiva.");
         }
         this.amount = amount;
     }
-    private void setDescription(String description){
+    public void setDescription(String description){
         this.description = description != null ? description.trim() : "";
         if (this.description.length() > 200){
             this.description = this.description.substring(0,197) + "...";
@@ -89,6 +113,7 @@ public class Transaction {
 
     //getteri si setteri
     public String getTransactionId(){return transactionId;}
+    public void setTransactionId(String transactionId) { this.transactionId = transactionId; }
     public String getSourceAccountNumber(){return sourceAccountNumber;}
     public void setSourceAccountNumber(String sourceAccountNumber){
         this.sourceAccountNumber = sourceAccountNumber;
@@ -100,15 +125,24 @@ public class Transaction {
     public TransactionType getType(){return type;}
     public void setType(TransactionType type){this.type = type;}
     public BigDecimal getAmount(){return amount;}
+    //public void setAmount(BigDecimal amount) { this.amount = amount; }
     public Currency getCurrency(){return currency;}
     public void setCurrency(Currency currency){this.currency = currency;}
     public String getDescription(){return description;}
+    //public void setDescription(String description) { this.description = description; }
     public LocalDateTime getTimestamp(){return timestamp;}
+    public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
     public TransactionStatus getStatus(){return status;}
+
     public void setStatus(TransactionStatus status){this.status = status;}
     public void markASCompleted(){this.status = TransactionStatus.COMPLETED;}
     public void markAsFailed(){this.status = TransactionStatus.FAILED;}
     public void markAsCancelled(){this.status = TransactionStatus.CANCELLED;}
+   //public String getSourceAccountNumber() { return sourceAccountNumber; }
+    //public void setSourceAccountNumber(String sourceAccountNumber) { this.sourceAccountNumber = sourceAccountNumber; }
+
+    //public String getTargetAccountNumber() { return targetAccountNumber; }
+    //public void setTargetAccountNumber(String targetAccountNumber) { this.targetAccountNumber = targetAccountNumber; }
 
     //metode utilitare
     public boolean isSuccessful(){return status == TransactionStatus.COMPLETED;}

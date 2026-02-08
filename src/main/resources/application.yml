@@ -1,69 +1,68 @@
-# Banking Application Configuration
-
 spring:
   application:
     name: banking-system
 
-  # Database Configuration (pentru început folosim H2 în memorie)
   datasource:
-    url: jdbc:h2:mem:bankdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: password
+    url: jdbc:mysql://localhost:3306/banking_system?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: 1234  # SCHIMBĂ LA PAROLA TA REALĂ
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      connection-timeout: 30000
+      maximum-pool-size: 10
 
-  # H2 Console (pentru vizualizare DB în browser)
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-
-  # JPA Configuration
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: update  # pentru început, update schema automat
+      ddl-auto: create  # SAU 'create-drop' pentru testare
+    show-sql: true
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
-    show-sql: true
+        jdbc:
+          batch_size: 20
+        # FORȚEAZĂ crearea tabelelor
+        # javax.persistence.schema-generation.database.action: create
+    # IMPORTANT: Specifică pachetul entităților
+    packages-to-scan: com.bank.infrastructure.persistence.entity
 
-  # Server Configuration
-  server:
-    port: 8080
-    servlet:
-      context-path: /banking
+  # TEMPORAR: dezactivează scripturile SQL
+  # sql:
+  #   init:
+  #     mode: never
 
-  # Profile setup
-  profiles:
-    active: dev
 
-# Application specific settings
-banking:
-  app:
-    name: "Banca Comercială "
-    version: "1.0.0"
 
-  security:
-    max-login-attempts: 3
-    account-lock-duration-minutes: 30
+  # SQL scripts pentru inițializare
+  #sql:
+   # init:
+    #  mode: always  # pentru dev, în producție schimbă în 'never'
+     # schema-locations: classpath:db/migration/V1__init_schema.sql
+     # data-locations: classpath:db/data.sql
 
-  currency:
-    default: "MDL"
-    supported:
-      - "MDL"
-      - "EUR"
-      - "USD"
-      - "GBP"
-      - "RON"
-
-# Logging Configuration
+# Logging
 logging:
   level:
     com.bank: DEBUG
-    org.springframework: INFO
     org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
   file:
-    name: logs/banking-app.log
+    name: logs/banking-system.log
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Configurații bancare custom
+banking:
+  security:
+    max-login-attempts: 3
+    account-lock-time-minutes: 30
+  limits:
+    daily-withdrawal-default: 5000.00
+    minimum-deposit: 1.00
+    minimum-balance: 10.00
+  exchange:
+    commission-rate: 0.005  # 0.5%
+    update-frequency: "0 0 9 * * ?"  # Daily at 9 AM
+
+server:
+  port: 8080

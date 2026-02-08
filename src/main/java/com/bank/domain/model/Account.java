@@ -118,7 +118,16 @@ public class Account {
         resetDailyLimitIfNeeded();
         return dailyWithdrawalUsed;
     }
+    public void setDailyWithdrawalUsed(BigDecimal dailyWithdrawalUsed) {
+        this.dailyWithdrawalUsed = dailyWithdrawalUsed;
+    }
+    public LocalDate getLastResetDate() {
+        return lastResetDate;
+    }
 
+    public void setLastResetDate(LocalDate lastResetDate) {
+        this.lastResetDate = lastResetDate;
+    }
 
     public void setOwnerName(String ownerName) {
         if (ownerName == null || ownerName.trim().length() < 2) {

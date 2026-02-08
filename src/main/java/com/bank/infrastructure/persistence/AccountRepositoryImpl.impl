@@ -1,0 +1,171 @@
+package com.bank.infrastructure.persistence.repository.impl;
+
+import com.bank.domain.model.Account;
+import com.bank.domain.repository.AccountRepository;
+import com.bank.infrastructure.persistence.entity.AccountEntity;
+import com.bank.infrastructure.persistence.mapper.AccountMapper;
+import com.bank.infrastructure.persistence.repository.JpaAccountRepository;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public class AccountRepositoryImpl implements AccountRepository {
+    
+    private final JpaAccountRepository jpaAccountRepository;
+    private final AccountMapper accountMapper;
+    
+    public AccountRepositoryImpl(JpaAccountRepository jpaAccountRepository, 
+                                 AccountMapper accountMapper) {
+        this.jpaAccountRepository = jpaAccountRepository;
+        this.accountMapper = accountMapper;
+    }
+    
+    @Override
+    public Account save(Account account) {
+        AccountEntity entity = accountMapper.toEntity(account);
+        AccountEntity savedEntity = jpaAccountRepository.save(entity);
+        return accountMapper.toDomain(savedEntity);
+    }
+    
+    @Override
+    public Optional<Account> findByAccountNumber(String accountNumber) {
+        return jpaAccountRepository.findByAccountNumber(accountNumber)
+                .map(accountMapper::toDomain);
+    }
+    
+    @Override
+    public boolean deleteByAccountNumber(String accountNumber) {
+        int deleted = jpaAccountRepository.deleteByAccountNumber(accountNumber);
+        return deleted > 0;
+    }
+    
+    @Override
+    public boolean existsByAccountNumber(String accountNumber) {
+        return jpaAccountRepository.existsByAccountNumber(accountNumber);
+    }
+    
+    @Override
+    public List<Account> findAll() {
+        return jpaAccountRepository.findAll()
+                .stream()
+                .map(accountMapper::toDomain)
+                .toList();
+    }
+    
+    @Override
+    public long count() {
+        return jpaAccountRepository.count();
+    }
+    
+    @Override
+    public List<Account> findByCustomerId(String customerId) {
+        return jpaAccountRepository.findByOwner_CustomerId(customerId)
+                .stream()
+                .map(accountMapper::toDomain)
+                .toList();
+    }
+    
+    @Override
+    public List<Account> findByAccountType(String accountType) {
+        return jpaAccountRepository.findByAccountType(accountType)
+                .stream()
+                .map(accountMapper::toDomain)
+                .toList();
+    }
+    
+    @Override
+    public List<Account> findActiveAccounts() {
+        return jpaAccountRepository.findByActiveTrue()
+                .stream()
+                .map(accountMapper::toDomain)
+                .toList();
+    }
+    
+    @Override
+    public List<Account> findInactiveAccounts() {
+        return jpaAccountRepository.findByActiveFalse()
+                .stream()
+                .map(accountMapper::toDomain)
+                .toList();
+    }
+    
+    @Override
+    public List<Account> findByBalanceGreaterThanEqual(double minBalance) {
+        return jpaAccountRepository.findByTotalBalanceGreaterThanEqual(minBalance)
+                .stream()
+                .map(accountMapper::toDomain)
+                .toList();
+    }
+    
+    @Override
+    public List<Account> findByCreationDateBetween(LocalDate startDate, LocalDate endDate) {
+        return jpaAccountRepository.findByCreationDateBetween(startDate, endDate)
+                .stream()
+                .map(accountMapper::toDomain)
+                .toList();
+    }
+    
+    @Override
+    public List<Account> findByOwnerNameContaining(String ownerNamePart) {
+        return jpaAccountRepository.findByOwnerNameContaining(ownerNamePart)
+                .stream()
+                .map(accountMapper::toDomain)
+                .toList();
+    }
+    
+    @Override
+    public double getTotalBalanceInMDL() {
+        return jpaAccountRepository.getTotalBalanceInMDL();
+    }
+    
+    @Override
+    public double getAverageBalanceInMDL() {
+        return jpaAccountRepository.getAverageBalanceInMDL();
+    }
+    
+    @Override
+    public Optional<Account> findAccountWithMaxBalance() {
+        return jpaAccountRepository.findTopByOrderByTotalBalanceDesc()
+                .map(accountMapper::toDomain);
+    }
+    
+    @Override
+    public Optional<Account> findAccountWithMinBalance() {
+        return jpaAccountRepository.findTopByOrderByTotalBalanceAsc()
+                .map(accountMapper::toDomain);
+    }
+    
+    @Override
+    public boolean blockAccount(String accountNumber) {
+        int updated = jpaAccountRepository.deactivateByAccountNumber(accountNumber);
+        return updated > 0;
+    }
+    
+    @Override
+    public boolean unblockAccount(String accountNumber) {
+        int updated = jpaAccountRepository.activateByAccountNumber(accountNumber);
+        return updated > 0;
+    }
+    
+    @Override
+    public boolean updateDailyWithdrawalLimit(String accountNumber, double newLimit) {
+        int updated = jpaAccountRepository.updateDailyLimit(accountNumber, newLimit);
+        return updated > 0;
+    }
+    
+    @Override
+    @Transactional
+    public int resetDailyWithdrawalUsed() {
+        return jpaAccountRepository.resetDailyWithdrawals();
+    }
+    
+    @Override
+    public boolean transfer(String sourceAccountNumber, String targetAccountNumber, 
+                           double amount, String currency, String description) {
+        throw new UnsupportedOperationException("Use AccountService for transfer operations");
+    }
+}

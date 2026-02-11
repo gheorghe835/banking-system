@@ -1,6 +1,7 @@
-package com.bank.config;
+package com.bank.infrastructure.config;
 
 import com.zaxxer.hikari.HikariDataSource;
+import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,18 +16,14 @@ import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Configurația pentru baza de date MySQL și JPA/Hibernate
- */
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
         basePackages = "com.bank.infrastructure.persistence.repository",
         entityManagerFactoryRef = "entityManagerFactory",
-        transactionManagerRef = "transactionManager"
+        transactionManagerRef = "transactionManeger"
 )
 public class DatabaseConfig {
-
     @Value("${spring.datasource.url}")
     private String dataSourceUrl;
 
@@ -48,9 +45,6 @@ public class DatabaseConfig {
     @Value("${spring.jpa.properties.hibernate.dialect}")
     private String hibernateDialect;
 
-    /**
-     * Configurarea DataSource-ului cu HikariCP pentru connection pooling
-     */
     @Bean
     public DataSource dataSource() {
         HikariDataSource dataSource = new HikariDataSource();
@@ -58,8 +52,6 @@ public class DatabaseConfig {
         dataSource.setUsername(dataSourceUsername);
         dataSource.setPassword(dataSourcePassword);
         dataSource.setDriverClassName(dataSourceDriverClassName);
-
-        // Configurații HikariCP pentru performanță
         dataSource.setMaximumPoolSize(10);
         dataSource.setMinimumIdle(5);
         dataSource.setConnectionTimeout(30000);
@@ -67,47 +59,34 @@ public class DatabaseConfig {
         dataSource.setMaxLifetime(1800000);
         dataSource.setConnectionTestQuery("SELECT 1");
         dataSource.setPoolName("BankingSystemPool");
-
         return dataSource;
     }
 
-    /**
-     * Configurarea EntityManagerFactory pentru JPA
-     */
     @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-        em.setDataSource(dataSource());
+        em.setDataSource(dataSource);
         em.setPackagesToScan("com.bank.infrastructure.persistence.entity");
-
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
-
         Map<String, Object> properties = new HashMap<>();
         properties.put("hibernate.hbm2ddl.auto", hibernateDdlAuto);
         properties.put("hibernate.dialect", hibernateDialect);
         properties.put("hibernate.show_sql", showSql);
         properties.put("hibernate.format_sql", true);
         properties.put("hibernate.use_sql_comments", true);
-
-        // Optimizări pentru MySQL
         properties.put("hibernate.jdbc.batch_size", 20);
         properties.put("hibernate.order_inserts", true);
         properties.put("hibernate.order_updates", true);
         properties.put("hibernate.jdbc.fetch_size", 100);
-
         em.setJpaPropertyMap(properties);
-
         return em;
     }
 
-    /**
-     * Configurarea TransactionManager-ului
-     */
     @Bean
-    public PlatformTransactionManager transactionManager() {
+    public PlatformTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
         JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
+        transactionManager.setEntityManagerFactory(entityManagerFactory);
         return transactionManager;
     }
 }

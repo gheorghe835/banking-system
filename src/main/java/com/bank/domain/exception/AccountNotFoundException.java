@@ -1,27 +1,32 @@
 package com.bank.domain.exception;
 
 /**
- * exceptie aruncata cind un cont bancar nu este gatit
+ * Excepție aruncată când un cont bancar nu este găsit
  */
+public class AccountNotFoundException extends BankingException {
 
-public class AccountNotFoundException extends BankingException{
     private final String accountNumber;
 
-    public AccountNotFoundException(String accountNumber){
+    public AccountNotFoundException(String accountNumber) {
         super(BankingErrorCode.ACCOUNT_NOT_FOUND,
-                "Contul cu numarul " + accountNumber + ", nu a fost gasit.");
+                "Contul cu numărul '" + accountNumber + "' nu a fost găsit");
         this.accountNumber = accountNumber;
     }
-    public AccountNotFoundException(String accountNumber,Throwable cause){
+
+    public AccountNotFoundException(String accountNumber, Throwable cause) {
         super(BankingErrorCode.ACCOUNT_NOT_FOUND,
-                "Contul cu numarul " + accountNumber + " nu a fost gasit",cause);
+                "Contul cu numărul '" + accountNumber + "' nu a fost găsit",
+                cause);
         this.accountNumber = accountNumber;
     }
-    public String getAccountNumber(){return accountNumber;}
+
+    public String getAccountNumber() {
+        return accountNumber;
+    }
 
     @Override
-    public String toString(){
+    public String toString() {
         return String.format("AccountNotFoundException[accountNumber=%s, message=%s]",
-                accountNumber,getMessage());
+                accountNumber, getMessage());
     }
 }

@@ -28,15 +28,26 @@ public enum Currency {
     }
 
     public String getCode() {
-        return code;
+        return this.name();
     }
 
     public double getExchangeRateToMDL() {
         return exchangeRateToMDL;
     }
 
-
     // Metode utilitare
+    // Găsește Currency după cod
+    public static Currency fromCode(String code) {
+        if (code == null) {
+            throw new IllegalArgumentException("Codul valutar nu poate fi null");
+        }
+        for (Currency currency : values()) {
+            if (currency.getCode().equalsIgnoreCase(code.trim())) {
+                return currency;
+            }
+        }
+        throw new IllegalArgumentException("Cod valutar necunoscut: " + code);
+    }
 
     public static boolean isValidCurrency(String code) {
         for (Currency currency : values()) {
@@ -46,17 +57,6 @@ public enum Currency {
         }
         return false;
     }
-    // Verifică dacă un cod de monedă este valid
-    public static boolean isValid(String code) {
-        if (code == null) return false;
-
-        try {
-            Currency.valueOf(code.toUpperCase());
-            return true;
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-    }
 
     public double convertTo(Currency target, double amount) {
         if (this == target) return amount;
@@ -64,22 +64,16 @@ public enum Currency {
         double amountInMDL = amount * this.exchangeRateToMDL;
         return amountInMDL / target.exchangeRateToMDL;
     }
-    public static Currency fromCode(String code){
-        if (code == null) {
-            throw new IllegalArgumentException("Codul valutar nu poate fi null");
-        }
 
-        // Folosește valueOf care există implicit pentru toate enum-urile
-        try {
-            return Currency.valueOf(code.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Cod valutar necunoscut: " + code +
-                    ". Valide: MDL, EUR, USD, GBP, RON");
+    // Verifică dacă un cod de monedă este valid
+    public static boolean isValid(String code) {
+        if (code == null) return false;
+        for (Currency currency : values()) {
+            if (currency.getCode().equalsIgnoreCase(code.trim())) {
+                return true;
+            }
         }
-    }
-
-    public static Currency[] getAllCurrencies(){
-        return Currency.values();
+        return false;
     }
 
     @Override

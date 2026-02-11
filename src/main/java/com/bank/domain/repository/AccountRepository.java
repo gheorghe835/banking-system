@@ -1,168 +1,149 @@
 package com.bank.domain.repository;
 
 import com.bank.domain.model.Account;
+import com.bank.domain.model.Customer;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Interfata pentru repository de conturi bancare
- * Defineste operatiunile CRUD si metode specifice buisiness bancar
+ * Interfață pentru repository-ul de conturi bancare
+ * Definește operațiunile CRUD și metode specifice business-ului bancar
  */
-
 public interface AccountRepository {
-    //operatiuni de baza - CRUD
+
+    // ===== CRUD OPERATIONS =====
 
     /**
-     * salveaza sau actualizeaza un cont bancar
+     * Salvează sau actualizează un cont bancar
      * @param account Contul de salvat
      * @return Contul salvat
      */
     Account save(Account account);
 
     /**
-     * gaseste un cont dupa numarul sau
-     * @param accountNumber numarul contului
-     * @return Optional care contine contul daca este gasit
+     * Găsește un cont după numărul său
+     * @param accountNumber Numărul contului
+     * @return Optional care conține contul dacă este găsit
      */
     Optional<Account> findByAccountNumber(String accountNumber);
 
     /**
-     * sterge un cont dupa numarul sau
-     * @param accauntNumber numarul contului de sters
-     * @return true daca contul a fost sters
+     * Șterge un cont după numărul său
+     * @param accountNumber Numărul contului de șters
+     * @return true dacă contul a fost șters
      */
-    boolean deleteByAccountNumber(String accauntNumber);
+    boolean deleteByAccountNumber(String accountNumber);
 
     /**
-     * verifica daca exista un cont cu numarul dat
-     * @param accauntNumber numarul contului
-     * @return true daca exista
+     * Verifică dacă există un cont cu numărul dat
+     * @param accountNumber Numărul contului
+     * @return true dacă există
      */
-    boolean existsByAccountNumber(String accauntNumber);
+    boolean existsByAccountNumber(String accountNumber);
 
     /**
-     * returneaza toate conturile
-     * @return lista tuturor conturilor
+     * Returnează toate conturile
+     * @return Lista tuturor conturilor
      */
     List<Account> findAll();
 
     /**
-     * returneaza numarul total de conturi
-     * @return numarul de conturi
+     * Returnează numărul total de conturi
+     * @return Numărul de conturi
      */
     long count();
 
-    //metode specifice buisiness bancar
-    /**
-     * gaseste toate conturile unui client
-     * @param customerId client
-     * @return lista conturilor clientului
-     */
-    List<Account> findByCustomerId(String customerId);
+    // ===== BUSINESS SPECIFIC METHODS =====
 
     /**
-     * gaseste conturile dupa tip
-     * @param accountType tipul contului (CURRENT,SAVINGS,BUISINESS)
-     * @return lista conturilor de tipul specificat
+     * Găsește toate conturile unui client
+     * @param customer Clientul
+     * @return Lista conturilor clientului
+     */
+    List<Account> findByCustomer(Customer customer);
+
+    /**
+     * Găsește conturile după tip
+     * @param accountType Tipul contului (CURRENT, SAVINGS, BUSINESS)
+     * @return Lista conturilor de tipul specificat
      */
     List<Account> findByAccountType(String accountType);
 
     /**
-     * gaseste conturile active
-     * @return lista conturilor active
+     * Găsește conturile active
+     * @return Lista conturilor active
      */
     List<Account> findActiveAccounts();
 
-    /**gaseste conturile inactive
-     * @return lista conturilor inactive
+    /**
+     * Găsește conturile inactive
+     * @return Lista conturilor inactive
      */
     List<Account> findInactiveAccounts();
 
     /**
-     * gaseste conturile cu sold peste o anumita valoare in MDL
-     * @param minBalance soldul minim in MDL
-     * @return lista conturilor cu sold >= minBalance
+     * Găsește conturile cu sold peste o anumită valoare în MDL
+     * @param minBalance Soldul minim în MDL
+     * @return Lista conturilor cu sold >= minBalance
      */
-    List<Account> findByBalanceGreaterThanEqual(double minBalance);
+    List<Account> findByBalanceGreaterThanEqual(BigDecimal minBalance);
 
     /**
-     * gaseste conturile create intr-o anumita perioada
-     * @param startDate data de inceput
-     * @param endDate data de sfirsit
-     * @return lista conturilor conturilor create in perioda specificata
+     * Găsește conturile create într-o anumită perioadă
+     * @param startDate Data de început
+     * @param endDate Data de sfârșit
+     * @return Lista conturilor create în perioada specificată
      */
-    List<Account> findByCreationDateBetween(LocalDate startDate,LocalDate endDate);
+    List<Account> findByCreationDateBetween(java.time.LocalDate startDate, java.time.LocalDate endDate);
 
     /**
-     * gaseste conturile dupa numele proprietarului(cautare partiala)
-     * @param ownerNamePart parte din numele proprietarului
-     * @return lista conturilor ale caror proprietati contin sirul dat
+     * Găsește conturile după proprietar (nume parțial)
+     * @param ownerNamePart Parte din numele proprietarului
+     * @return Lista conturilor ale căror proprietari conțin șirul dat
      */
-    List<Account> findByOwnerNameContainig(String ownerNamePart);
+    List<Account> findByOwnerNameContaining(String ownerNamePart);
 
     /**
-     * returneaza soldul total MDL din toate conturile
-     * @return soldul total in MDL
+     * Returnează soldul total MDL din toate conturile
+     * @return Soldul total în MDL
      */
-    double getTotalBalanceInMDL();
+    BigDecimal getTotalBalanceInMDL();
 
     /**
-     * returneaza soldul mediu MDL pe cont
-     * @return soldul mediu in MDL
+     * Returnează soldul mediu MDL pe cont
+     * @return Soldul mediu în MDL
      */
-    double getAverageBalanceInMDL();
+    BigDecimal getAverageBalanceInMDL();
 
     /**
-     * gaseste contul cu cel mai mare sold
-     * @return contul cu cel mai mare sold
-     */
-    Optional<Account> findAccountWithMaxBalance();
-
-    /**
-     * gaseste contul cu cel mai mic sold
-     * @return contul cu cel mai mic sold
-     */
-    Optional<Account> findAccountWithMinBalance();
-
-    /**
-     * blocheaza un cont(inactiv)
-     * @param accountNumber numarul contului de blocat
-     * @return true daca contul a fost blocat
+     * Blochează un cont (îl face inactiv)
+     * @param accountNumber Numărul contului de blocat
+     * @return true dacă contul a fost blocat
      */
     boolean blockAccount(String accountNumber);
 
     /**
-     * deblocheaza un cont(activ)
-     * @param accountNumber numarul contului de deblocat
-     * @return true daca contul a fost deblocat
+     * Deblochează un cont (îl face activ)
+     * @param accountNumber Numărul contului de deblocat
+     * @return true dacă contul a fost deblocat
      */
     boolean unblockAccount(String accountNumber);
 
     /**
-     * actualizeaza limita zilnica de retragere pentru un cont
-     * @param accountNumber numarul contului
-     * @param newLimit noua limita in MDL
-     * @return true daca limita a fost actualizata
+     * Actualizează limita zilnică de retragere pentru un cont
+     * @param accountNumber Numărul contului
+     * @param newLimit Noua limită în MDL
+     * @return true dacă limita a fost actualizată
      */
-    boolean updateDailyWithdrawalLimit(String accountNumber,double newLimit);
+    boolean updateDailyWithdrawalLimit(String accountNumber, double newLimit);
 
     /**
-     * reseteaza limita zilnica utilizata pentru toate conturile
-     * (trebuie apelata zilnic)
-     * @return numarul de conturi actualizate
+     * Resetează limita zilnică utilizată pentru toate conturile
+     * (trebuie apelată zilnic)
+     * @return Numărul de conturi actualizate
      */
     int resetDailyWithdrawalUsed();
-
-    /**
-     * transfera bani intre doua conturi
-     * @param sourceAccountNumber contul sursa
-     * @param targetAccountNumber contul destinatie
-     * @param amount suma de transferat
-     * @param currency moneda transferului
-     * @param description descrierea transferului
-     * @return true daca transferul a reusit
-     */
-    boolean transfer(String sourceAccountNumber,String targetAccountNumber,double amount,String currency,String description);
+    List<Account> findByCustomerId(String customerId);
 }

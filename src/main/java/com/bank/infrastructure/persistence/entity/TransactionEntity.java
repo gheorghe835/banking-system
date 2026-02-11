@@ -7,44 +7,52 @@ import java.time.LocalDateTime;
 /**
  * Entitate JPA pentru tranzactii bancare
  */
-
 @Entity
 @Table(name = "transactions")
 public class TransactionEntity {
+
     @Id
-    @Column(name = "transaction_id",length = 20,nullable = false,unique = true)
+    @Column(name = "transaction_id", length = 20, nullable = false, unique = true)
     private String transactionId;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_number",referencedColumnName = "account_number")
+    @JoinColumn(name = "account_number", nullable = false)
     private AccountEntity account;
 
-    @Column(name = "transaction_type",length = 30,nullable = false)
-    private String transactionType;
-    @Column(name = "amount",precision = 15,scale = 2,nullable = false)
+    @Column(name = "transaction_type", length = 30, nullable = false)
+    private String transactionType; // "DEPOSIT", "WITHDRAWAL", "TRANSFER_IN", etc.
+
+    @Column(name = "amount", precision = 15, scale = 2, nullable = false)
     private BigDecimal amount;
-    @Column(name = "currency",length = 3,nullable = false)
-    private String currency;//MDL, EUR, USD, etc
-    @Column(name = "description",length = 200)
+
+    @Column(name = "currency", length = 3, nullable = false)
+    private String currency; // "MDL", "EUR", "USD", etc.
+
+    @Column(name = "description", length = 200)
     private String description;
-    @Column(name = "timestamp",nullable = false)
+
+    @Column(name = "timestamp", nullable = false)
     private LocalDateTime timestamp;
-    @Column(name = "status",length = 20,nullable = false)
-    private String status;// "PENDING", "COMPLETED", "FAILED", "CANCELLED"
-    @Column(name = "source_account",length = 16)
+
+    @Column(name = "status", length = 20, nullable = false)
+    private String status; // "PENDING", "COMPLETED", "FAILED", "CANCELLED"
+
+    @Column(name = "source_account", length = 16)
     private String sourceAccount;
-    @Column(name = "target_account",length = 16)
+
+    @Column(name = "target_account", length = 16)
     private String targetAccount;
 
-    //constructor implicit
-    public TransactionEntity(){
+    // Constructor implicit (necesar pentru JPA)
+    public TransactionEntity() {
         this.timestamp = LocalDateTime.now();
         this.status = "PENDING";
     }
 
-    //constructori cu parametri
-    public TransactionEntity(String transactionId,AccountEntity account,
-                             String transactionType,BigDecimal amount,
-                             String currency,String description){
+    // Constructor cu parametri
+    public TransactionEntity(String transactionId, AccountEntity account,
+                             String transactionType, BigDecimal amount,
+                             String currency, String description) {
         this();
         this.transactionId = transactionId;
         this.account = account;
@@ -54,8 +62,7 @@ public class TransactionEntity {
         this.description = description;
     }
 
-    //getteri si setteri
-
+    // Getters si Setters
     public String getTransactionId() {
         return transactionId;
     }
@@ -136,31 +143,39 @@ public class TransactionEntity {
         this.targetAccount = targetAccount;
     }
 
-    //metode utilitare
-    public boolean isCompleted(){
+    // Metode utilitare
+    public boolean isCompleted() {
         return "COMPLETED".equals(status);
     }
-    public boolean isFailed(){
+
+    public boolean isFailed() {
         return "FAILED".equals(status);
     }
-    public boolean isPending(){
+
+    public boolean isPending() {
         return "PENDING".equals(status);
     }
-    public void markAsCompleted(){
+
+    public void markAsCompleted() {
         this.status = "COMPLETED";
     }
-    public void markAsFailed(){
+
+    public void markAsFailed() {
         this.status = "FAILED";
     }
-    public void markAsCancelled(){
+
+    public void markAsCancelled() {
         this.status = "CANCELLED";
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return String.format("TransactionEntity[id=%s, type=%s, amount=%.2f %s, status=%s, time=%s]",
-                transactionId,transactionType,amount,currency,status,
+                transactionId,
+                transactionType,
+                amount != null ? amount : BigDecimal.ZERO,
+                currency,
+                status,
                 timestamp.format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
     }
 }
-

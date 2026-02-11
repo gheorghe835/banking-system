@@ -1,44 +1,50 @@
 package com.bank.infrastructure.persistence.entity;
 
+import jakarta.persistence.*;
+
 /**
  * Entitate JPA pentru manageri bancari
  */
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
 @Entity
 @Table(name = "bank_managers")
 public class BankManagerEntity {
+
     @Id
-    @Column(name = "employee_id",length = 20,nullable = false,unique = true)
+    @Column(name = "employee_id", length = 20, nullable = false, unique = true)
     private String employeeId;
-    @Column(name = "username",length = 50,nullable = false,unique = true)
+
+    @Column(name = "username", length = 50, nullable = false, unique = true)
     private String username;
-    @Column(name = "password_hash",length = 100,nullable = false)
+
+    @Column(name = "password_hash", length = 100, nullable = false)
     private String passwordHash;
-    @Column(name = "first_name",length = 50,nullable = false)
+
+    @Column(name = "first_name", length = 50, nullable = false)
     private String firstName;
-    @Column(name = "last_name",length = 50,nullable = false)
+
+    @Column(name = "last_name", length = 50, nullable = false)
     private String lastName;
-    @Column(name = "email",length = 100,nullable = false,unique = true)
+
+    @Column(name = "email", length = 100, nullable = false, unique = true)
     private String email;
-    @Column(name = "department",length = 50)
+
+    @Column(name = "department", length = 50)
     private String department;
-    @Column(name = "is_active",nullable = false)
+
+    @Column(name = "is_active", nullable = false)
     private boolean active = true;
-    @Column(name = "access_level",length = 20,nullable = false)
-    private String accessLevel;// "JUNIOR", "SENIOR", "ADMIN", "SUPER_ADMIN"
 
-    //constructor implicit(JPA)
-    public BankManagerEntity(){}
+    @Column(name = "access_level", length = 20, nullable = false)
+    private String accessLevel; // "JUNIOR", "SENIOR", "ADMIN", "SUPER_ADMIN"
 
-    //constructori cu parametri
-    public BankManagerEntity(String employeeId,String username,String passwordHash,
-                             String firstName,String lastName,String email,
-                             String accessLevel){
+    // Constructor implicit (necesar pentru JPA)
+    public BankManagerEntity() {
+    }
+
+    // Constructor cu parametri
+    public BankManagerEntity(String employeeId, String username, String passwordHash,
+                             String firstName, String lastName, String email,
+                             String accessLevel) {
         this.employeeId = employeeId;
         this.username = username;
         this.passwordHash = passwordHash;
@@ -48,8 +54,7 @@ public class BankManagerEntity {
         this.accessLevel = accessLevel;
     }
 
-    //getteri si setteri
-
+    // Getters si Setters
     public String getEmployeeId() {
         return employeeId;
     }
@@ -122,24 +127,22 @@ public class BankManagerEntity {
         this.accessLevel = accessLevel;
     }
 
-    //metode utilitare
-    public String getFullName(){
+    // Metode utilitare
+    public String getFullName() {
         return firstName + " " + lastName;
     }
 
-    public boolean hasAdminAccess(){
+    public boolean hasAdminAccess() {
         return "ADMIN".equals(accessLevel) || "SUPER_ADMIN".equals(accessLevel);
     }
 
-    public boolean hasFullAccess(){
+    public boolean hasFullAccess() {
         return "SUPER_ADMIN".equals(accessLevel);
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return String.format("BankManagerEntity[id=%s, name=%s %s, username=%s, level=%s, active=%s]",
-                employeeId,firstName,lastName,username,accessLevel,active);
+                employeeId, firstName, lastName, username, accessLevel, active);
     }
 }
-
-

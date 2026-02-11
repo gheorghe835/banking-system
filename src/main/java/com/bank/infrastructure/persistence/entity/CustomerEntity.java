@@ -3,6 +3,7 @@ package com.bank.infrastructure.persistence.entity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,46 +11,54 @@ import java.util.List;
  * Entitate JPA pentru clienti bancari
  * Mapeaza clasa Customer din domain layer
  */
-
 @Entity
 @Table(name = "customers")
 public class CustomerEntity {
+
     @Id
-    @Column(name = "customer_id",length = 20,nullable = false,unique = true)
+    @Column(name = "customer_id", length = 20, nullable = false, unique = true)
     private String customerId;
 
-    @Column(name = "first_name",length = 50,nullable = false)
+    @Column(name = "first_name", length = 50, nullable = false)
     private String firstName;
-    @Column(name = "last_name",length = 50,nullable = false)
+
+    @Column(name = "last_name", length = 50, nullable = false)
     private String lastName;
-    @Column(name = "email",length = 100,nullable = false,unique = true)
+
+    @Column(name = "email", length = 100, nullable = false, unique = true)
     private String email;
-    @Column(name = "phone_number",length = 20)
+
+    @Column(name = "phone_number", length = 20)
     private String phoneNumber;
-    @Column(name = "birt_date")
+
+    @Column(name = "birth_date")
     private LocalDate birthDate;
-    @Column(name = "address",length = 200)
+
+    @Column(name = "address", length = 200)
     private String address;
-    @Column(name = "identity_number",length = 20,unique = true)
+
+    @Column(name = "identity_number", length = 20, unique = true)
     private String identityNumber;
-    @Column(name = "registration_date",nullable = false)
+
+    @Column(name = "registration_date", nullable = false)
     private LocalDateTime registrationDate;
-    @Column(name = "is_active",nullable = false)
+
+    @Column(name = "is_active", nullable = false)
     private boolean active = true;
 
-    //relatie OneToMany cu conturile clientului
-    @OneToMany(mappedBy = "owner",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    // Relatie OneToMany cu conturile clientului
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<AccountEntity> accounts = new ArrayList<>();
 
-    //constructor implicit(JPA)
-    public CustomerEntity(){
+    // Constructor implicit (necesar pentru JPA)
+    public CustomerEntity() {
         this.registrationDate = LocalDateTime.now();
     }
 
-    //constructori cu parametri
-    public CustomerEntity(String customerId,String firstName,String lastName,
-                          String email,String phoneNumber,LocalDate birthDate,
-                          String identityNumber){
+    // Constructor cu parametri
+    public CustomerEntity(String customerId, String firstName, String lastName,
+                          String email, String phoneNumber, LocalDate birthDate,
+                          String identityNumber) {
         this();
         this.customerId = customerId;
         this.firstName = firstName;
@@ -60,8 +69,7 @@ public class CustomerEntity {
         this.identityNumber = identityNumber;
     }
 
-    //getteri si setteri
-
+    // Getters si Setters
     public String getCustomerId() {
         return customerId;
     }
@@ -146,22 +154,23 @@ public class CustomerEntity {
         return accounts;
     }
 
-    public void setAccounts(List<AccountEntity> acconts) {
-        this.accounts = acconts;
+    public void setAccounts(List<AccountEntity> accounts) {
+        this.accounts = accounts;
     }
 
-    //metode utilitare
-    public String getFullName(){
+    // Metode utilitare
+    public String getFullName() {
         return firstName + " " + lastName;
     }
-    public int getAge(){
-        return LocalDate.now().getYear() - birthDate.getYear();
+
+    public int getAge() {
+        if (birthDate == null) return 0;
+        return Period.between(birthDate, LocalDate.now()).getYears();
     }
 
     @Override
-    public String toString(){
-        return String.format("CustomerEntity[id=%s, name=%s%s, email=%s, active=%s]",
-                customerId,firstName,lastName,email,active);
+    public String toString() {
+        return String.format("CustomerEntity[id=%s, name=%s %s, email=%s, active=%s]",
+                customerId, firstName, lastName, email, active);
     }
 }
-

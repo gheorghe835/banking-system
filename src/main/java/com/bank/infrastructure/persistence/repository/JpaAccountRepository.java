@@ -1,92 +1,111 @@
-// Infrastructure Layer - Repository pentru JPA
 package com.bank.infrastructure.persistence.repository;
 
 import com.bank.infrastructure.persistence.entity.AccountEntity;
+import com.bank.infrastructure.persistence.entity.CustomerEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface JpaAccountRepository extends JpaRepository<AccountEntity, Long> {
+public interface JpaAccountRepository extends JpaRepository<AccountEntity, String> {
 
+    // Basic queries
     Optional<AccountEntity> findByAccountNumber(String accountNumber);
-
     boolean existsByAccountNumber(String accountNumber);
 
-    @Transactional
-    @Modifying
-    @Query("DELETE FROM AccountEntity a WHERE a.accountNumber = :accountNumber")
-    int deleteByAccountNumber(@Param("accountNumber") String accountNumber);
+    // Find by customer
+    List<AccountEntity> findByOwner(CustomerEntity owner);
+    List<AccountEntity> findByOwnerCustomerId(String customerId);
 
-    List<AccountEntity> findByOwner_CustomerId(String customerId);
-
+    // Find by account type
     List<AccountEntity> findByAccountType(String accountType);
 
+    // Find active/inactive accounts
     List<AccountEntity> findByActiveTrue();
-
     List<AccountEntity> findByActiveFalse();
 
-    // Această metodă necesită un field totalBalanceInMDL în AccountEntity
-    @Query("SELECT a FROM AccountEntity a WHERE " +
-            "(a.balanceMDL + a.balanceEUR * 19.45 + a.balanceUSD * 17.55 + " +
-            "a.balanceGBP * 22.10 + a.balanceRON * 4.0) >= :minBalance")
-    List<AccountEntity> findByTotalBalanceGreaterThanEqual(@Param("minBalance") double minBalance);
+    // Find by balance ranges
+    List<AccountEntity> findByBalanceMDLGreaterThanEqual(BigDecimal minBalance);
+    List<AccountEntity> findByBalanceMDLLessThanEqual(BigDecimal maxBalance);
+    List<AccountEntity> findByBalanceMDLBetween(BigDecimal minBalance, BigDecimal maxBalance);
 
+    // Find by creation date
+    List<AccountEntity> findByCreationDateAfter(LocalDate date);
+    List<AccountEntity> findByCreationDateBefore(LocalDate date);
     List<AccountEntity> findByCreationDateBetween(LocalDate startDate, LocalDate endDate);
 
+    // Find by last login
+    List<AccountEntity> findByLastLoginIsNotNull();
+    List<AccountEntity> findByLastLoginIsNull();
+
+    // Find accounts with foreign currency
+    List<AccountEntity> findByBalanceEURGreaterThan(BigDecimal zero);
+    List<AccountEntity> findByBalanceUSDGreaterThan(BigDecimal zero);
+    List<AccountEntity> findByBalanceGBPGreaterThan(BigDecimal zero);
+    List<AccountEntity> findByBalanceRONGreaterThan(BigDecimal zero);
+
+    // Custom queries with JPQL
+    @Query("SELECT a FROM AccountEntity a WHERE a.owner.firstName LIKE %:name% OR a.owner.lastName LIKE %:name%")
+    List<AccountEntity> findByOwnerNameContaining(@Param("name") String name);
+
     @Query("SELECT a FROM AccountEntity a WHERE " +
-            "LOWER(CONCAT(a.owner.firstName, ' ', a.owner.lastName)) " +
-            "LIKE LOWER(CONCAT('%', :ownerNamePart, '%'))")
-    List<AccountEntity> findByOwnerNameContaining(@Param("ownerNamePart") String ownerNamePart);
+            "(a.balanceMDL + a.balanceEUR * :eurRate + a.balanceUSD * :usdRate + " +
+            "a.balanceGBP * :gbpRate + a.balanceRON * :ronRate) >= :minTotal")
+    List<AccountEntity> findByTotalBalanceGreaterThanEqual(
+            @Param("minTotal") BigDecimal minTotal,
+            @Param("eurRate") BigDecimal eurRate,
+            @Param("usdRate") BigDecimal usdRate,
+            @Param("gbpRate") BigDecimal gbpRate,
+            @Param("ronRate") BigDecimal ronRate);
 
-    @Query("SELECT COALESCE(" +
-            "SUM(a.balanceMDL + a.balanceEUR * 19.45 + a.balanceUSD * 17.55 + " +
-            "a.balanceGBP * 22.10 + a.balanceRON * 4.0), 0) FROM AccountEntity a")
-    double getTotalBalanceInMDL();
+    // Statistics queries
+    @Query("SELECT COUNT(a) FROM AccountEntity a WHERE a.active = true")
+    long countActiveAccounts();
 
-    @Query("SELECT COALESCE(" +
-            "AVG(a.balanceMDL + a.balanceEUR * 19.45 + a.balanceUSD * 17.55 + " +
-            "a.balanceGBP * 22.10 + a.balanceRON * 4.0), 0) FROM AccountEntity a")
-    double getAverageBalanceInMDL();
+    @Query("SELECT SUM(a.balanceMDL) FROM AccountEntity a")
+    BigDecimal sumAllMDLBalances();
 
-    @Query("SELECT a FROM AccountEntity a ORDER BY " +
-            "(a.balanceMDL + a.balanceEUR * 19.45 + a.balanceUSD * 17.55 + " +
-            "a.balanceGBP * 22.10 + a.balanceRON * 4.0) DESC")
-    Optional<AccountEntity> findTopByOrderByTotalBalanceDesc();
+    @Query("SELECT AVG(a.balanceMDL) FROM AccountEntity a WHERE a.balanceMDL > 0")
+    BigDecimal averageMDLBalance();
 
-    @Query("SELECT a FROM AccountEntity a ORDER BY " +
-            "(a.balanceMDL + a.balanceEUR * 19.45 + a.balanceUSD * 17.55 + " +
-            "a.balanceGBP * 22.10 + a.balanceRON * 4.0) ASC")
-    Optional<AccountEntity> findTopByOrderByTotalBalanceAsc();
+    @Query("SELECT MAX(a.balanceMDL) FROM AccountEntity a")
+    BigDecimal findMaxMDLBalance();
 
-    @Transactional
+    @Query("SELECT MIN(a.balanceMDL) FROM AccountEntity a WHERE a.balanceMDL > 0")
+    BigDecimal findMinMDLBalance();
+
+    // Update queries
     @Modifying
-    @Query("UPDATE AccountEntity a SET a.active = false WHERE a.accountNumber = :accountNumber")
-    int deactivateByAccountNumber(@Param("accountNumber") String accountNumber);
+    @Query("UPDATE AccountEntity a SET a.active = :active WHERE a.accountNumber = :accountNumber")
+    int updateAccountStatus(@Param("accountNumber") String accountNumber,
+                            @Param("active") boolean active);
 
-    @Transactional
     @Modifying
-    @Query("UPDATE AccountEntity a SET a.active = true WHERE a.accountNumber = :accountNumber")
-    int activateByAccountNumber(@Param("accountNumber") String accountNumber);
+    @Query("UPDATE AccountEntity a SET a.dailyWithdrawalLimit = :newLimit WHERE a.accountNumber = :accountNumber")
+    int updateDailyWithdrawalLimit(@Param("accountNumber") String accountNumber,
+                                   @Param("newLimit") BigDecimal newLimit);
 
-    @Transactional
     @Modifying
-    @Query("UPDATE AccountEntity a SET a.dailyWithdrawalLimit = :newLimit " +
-            "WHERE a.accountNumber = :accountNumber")
-    int updateDailyLimit(@Param("accountNumber") String accountNumber,
-                         @Param("newLimit") double newLimit);
+    @Query("UPDATE AccountEntity a SET a.dailyWithdrawalUsed = 0, a.lastResetDate = CURRENT_DATE " +
+            "WHERE a.lastResetDate < CURRENT_DATE")
+    int resetDailyWithdrawalLimits();
 
-    @Transactional
-    @Modifying
-    @Query("UPDATE AccountEntity a SET a.dailyWithdrawalUsed = 0, a.lastResetDate = CURRENT_DATE")
-    int resetDailyWithdrawals();
+    // Native SQL query example
+    @Query(value = "SELECT * FROM accounts WHERE " +
+            "(balance_mdl + balance_eur * :eurRate + balance_usd * :usdRate + " +
+            "balance_gbp * :gbpRate + balance_ron * :ronRate) = " +
+            "(SELECT MAX(balance_mdl + balance_eur * :eurRate + balance_usd * :usdRate + " +
+            "balance_gbp * :gbpRate + balance_ron * :ronRate) FROM accounts)",
+            nativeQuery = true)
+    List<AccountEntity> findRichestAccount(@Param("eurRate") BigDecimal eurRate,
+                                           @Param("usdRate") BigDecimal usdRate,
+                                           @Param("gbpRate") BigDecimal gbpRate,
+                                           @Param("ronRate") BigDecimal ronRate);
 }
-
-

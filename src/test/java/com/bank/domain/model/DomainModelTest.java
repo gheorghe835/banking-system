@@ -1,8 +1,6 @@
 package com.bank.domain.model;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -11,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class DomainModelTest {
 
     @Test
-    @DisplayName("Test creare Currency")
     void testCurrencyEnum() {
         // Test valute
         assertEquals("EUR", Currency.EUR.getCode());
@@ -22,35 +19,42 @@ class DomainModelTest {
         assertEquals(1945.0, converted, 0.001);
 
         // Test validare
-        assertTrue(Currency.isValid("USD"));
-        assertFalse(Currency.isValid("XYZ"));
+        assertTrue(Currency.isValidCurrency("USD"));
+        assertFalse(Currency.isValidCurrency("XYZ"));
+
+        assertEquals(Currency.USD, Currency.fromCode("USD"));
+        assertThrows(IllegalArgumentException.class, () -> Currency.fromCode("XYZ"));
     }
 
     @Test
-    @DisplayName("Test creare Customer")
     void testCustomerCreation() {
         Customer customer = new Customer(
-                "Egor",
-                "Batiri",
-                "egor_bati@gmail.com",
+                "John",
+                "Doe",
+                "john.doe@example.com",
                 "+37369123456",
-                LocalDate.of(2000, 12, 17),
+                LocalDate.of(1990, 1, 1),
                 "1234567890123"
         );
 
-        assertEquals("Egor", customer.getFirstName());
-        assertEquals("Batiri", customer.getLastName());
-        assertEquals("egor_bati@gmail.com", customer.getEmail());
+        assertEquals("John", customer.getFirstName());
+        assertEquals("Doe", customer.getLastName());
+        assertEquals("john.doe@example.com", customer.getEmail());
         assertTrue(customer.isActive());
         assertNotNull(customer.getCustomerId());
+
+        // Test validare
+        assertThrows(IllegalArgumentException.class,
+                () -> customer.setEmail("invalid-email"));
+        assertThrows(IllegalArgumentException.class,
+                () -> customer.setBirthDate(LocalDate.now().minusYears(10)));
     }
 
     @Test
-    @DisplayName("Test creare Account")
     void testAccountCreation() {
         Customer customer = new Customer(
-                "Iulia", "Batiri", "iulia2006@gmail.com",
-                "+37369234567", LocalDate.of(2006, 2, 28), "9876543210987"
+                "Jane", "Smith", "jane@example.com",
+                "+37369234567", LocalDate.of(1985, 5, 15), "9876543210987"
         );
 
         Account account = new Account(
@@ -65,10 +69,21 @@ class DomainModelTest {
         assertEquals(Account.ACCOUNT_TYPE_CURRENT, account.getAccountType());
         assertTrue(account.isActive());
         assertEquals(BigDecimal.valueOf(1000), account.getBalance(Currency.MDL));
+
+        // Test depunere
+        account.deposit(BigDecimal.valueOf(500), Currency.MDL);
+        assertEquals(BigDecimal.valueOf(1500), account.getBalance(Currency.MDL));
+
+        // Test retragere
+        account.withdraw(BigDecimal.valueOf(200), Currency.MDL);
+        assertEquals(BigDecimal.valueOf(1300), account.getBalance(Currency.MDL));
+
+        // Test sold insuficient
+        assertThrows(IllegalArgumentException.class,
+                () -> account.withdraw(BigDecimal.valueOf(2000), Currency.MDL));
     }
 
     @Test
-    @DisplayName("Test creare Transaction")
     void testTransactionCreation() {
         Transaction transaction = new Transaction(
                 Transaction.TransactionType.DEPOSIT,
@@ -82,23 +97,31 @@ class DomainModelTest {
         assertEquals(BigDecimal.valueOf(500), transaction.getAmount());
         assertEquals(Currency.EUR, transaction.getCurrency());
         assertEquals(Transaction.TransactionStatus.PENDING, transaction.getStatus());
+
+        // Test mark as completed
+        transaction.markAsCompleted();
+        assertEquals(Transaction.TransactionStatus.COMPLETED, transaction.getStatus());
+        assertTrue(transaction.isSuccessful());
     }
 
     @Test
-    @DisplayName("Test creare BankManager")
     void testBankManagerCreation() {
         BankManager manager = new BankManager(
                 "admin123",
-                "Oxana",
-                "Batiri",
-                "axana_batiri@bank.com",
+                "Alice",
+                "Johnson",
+                "alice.johnson@bank.com",
                 BankManager.AccessLevel.ADMIN
         );
 
         assertEquals("admin123", manager.getUsername());
-        assertEquals("Oxana Batiri", manager.getFullName());
+        assertEquals("Alice Johnson", manager.getFullName());
         assertEquals(BankManager.AccessLevel.ADMIN, manager.getAccessLevel());
         assertTrue(manager.isActive());
         assertTrue(manager.hasAdminAccess());
+        assertFalse(manager.hasFullAccess()); // Nu este SUPER_ADMIN
+
+        assertNotNull(manager.getEmployeeId());
+        assertTrue(manager.getEmployeeId().startsWith("MGR"));
     }
 }

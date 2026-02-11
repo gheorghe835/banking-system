@@ -1,8 +1,7 @@
 package com.bank.domain.service;
 
 import com.bank.domain.exception.*;
-import com.bank.domain.model.Account;
-import com.bank.domain.model.Currency;
+import com.bank.domain.model.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -10,191 +9,204 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Serviciul pentru operatiuni de schimb valutar
+ * Serviciu pentru operațiuni de schimb valutar
  */
-
 public class ExchangeService {
+
     private final AccountService accountService;
     private final TransactionService transactionService;
-    private Map<Currency, BigDecimal> exchangeRates = new HashMap<>();
+    private Map<Currency, BigDecimal> exchangeRates;
 
-    //comision pentru schimb valutar(0.5%)
+    // Comision pentru schimb valutar (0.5%)
     private static final BigDecimal EXCHANGE_COMMISSION = BigDecimal.valueOf(0.005);
 
     public ExchangeService(AccountService accountService, TransactionService transactionService) {
         this.accountService = accountService;
         this.transactionService = transactionService;
-        this.exchangeRates = new HashMap<>();
         initializeExchangeRates();
     }
 
-    //initializeaza ratele de schimb
-    private void initializeExchangeRates(){
-        exchangeRates.put(Currency.MDL,BigDecimal.ONE);
-        exchangeRates.put(Currency.EUR,BigDecimal.valueOf(19.45));
-        exchangeRates.put(Currency.USD,BigDecimal.valueOf(17.55));
-        exchangeRates.put(Currency.GBP,BigDecimal.valueOf(22.10));
-        exchangeRates.put(Currency.RON,BigDecimal.valueOf(4.0));
+    /**
+     * Inițializează ratele de schimb
+     */
+    private void initializeExchangeRates() {
+        exchangeRates = new HashMap<>();
+
+        // Rate față de MDL
+        exchangeRates.put(Currency.MDL, BigDecimal.ONE);
+        exchangeRates.put(Currency.EUR, BigDecimal.valueOf(19.45));
+        exchangeRates.put(Currency.USD, BigDecimal.valueOf(17.55));
+        exchangeRates.put(Currency.GBP, BigDecimal.valueOf(22.10));
+        exchangeRates.put(Currency.RON, BigDecimal.valueOf(4.0));
     }
 
-    //Operatiuni de schimb valutar
+    // ===== OPERAȚIUNI DE SCHIMB VALUTAR =====
+
     /**
-     * schimba banii dintr-o moneda in alta
+     * Schimbă bani dintr-o monedă în alta
      */
     public Account exchangeCurrency(String accountNumber,
                                     Currency fromCurrency,
                                     Currency toCurrency,
-                                    BigDecimal amount){
-        //validare input
-        if (fromCurrency == toCurrency){
-            throw new CurrencyExchangeException(fromCurrency,toCurrency,amount.doubleValue(),
-                    "Nu puteti schimba aceeasi moneda");
+                                    BigDecimal amount) {
+
+        // Validare input
+        if (fromCurrency == toCurrency) {
+            throw new CurrencyExchangeException(fromCurrency, toCurrency, amount,
+                    "Nu puteți schimba aceeași monedă");
         }
 
-        if (amount.compareTo(BigDecimal.ZERO) <= 0){
-            throw new ValidationException("Suma invalida")
-                    .addError("amount","Suma trebuie sa fie pozitiva",amount);
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new ValidationException("Sumă invalidă")
+                    .addError("amount", "Suma trebuie să fie pozitivă", amount);
         }
 
-        //gaseste contul
+        // Găsește contul
         Account account = accountService.findActiveAccount(accountNumber);
 
-        //verifica daca are suficiente fonduri in moneda sursa
-        if (!account.hasSufficientFounds(amount,fromCurrency)){
+        // Verifică dacă are suficiente fonduri în moneda sursă
+        if (!account.hasSufficientFunds(amount, fromCurrency)) {
             BigDecimal available = account.getBalance(fromCurrency);
             throw new InsufficientFundsException(accountNumber,
-                    amount.doubleValue(),available.doubleValue(),fromCurrency);
+                    amount, available, fromCurrency);
         }
 
-        //calculeaza suma schimbata(cu comision)
-        BigDecimal exchangeAmount = calculateExchange(amount,fromCurrency,toCurrency);
+        // Calculează suma schimbată (cu comision)
+        BigDecimal exchangedAmount = calculateExchange(amount, fromCurrency, toCurrency);
 
-        //aplica comision
-        BigDecimal commission = exchangeAmount.multiply(EXCHANGE_COMMISSION);
-        exchangeAmount = exchangeAmount.subtract(commission);
+        // Aplică comision
+        BigDecimal commission = exchangedAmount.multiply(EXCHANGE_COMMISSION);
+        exchangedAmount = exchangedAmount.subtract(commission);
 
-        //efectuiaza schimbul
-        //retrage din moneda sursa
-        account.withdraw(amount,fromCurrency);
+        // Efectuează schimbul
+        // Retrage din moneda sursă
+        account.withdraw(amount, fromCurrency);
 
-        //depune in moneda destinatie
-        account.deposit(exchangeAmount,toCurrency);
+        // Depune în moneda destinație
+        account.deposit(exchangedAmount, toCurrency);
 
-        //salveaza contul
-        //inregistreaza tranzactia
-        String description = String.format("Schimb valutar %s -> %s(comision: %s%s",
-                fromCurrency,toCurrency,commission.setScale(4, RoundingMode.HALF_UP),toCurrency);
+        // Salvează contul
+        // Notă: În practică, ai salva prin accountService
 
-        //este nevoie de a crea o tranzactie de tip Exchange
+        // Înregistrează tranzacția
+        String description = String.format("Schimb valutar %s -> %s (comision: %s %s)",
+                fromCurrency, toCurrency, commission.setScale(4, RoundingMode.HALF_UP), toCurrency);
+
+        // Ar trebui să creăm o tranzacție de tip EXCHANGE
 
         return account;
     }
 
     /**
-     * calculeaza suma schimbata intre doua monede
+     * Calculează suma schimbată între două monede
      */
-    public BigDecimal calculateExchange(BigDecimal amount,Currency fromCurrency,Currency toCurrency){
+    public BigDecimal calculateExchange(BigDecimal amount, Currency fromCurrency, Currency toCurrency) {
         BigDecimal rateFrom = exchangeRates.get(fromCurrency);
         BigDecimal rateTo = exchangeRates.get(toCurrency);
 
-        if (rateFrom == null || rateTo == null){
-            throw new CurrencyExchangeException(fromCurrency,toCurrency,amount.doubleValue(),
+        if (rateFrom == null || rateTo == null) {
+            throw new CurrencyExchangeException(fromCurrency, toCurrency, amount,
                     "Rate de schimb indisponibile");
         }
 
-        //conversie: amount * (rateFrom/rateTo)
-        return amount.multiply(rateFrom).divide(rateTo,4,RoundingMode.HALF_UP);
+        // Conversie: amount * (rateFrom / rateTo)
+        return amount.multiply(rateFrom).divide(rateTo, 4, RoundingMode.HALF_UP);
     }
 
     /**
-     * calculeaza suma schimbata intre doua monede(cu string)
+     * Calculează suma schimbată între două monede (cu string-uri)
      */
-    public BigDecimal calculateExchange(BigDecimal amount,String fromCurrencyCode,String toCurrencyCode){
+    public BigDecimal calculateExchange(BigDecimal amount, String fromCurrencyCode, String toCurrencyCode) {
         Currency fromCurrency = Currency.fromCode(fromCurrencyCode);
         Currency toCurrency = Currency.fromCode(toCurrencyCode);
 
-        return calculateExchange(amount,fromCurrency,toCurrency);
+        return calculateExchange(amount, fromCurrency, toCurrency);
     }
 
-    //Gestiune rate de schimb
+    // ===== GESTIUNE RATE DE SCHIMB =====
+
     /**
-     * actualizeaza rata de schimb pentru o moneda
+     * Actualizează rata de schimb pentru o monedă
      */
-    public void updateExchangeRate(Currency currency,BigDecimal newRate){
-        if (newRate.compareTo(BigDecimal.ZERO) <= 0){
-            throw new ValidationException("Rata invalida")
-                    .addError("rate","Rata trebuie sa fie pozitiva",newRate);
+    public void updateExchangeRate(Currency currency, BigDecimal newRate) {
+        if (newRate.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new ValidationException("Rată invalidă")
+                    .addError("rate", "Rata trebuie să fie pozitivă", newRate);
         }
-        exchangeRates.put(currency,newRate);
+
+        exchangeRates.put(currency, newRate);
     }
 
     /**
-     * returneaza rata de schimb pentru o moneda
+     * Returnează rata de schimb pentru o monedă
      */
-    public BigDecimal getExchangeRate(Currency currency){
+    public BigDecimal getExchangeRate(Currency currency) {
         BigDecimal rate = exchangeRates.get(currency);
 
-        if (rate == null){
+        if (rate == null) {
             throw new BankingException(BankingErrorCode.EXCHANGE_RATE_UNAVAILABLE,
-                    "Rata de schimb indisponibila pentru " + currency);
+                    "Rată de schimb indisponibilă pentru " + currency);
         }
+
         return rate;
     }
 
     /**
-     * returneaza toate ratele de schimb
+     * Returnează toate ratele de schimb
      */
-    public Map<Currency,BigDecimal> getAllExchangeRates(){
+    public Map<Currency, BigDecimal> getAllExchangeRates() {
         return new HashMap<>(exchangeRates);
     }
 
     /**
-     * returneaza rata de schimb intre doua monede
+     * Returnează rata de schimb între două monede
      */
-    public BigDecimal getExchangeRate(Currency fromCurency,Currency toCurrency){
-        if (fromCurency == toCurrency){
+    public BigDecimal getExchangeRate(Currency fromCurrency, Currency toCurrency) {
+        if (fromCurrency == toCurrency) {
             return BigDecimal.ONE;
         }
 
-        BigDecimal rateFrom = getExchangeRate(fromCurency);
+        BigDecimal rateFrom = getExchangeRate(fromCurrency);
         BigDecimal rateTo = getExchangeRate(toCurrency);
 
-        return rateFrom.divide(rateTo,4,RoundingMode.HALF_UP);
+        return rateFrom.divide(rateTo, 4, RoundingMode.HALF_UP);
     }
 
-    //Conversii
+    // ===== CONVERSII =====
+
     /**
-     * converteste o suma in MDL
+     * Converstește o sumă în MDL
      */
-    public BigDecimal convertToMDL(BigDecimal amount,Currency currency){
+    public BigDecimal convertToMDL(BigDecimal amount, Currency currency) {
         return amount.multiply(getExchangeRate(currency));
     }
 
     /**
-     * converteste o suma din MDl intr-o alta moneda
+     * Converstește o sumă din MDL într-o altă monedă
      */
-    public BigDecimal convertFromMDL(BigDecimal amountInMDL,Currency currency){
-        return amountInMDL.divide(getExchangeRate(currency),4,RoundingMode.HALF_UP);
+    public BigDecimal convertFromMDL(BigDecimal amountInMDL, Currency toCurrency) {
+        return amountInMDL.divide(getExchangeRate(toCurrency), 4, RoundingMode.HALF_UP);
     }
 
     /**
-     * converteste o suma intre oricare doua monede
+     * Converstește o sumă între oricare două monede
      */
-    public BigDecimal convert(BigDecimal amount,Currency fromCurrency,Currency toCurrency){
-        if (fromCurrency == toCurrency){
+    public BigDecimal convert(BigDecimal amount, Currency fromCurrency, Currency toCurrency) {
+        if (fromCurrency == toCurrency) {
             return amount;
         }
 
-        //converteste MDL in prim rind
-        BigDecimal amoountInMDL = convertToMDL(amount,fromCurrency);
+        // Convert to MDL first
+        BigDecimal amountInMDL = convertToMDL(amount, fromCurrency);
 
-        //converteste din MDL in moneda tinta
-        return convertFromMDL(amoountInMDL,toCurrency);
+        // Convert from MDL to target currency
+        return convertFromMDL(amountInMDL, toCurrency);
     }
 
-    //Rapoarte
+    // ===== RAPOARTE =====
+
     /**
-     * calculeaza valoarea totala a contului in MDL
+     * Calculează valoarea totală a contului în MDL
      */
     public BigDecimal calculateTotalValueInMDL(Account account) {
         BigDecimal total = BigDecimal.ZERO;
@@ -203,53 +215,27 @@ public class ExchangeService {
             BigDecimal balance = account.getBalance(currency);
             if (balance.compareTo(BigDecimal.ZERO) > 0) {
                 BigDecimal valueInMDL = convertToMDL(balance, currency);
+                total = total.add(valueInMDL);
             }
         }
+
         return total;
     }
 
     /**
-     * calculeaza comisionul pentru un schimb valutar
+     * Calculează comisionul pentru un schimb valutar
      */
-    public BigDecimal calculateCommission(BigDecimal amount,Currency fromCurrency,Currency toCurrency){
-        BigDecimal exchangedAmount = calculateExchange(amount,fromCurrency,toCurrency);
+    public BigDecimal calculateCommission(BigDecimal amount, Currency fromCurrency, Currency toCurrency) {
+        BigDecimal exchangedAmount = calculateExchange(amount, fromCurrency, toCurrency);
         return exchangedAmount.multiply(EXCHANGE_COMMISSION);
     }
 
     /**
-     * returneaza suma primita dupa comision
+     * Returnează suma primită după comision
      */
-    public BigDecimal getAmountAfterCommission(BigDecimal amount,Currency fromCurrency,Currency toCurrency){
-        BigDecimal exchangedAmount = calculateExchange(amount,fromCurrency,toCurrency);
+    public BigDecimal getAmountAfterCommission(BigDecimal amount, Currency fromCurrency, Currency toCurrency) {
+        BigDecimal exchangedAmount = calculateExchange(amount, fromCurrency, toCurrency);
         BigDecimal commission = exchangedAmount.multiply(EXCHANGE_COMMISSION);
         return exchangedAmount.subtract(commission);
     }
-
-    // setarea ratelor (pentru testare):
-    public void setExchangeRates(Map<Currency, BigDecimal> rates) {
-        this.exchangeRates = new HashMap<>(rates);
-    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

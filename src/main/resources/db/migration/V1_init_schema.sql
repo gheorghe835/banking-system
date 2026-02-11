@@ -1,7 +1,7 @@
 -- =============================================
 -- BANCĂ COMERCIALĂ - SCHEMA DE BAZĂ DE DATE
 -- Versiune: 1.0
--- Data creării: 2024
+-- Data creării: 2026
 -- =============================================
 
 -- Tabela pentru clienți

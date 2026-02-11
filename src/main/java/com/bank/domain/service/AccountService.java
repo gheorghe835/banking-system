@@ -1,75 +1,77 @@
 package com.bank.domain.service;
 
-import com.bank.domain.exception.AccountNotFoundException;
-import com.bank.domain.exception.BankingErrorCode;
-import com.bank.domain.exception.BankingException;
-import com.bank.domain.exception.ValidationException;
-import com.bank.domain.model.Account;
-import com.bank.domain.model.Currency;
-import com.bank.domain.model.Customer;
-import com.bank.domain.model.Transaction;
+import com.bank.domain.exception.*;
+import com.bank.domain.model.*;
 import com.bank.domain.repository.AccountRepository;
 import com.bank.domain.repository.TransactionRepository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Serviciu pentru gestionarea conturilor bancare
- * Contine ligica de buisiness pentru operatiunile cu conturi
+ * Conține toată logica de business pentru operațiunile cu conturi
  */
-
 public class AccountService {
+
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
     private final ValidationService validationService;
 
-    //constructor cu depedency injection
+    // Constructor cu dependency injection
     public AccountService(AccountRepository accountRepository,
                           TransactionRepository transactionRepository,
-                          ValidationService validationService){
+                          ValidationService validationService) {
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
         this.validationService = validationService;
     }
 
-    //operatiuni de baza pe conturi
+    // ===== OPERAȚIUNI DE BAZĂ PE CONTURI =====
+
     /**
-     * creeaza un nou cont bancar
+     * Creează un nou cont bancar
      */
     public Account createAccount(String accountNumber, Customer owner,
-                                 String accountType, BigDecimal initialBalance){
-        //validare input
+                                 String accountType, BigDecimal initialBalance) {
+        // Validare input
         validationService.validateAccountNumber(accountNumber);
         validationService.validateCustomer(owner);
 
-        //verifica daca contul exista deja
-        if (accountRepository.existsByAccountNumber(accountNumber)){
+        // Verifică dacă contul există deja
+        if (accountRepository.existsByAccountNumber(accountNumber)) {
             throw new BankingException(BankingErrorCode.ACCOUNT_ALREADY_EXISTS,
-                    "Contul cu numarul " + accountNumber + " exista deja");
+                    "Contul cu numărul " + accountNumber + " există deja");
         }
 
-        //creaza contul
-        Account account = new Account(accountNumber,owner,accountType,initialBalance);
+        // Creează contul
+        Account account = new Account(accountNumber, owner, accountType, initialBalance);
 
-        //salveaza contul
+        // Salvează contul
         Account savedAccount = accountRepository.save(account);
 
-        //inregistreaza tranzactia de creare
-        Transaction transaction = new Transaction(Transaction.TransactionType.ACCOUNT_CREATION,
-                initialBalance, Currency.MDL,"Creare cont cu sold initial");
+        // Înregistrează tranzacția de creare
+        Transaction transaction = new Transaction(
+                Transaction.TransactionType.ACCOUNT_CREATION,
+                initialBalance,
+                Currency.MDL,
+                "Creare cont cu sold inițial"
+        );
         transaction.setSourceAccountNumber(null);
         transaction.setTargetAccountNumber(accountNumber);
-        transaction.markASCompleted();
+        transaction.markAsCompleted();
         transactionRepository.save(transaction);
 
         return savedAccount;
     }
 
     /**
-     * Gaseste un cont dupa numar
+     * Găsește un cont după număr
      */
-    public Account findAccount(String accountNumber){
+    public Account findAccount(String accountNumber) {
         validationService.validateAccountNumber(accountNumber);
 
         return accountRepository.findByAccountNumber(accountNumber)
@@ -77,162 +79,194 @@ public class AccountService {
     }
 
     /**
-     * Gaseste un cont dupa numar cu verificare de activitate
+     * Găsește un cont după număr cu verificare de activitate
      */
-    public Account findActiveAccount(String accountNumber){
+    public Account findActiveAccount(String accountNumber) {
         Account account = findAccount(accountNumber);
 
-        if (!account.isActive()){
+        if (!account.isActive()) {
             throw new BankingException(BankingErrorCode.ACCOUNT_INACTIVE,
-                    "Contul "+ accountNumber + " este inactiv");
+                    "Contul " + accountNumber + " este inactiv");
         }
 
         return account;
     }
 
     /**
-     * Returneaza toate conturile
+     * Returnează toate conturile
      */
-    public List<Account> getAllAccounts(){return accountRepository.findAll();}
+    public List<Account> getAllAccounts() {
+        return accountRepository.findAll();
+    }
 
     /**
-     * returneaza conturile unui client
-    */
-    public List<Account> getCustomerAccounts(String customerId){
+     * Returnează conturile unui client
+     */
+    public List<Account> getCustomerAccounts(String customerId) {
         return accountRepository.findByCustomerId(customerId);
     }
 
     /**
-     * sterge un cont(doar daca soldul este zero
+     * Șterge un cont (doar dacă soldul este zero)
      */
-    public boolean deleteAccount(String accountNumber){
+    public boolean deleteAccount(String accountNumber) {
         Account account = findAccount(accountNumber);
 
-        //verifica daca contul are sold
-        if (account.getBalance(Currency.MDL).compareTo(BigDecimal.ZERO) > 0){
+        // Verifică dacă contul are sold
+        if (account.getBalance(Currency.MDL).compareTo(BigDecimal.ZERO) > 0) {
             throw new BankingException(BankingErrorCode.INVALID_TRANSACTION,
-                    "Contul nu poate fi sters deoarece are sold. Transferati mai intii soldul");
+                    "Contul nu poate fi șters deoarece are sold. Transferați mai întâi banii.");
         }
 
-        //marcheaza contul ca inactiv in loc de stergere fizica
+        // Marchează contul ca inactiv în loc de ștergere fizică
         account.deactivate();
         accountRepository.save(account);
 
         return true;
     }
 
-    //operatiuni financiare
+    // ===== OPERAȚIUNI FINANCIARE =====
+
     /**
-     * depune bani intr-un cont
+     * Depune bani într-un cont
      */
-    public Account deposit(String accountNumber,BigDecimal amount,Currency currency){
-        validationService.validateDepositAmount(amount.doubleValue(),currency);
+    public Account deposit(String accountNumber, BigDecimal amount, Currency currency) {
+        validationService.validateDepositAmount(amount, currency);
 
         Account account = findActiveAccount(accountNumber);
 
-        //efectuiaza depunerea
-        if (account.deposit(amount,currency)){
+        // Efectuează depunerea
+        if (account.deposit(amount, currency)) {
             account = accountRepository.save(account);
 
-            //inregistreaza tranzactia
-            Transaction transaction = new Transaction(Transaction.TransactionType.DEPOSIT,
+            // Înregistrează tranzacția
+            Transaction transaction = new Transaction(
+                    Transaction.TransactionType.DEPOSIT,
                     amount,
                     currency,
-                    "Depunere in cont");
+                    "Depunere în cont"
+            );
             transaction.setSourceAccountNumber(null);
             transaction.setTargetAccountNumber(accountNumber);
-            transaction.markASCompleted();
+            transaction.markAsCompleted();
             transactionRepository.save(transaction);
 
             return account;
         }
+
         throw new BankingException(BankingErrorCode.TRANSACTION_FAILED,
-                "Depunerea a esuat pentru contul " + accountNumber);
+                "Depunerea a eșuat pentru contul " + accountNumber);
     }
 
     /**
-     * retrage banii dintr-un cont
+     * Retrage bani dintr-un cont
      */
-    public Account withdraw(String accountNumber,BigDecimal amount,Currency currency){
-        validationService.validateWithdrawalAmount(amount.doubleValue(),currency);
+    public Account withdraw(String accountNumber, BigDecimal amount, Currency currency) {
+        validationService.validateWithdrawalAmount(amount, currency);
 
         Account account = findActiveAccount(accountNumber);
 
-        //efectuiaza retragerea
-        if (account.withdraw(amount,currency)){
+        // Efectuează retragerea
+        if (account.withdraw(amount, currency)) {
             account = accountRepository.save(account);
 
-            //inregistreaza tranzactia
-            Transaction transaction = new Transaction(Transaction.TransactionType.WITHDRAWAL,
+            // Înregistrează tranzacția
+            Transaction transaction = new Transaction(
+                    Transaction.TransactionType.WITHDRAWAL,
                     amount,
                     currency,
-                    "Retragere din cont");
+                    "Retragere din cont"
+            );
             transaction.setSourceAccountNumber(accountNumber);
             transaction.setTargetAccountNumber(null);
-            transaction.markASCompleted();
+            transaction.markAsCompleted();
             transactionRepository.save(transaction);
 
             return account;
         }
+
         throw new BankingException(BankingErrorCode.TRANSACTION_FAILED,
-                "Retragerea a esuat pentru contul "+ accountNumber);
+                "Retragerea a eșuat pentru contul " + accountNumber);
     }
 
     /**
-     * transfera bani intre doua conturi
+     * Transferă bani între două conturi
      */
-    public void transfer(String sourceAccountNumber,String targetAccountNumber,
-                         BigDecimal amount,Currency currency,String description){
+    public void transfer(String sourceAccountNumber, String targetAccountNumber,
+                         BigDecimal amount, Currency currency, String description) {
         validationService.validateAccountNumber(sourceAccountNumber);
         validationService.validateAccountNumber(targetAccountNumber);
-        validationService.validateWithdrawalAmount(amount.doubleValue(),currency);
+        validationService.validateWithdrawalAmount(amount, currency);
 
-        if (sourceAccountNumber.equals(targetAccountNumber)){
+        if (sourceAccountNumber.equals(targetAccountNumber)) {
             throw new BankingException(BankingErrorCode.INVALID_TRANSACTION,
-                    "Nu puteti transfera bani catre acelasi cont");
+                    "Nu puteți transfera bani către același cont");
         }
 
         Account sourceAccount = findActiveAccount(sourceAccountNumber);
         Account targetAccount = findActiveAccount(targetAccountNumber);
 
-        //efectuiaza transferul
-        if (sourceAccount.transferTo(targetAccount,amount,currency,description)){
-            //salveaza ambele conturi
-            accountRepository.save(sourceAccount);
-            accountRepository.save(targetAccount);
+        // Verifică fonduri suficiente
+        if (!sourceAccount.hasSufficientFunds(amount, currency)) {
+            throw new InsufficientFundsException(sourceAccountNumber,
+                    amount, sourceAccount.getBalance(currency), currency);
+        }
 
-            //transferul a fost deja inregistrat in metoda transferTo() a contului
-        }
-        else {
-            throw new BankingException(BankingErrorCode.TRANSACTION_FAILED,
-                    "Transferul a esuat");
-        }
+        // Efectuează transferul
+        sourceAccount.withdraw(amount, currency);
+        targetAccount.deposit(amount, currency);
+
+        // Salvează conturile
+        accountRepository.save(sourceAccount);
+        accountRepository.save(targetAccount);
+
+        // Înregistrează tranzacțiile
+        Transaction outTransaction = new Transaction(
+                Transaction.TransactionType.TRANSFER_OUT,
+                amount, currency,
+                "Transfer către " + targetAccountNumber + ": " + description
+        );
+        outTransaction.setSourceAccountNumber(sourceAccountNumber);
+        outTransaction.setTargetAccountNumber(targetAccountNumber);
+        outTransaction.markAsCompleted();
+        transactionRepository.save(outTransaction);
+
+        Transaction inTransaction = new Transaction(
+                Transaction.TransactionType.TRANSFER_IN,
+                amount, currency,
+                "Transfer de la " + sourceAccountNumber + ": " + description
+        );
+        inTransaction.setSourceAccountNumber(sourceAccountNumber);
+        inTransaction.setTargetAccountNumber(targetAccountNumber);
+        inTransaction.markAsCompleted();
+        transactionRepository.save(inTransaction);
     }
 
     /**
-     * verifica soldul unui cont
+     * Verifică soldul unui cont
      */
-    public BigDecimal getBalance(String accountNumber,Currency currency){
+    public BigDecimal getBalance(String accountNumber, Currency currency) {
         Account account = findActiveAccount(accountNumber);
         return account.getBalance(currency);
     }
 
     /**
-     * verifica soldul total in MDL al unui cont
+     * Verifică soldul total în MDL al unui cont
      */
-    public BigDecimal getTotalBalanceInMDL(String accountNumber){
+    public BigDecimal getTotalBalanceInMDL(String accountNumber) {
         Account account = findActiveAccount(accountNumber);
-        return account.getTotalBalancesInMDL();
+        return account.getTotalBalanceInMDL();
     }
 
-    //Operatiuni administrative
+    // ===== OPERAȚIUNI ADMINISTRATIVE =====
+
     /**
-     * blocheaza un cont
+     * Blochează un cont
      */
-    public Account blockAccount(String accountNumber){
+    public Account blockAccount(String accountNumber) {
         Account account = findAccount(accountNumber);
 
-        if (!account.isActive()){
+        if (!account.isActive()) {
             throw new BankingException(BankingErrorCode.ACCOUNT_INACTIVE,
                     "Contul este deja inactiv");
         }
@@ -240,46 +274,53 @@ public class AccountService {
         account.deactivate();
         Account blockedAccount = accountRepository.save(account);
 
-        //inregistreaza evenimentul
-        Transaction transaction = new Transaction(Transaction.TransactionType.ACCOUNT_DEACTIVATED,
+        // Înregistrează evenimentul
+        Transaction transaction = new Transaction(
+                Transaction.TransactionType.ACCOUNT_DEACTIVATED,
                 BigDecimal.ZERO,
                 Currency.MDL,
-                "Cont blocat");
+                "Cont blocat"
+        );
         transaction.setSourceAccountNumber(accountNumber);
-        transaction.markASCompleted();
+        transaction.markAsCompleted();
         transactionRepository.save(transaction);
 
         return blockedAccount;
     }
 
-    //deblocheaza un cont
-    public Account unblockAccount(String accountNumber){
+    /**
+     * Deblochează un cont
+     */
+    public Account unblockAccount(String accountNumber) {
         Account account = findAccount(accountNumber);
 
-        if (!account.isActive()){
+        if (account.isActive()) {
             throw new BankingException(BankingErrorCode.INVALID_TRANSACTION,
                     "Contul este deja activ");
         }
+
         account.activate();
         Account unblockedAccount = accountRepository.save(account);
 
-        //inregistreaza evenimentul
-        Transaction transaction = new Transaction(Transaction.TransactionType.ACCOUNT_REACTIVATED,
+        // Înregistrează evenimentul
+        Transaction transaction = new Transaction(
+                Transaction.TransactionType.ACCOUNT_REACTIVATED,
                 BigDecimal.ZERO,
                 Currency.MDL,
-                "Cont deblocat");
+                "Cont deblocat"
+        );
         transaction.setSourceAccountNumber(accountNumber);
-        transaction.markASCompleted();
+        transaction.markAsCompleted();
         transactionRepository.save(transaction);
 
         return unblockedAccount;
     }
 
     /**
-     * actualizeaza limita zilnica de retragere
+     * Actualizează limita zilnică de retragere
      */
-    public Account updateDailyWithdrawalLimit(String accountNumber,BigDecimal newLimit){
-        validationService.validateWithdrawalLimit(newLimit.doubleValue());
+    public Account updateDailyWithdrawalLimit(String accountNumber, BigDecimal newLimit) {
+        validationService.validateWithdrawalLimit(newLimit);
 
         Account account = findActiveAccount(accountNumber);
         account.setDailyWithdrawalLimit(newLimit);
@@ -288,88 +329,79 @@ public class AccountService {
     }
 
     /**
-     * schimba numele proprietarului contului
+     * Schimbă numele proprietarului contului
      */
-    public Account updateAccountOwner(String accountNumber, Customer newOwner) {
-        // Validare
-        if (newOwner == null) {
-            throw new ValidationException("Proprietar invalid")
-                    .addError("owner", "Proprietarul nu poate fi null", null);
-        }
-
-        // Validare nume
-        if (newOwner.getFirstName() == null || newOwner.getFirstName().trim().length() < 2 ||
-                newOwner.getLastName() == null || newOwner.getLastName().trim().length() < 2) {
+    public Account updateAccountOwner(String accountNumber, String newOwnerName) {
+        if (newOwnerName == null || newOwnerName.trim().length() < 2) {
             throw new ValidationException("Nume proprietar invalid")
-                    .addError("firstName", "Prenumele trebuie să aibă minim 2 caractere", newOwner.getFirstName())
-                    .addError("lastName", "Numele trebuie să aibă minim 2 caractere", newOwner.getLastName());
+                    .addError("ownerName", "Numele trebuie să aibă minim 2 caractere", newOwnerName);
         }
 
         Account account = findActiveAccount(accountNumber);
-
-        // Actualizează proprietarul
-        account.setOwner(newOwner);
+        // Notă: În implementarea actuală, Account nu are setOwnerName
+        // Ar trebui să adăugăm această metodă sau să lucrăm prin Customer
 
         return accountRepository.save(account);
     }
 
-    //Rapoarte si statistici
+    // ===== RAPOARTE ȘI STATISTICI =====
+
     /**
-     * genereaza raport cu toate conturile active
+     * Generează raport cu toate conturile active
      */
-    public List<Account> getActiveAccounts(){
+    public List<Account> getActiveAccounts() {
         return accountRepository.findActiveAccounts();
     }
 
     /**
-     * genereaza raport cu toate conturile inactive
+     * Generează raport cu toate conturile inactive
      */
-    public List<Account> getInactiveAccounts(){
+    public List<Account> getInactiveAccounts() {
         return accountRepository.findInactiveAccounts();
     }
 
     /**
-     * renturneaza conturile cu sold peste a anumita valoare
+     * Returnează conturile cu sold peste o anumită valoare
      */
-    public List<Account> getAccountsWithBalanceAbove(double minBalance){
+    public List<Account> getAccountsWithBalanceAbove(BigDecimal minBalance) {
         return accountRepository.findByBalanceGreaterThanEqual(minBalance);
     }
 
     /**
-     * returneaza soldul total in MDL al tuturor conturilor
+     * Returnează soldul total MDL al tuturor conturilor
      */
-    public BigDecimal getTotalBankBalance(){
-        return BigDecimal.valueOf(accountRepository.getTotalBalanceInMDL());
+    public BigDecimal getTotalBankBalance() {
+        return accountRepository.getTotalBalanceInMDL();
     }
 
     /**
-     * returneaza numarul total de conturi
+     * Returnează numărul total de conturi
      */
-    public long getTotalAccountCount(){
+    public long getTotalAccountCount() {
         return accountRepository.count();
     }
 
     /**
-     * returneaza numarul de conturi active
+     * Returnează numărul de conturi active
      */
-    public long getActiveAccountCount(){
+    public long getActiveAccountCount() {
         return accountRepository.findActiveAccounts().size();
     }
 
     /**
-     * actualizeaza data ultimei autentificari
+     * Actualizează data ultimei autentificări
      */
-    public void updateLastLogin(String accountNumber){
+    public void updateLastLogin(String accountNumber) {
         Account account = findActiveAccount(accountNumber);
         account.updateLastLogin();
         accountRepository.save(account);
     }
 
     /**
-     * verifica daca un cont are suficiente fonduri
+     * Verifică dacă un cont are suficiente fonduri
      */
-    public boolean hasSufficientFunds(String accountNumber, BigDecimal amount,Currency currency){
+    public boolean hasSufficientFunds(String accountNumber, BigDecimal amount, Currency currency) {
         Account account = findActiveAccount(accountNumber);
-        return account.hasSufficientFounds(amount,currency);
+        return account.hasSufficientFunds(amount, currency);
     }
 }

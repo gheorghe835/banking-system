@@ -1,8 +1,6 @@
 package com.bank.infrastructure.persistence.entity;
 
 import jakarta.persistence.*;
-
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -12,56 +10,67 @@ import java.util.List;
 /**
  * Entitate JPA pentru conturi bancare
  */
-
 @Entity
 @Table(name = "accounts")
 public class AccountEntity {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column(name = "account_number",length = 16,nullable = false,unique = true)
+    @Column(name = "account_number", length = 16, nullable = false, unique = true)
     private String accountNumber;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id",nullable = false)
+    @JoinColumn(name = "customer_id", nullable = false)
     private CustomerEntity owner;
-    @Column(name = "account_type",length = 20,nullable = false)
-    private String accountType;//"CURRENT", "SAVINGS", "BUSINESS"
-    @Column(name = "balance_mdl",precision = 15,scale = 2,nullable = false)
+
+    @Column(name = "account_type", length = 20, nullable = false)
+    private String accountType; // "CURRENT", "SAVINGS", "BUSINESS"
+
+    @Column(name = "balance_mdl", precision = 15, scale = 2, nullable = false)
     private BigDecimal balanceMDL = BigDecimal.ZERO;
-    @Column(name = "balance_eur",precision = 15,scale = 2,nullable = false)
-    private BigDecimal  balanceEUR = BigDecimal.ZERO;
-    @Column(name = "balance_usd",precision = 15,scale = 2,nullable = false)
+
+    @Column(name = "balance_eur", precision = 15, scale = 2, nullable = false)
+    private BigDecimal balanceEUR = BigDecimal.ZERO;
+
+    @Column(name = "balance_usd", precision = 15, scale = 2, nullable = false)
     private BigDecimal balanceUSD = BigDecimal.ZERO;
-    @Column(name = "balance_gbp",precision = 15,scale = 2,nullable = false)
+
+    @Column(name = "balance_gbp", precision = 15, scale = 2, nullable = false)
     private BigDecimal balanceGBP = BigDecimal.ZERO;
-    @Column(name = "balance_ron",precision = 15,scale = 2,nullable = false)
+
+    @Column(name = "balance_ron", precision = 15, scale = 2, nullable = false)
     private BigDecimal balanceRON = BigDecimal.ZERO;
-    @Column(name = "creation_date",nullable = false)
+
+    @Column(name = "creation_date", nullable = false)
     private LocalDate creationDate;
+
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
-    @Column(name = "is_active",nullable = false)
+
+    @Column(name = "is_active", nullable = false)
     private boolean active = true;
-    @Column(name = "daily_withdrawal_limit",precision = 10,scale = 2,nullable = false)
+
+    @Column(name = "daily_withdrawal_limit", precision = 10, scale = 2, nullable = false)
     private BigDecimal dailyWithdrawalLimit = BigDecimal.valueOf(5000);
-    @Column(name = "daily_withdrawal_used",precision = 10,scale = 2,nullable = false)
+
+    @Column(name = "daily_withdrawal_used", precision = 10, scale = 2, nullable = false)
     private BigDecimal dailyWithdrawalUsed = BigDecimal.ZERO;
-    @Column(name = "last_reset_date",nullable = false)
+
+    @Column(name = "last_reset_date", nullable = false)
     private LocalDate lastResetDate;
 
-    //relatie OneToMany cu tranzactiile
-    @OneToMany(mappedBy = "account",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    // Relatie OneToMany cu tranzactiile
+    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<TransactionEntity> transactions = new ArrayList<>();
 
-    //constructor implicit(JPA)
-    public AccountEntity(){
+    // Constructor implicit (necesar pentru JPA)
+    public AccountEntity() {
         this.creationDate = LocalDate.now();
         this.lastResetDate = LocalDate.now();
     }
 
-    //consructor cu parametri
-    public AccountEntity(String accountNumber,CustomerEntity owner,
-                         String accountType,BigDecimal initialBalanceMDL){
+    // Constructor cu parametri
+    public AccountEntity(String accountNumber, CustomerEntity owner,
+                         String accountType, BigDecimal initialBalanceMDL) {
         this();
         this.accountNumber = accountNumber;
         this.owner = owner;
@@ -69,8 +78,7 @@ public class AccountEntity {
         this.balanceMDL = initialBalanceMDL != null ? initialBalanceMDL : BigDecimal.ZERO;
     }
 
-    //getteri si setteri
-
+    // Getters si Setters
     public String getAccountNumber() {
         return accountNumber;
     }
@@ -171,8 +179,8 @@ public class AccountEntity {
         return dailyWithdrawalUsed;
     }
 
-    public void setDailyWithdrawalUsed(BigDecimal getDailyWithdrawalUsed) {
-        this.dailyWithdrawalUsed = getDailyWithdrawalUsed;
+    public void setDailyWithdrawalUsed(BigDecimal dailyWithdrawalUsed) {
+        this.dailyWithdrawalUsed = dailyWithdrawalUsed;
     }
 
     public LocalDate getLastResetDate() {
@@ -191,38 +199,35 @@ public class AccountEntity {
         this.transactions = transactions;
     }
 
-    //metode utilitare pentru business logic
-    public BigDecimal getTotalBalanceInMDL(){
-        //conversia sumelor valutare la MDL folosind rate fixe(pentru exemplu)
+    // Metode utilitare pentru business logic
+    public BigDecimal getTotalBalanceInMDL() {
+        // Conversia sumelor valutare la MDL folosind rate fixe (pentru exemplu)
         BigDecimal total = balanceMDL;
-        total = total.add(balanceEUR.multiply(BigDecimal.valueOf(19.45)));//EUR -> MDL
-        total = total.add(balanceUSD.multiply(BigDecimal.valueOf(17.55)));//USD -> MDL
-        total = total.add(balanceGBP.multiply(BigDecimal.valueOf(22.10)));//GBP -> MDL
-        total = total.add(balanceRON.multiply(BigDecimal.valueOf(4.0)));//RON - > MDL
-
+        total = total.add(balanceEUR.multiply(BigDecimal.valueOf(19.45)));  // EUR -> MDL
+        total = total.add(balanceUSD.multiply(BigDecimal.valueOf(17.55)));  // USD -> MDL
+        total = total.add(balanceGBP.multiply(BigDecimal.valueOf(22.10)));  // GBP -> MDL
+        total = total.add(balanceRON.multiply(BigDecimal.valueOf(3.91)));    // RON -> MDL
         return total;
     }
 
-    public int getAccountAgeInDays(){
-        return (int) java.time.temporal.ChronoUnit.DAYS.between(creationDate,LocalDate.now());
+    public int getAccountAgeInDays() {
+        return (int) java.time.temporal.ChronoUnit.DAYS.between(creationDate, LocalDate.now());
     }
 
-    public void resetDailyLimitIfNeeded(){
-        if (!LocalDate.now().equals(lastResetDate)){
+    public void resetDailyLimitIfNeeded() {
+        if (!LocalDate.now().equals(lastResetDate)) {
             dailyWithdrawalUsed = BigDecimal.ZERO;
             lastResetDate = LocalDate.now();
         }
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return String.format("AccountEntity[number=%s, owner=%s, type=%s, active=%s, total=%.2f MDL]",
                 accountNumber,
                 owner != null ? owner.getFullName() : "N/A",
                 accountType,
                 active,
                 getTotalBalanceInMDL());
-
     }
 }
-

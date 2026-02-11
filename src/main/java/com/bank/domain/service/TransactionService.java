@@ -1,227 +1,221 @@
 package com.bank.domain.service;
 
-import com.bank.domain.exception.BankingErrorCode;
-import com.bank.domain.exception.BankingException;
-import com.bank.domain.exception.ValidationException;
-import com.bank.domain.model.Transaction;
+import com.bank.domain.exception.*;
+import com.bank.domain.model.*;
 import com.bank.domain.repository.TransactionRepository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Serviciu pentru gestionarea tranzactiilor bancare
+ * Serviciu pentru gestionarea tranzacțiilor bancare
  */
-
 public class TransactionService {
+
     private final TransactionRepository transactionRepository;
     private final AccountService accountService;
 
     public TransactionService(TransactionRepository transactionRepository,
-                              AccountService accountService){
+                              AccountService accountService) {
         this.transactionRepository = transactionRepository;
         this.accountService = accountService;
     }
 
-    //Operatiuni de baza pe tranzactii
+    // ===== OPERAȚIUNI DE BAZĂ PE TRANZACȚII =====
+
     /**
-     * gaseste o tranzactie dupa ID
+     * Găsește o tranzacție după ID
      */
-    public Transaction findTransaction(String transactionId){
+    public Transaction findTransaction(String transactionId) {
         return transactionRepository.findById(transactionId)
-                .orElseThrow(()->new BankingException(BankingErrorCode.NOT_FOUND,
-                        "Tranzactia cu ID " +transactionId + " nu a fost gasita"));
+                .orElseThrow(() -> new BankingException(BankingErrorCode.NOT_FOUND,
+                        "Tranzacția cu ID-ul " + transactionId + " nu a fost găsită"));
     }
 
     /**
-     * returneaza toate tranzactiile
+     * Returnează toate tranzacțiile
      */
-    public List<Transaction> getAllTransactions(){
+    public List<Transaction> getAllTransactions() {
         return transactionRepository.findAll();
     }
 
     /**
-     * returneaza tranzactiile unui cont
+     * Returnează tranzacțiile unui cont
      */
-    public List<Transaction> getAccountTransactions(String accountNumber){
+    public List<Transaction> getAccountTransactions(String accountNumber) {
         return transactionRepository.findByAccountNumber(accountNumber);
     }
 
     /**
-     * returneaza ultimele N tranzactii ale unui cont
+     * Returnează ultimele N tranzacții ale unui cont
      */
-    public List<Transaction> getLastTransactions(String accountNumber,int limit){
-        if (limit <= 0 ||limit > 100){
-            throw new ValidationException("Limita invalida")
-                    .addError("limit","Limita trebuie sa fie intre 1 si 100",limit);
+    public List<Transaction> getLastTransactions(String accountNumber, int limit) {
+        if (limit <= 0 || limit > 100) {
+            throw new ValidationException("Limită invalidă")
+                    .addError("limit", "Limită trebuie să fie între 1 și 100", limit);
         }
-        return transactionRepository.findLastTransactionByAccount(accountNumber,limit);
+
+        return transactionRepository.findLastTransactionsByAccount(accountNumber, limit);
     }
 
-    //Rapoarte si istoric
+    // ===== RAPOARTE ȘI ISTORIC =====
+
     /**
-     * genereaza extras de cont pentru o perioada
+     * Generează extras de cont pentru o perioadă
      */
     public List<Transaction> generateAccountStatement(String accountNumber,
                                                       LocalDateTime startDate,
-                                                      LocalDateTime endDate){
-        //validare date
-        if (startDate.isAfter(endDate)){
-            throw new ValidationException("Perioada invalida")
-                    .addError("startDate","Data de inceput trebuie sa fie inainte de data de sfirsit",startDate)
-                    .addError("endDate","Data de sfirsit trebuie sa fie dupa data de inceput",endDate);
+                                                      LocalDateTime endDate) {
+        // Validare date
+        if (startDate.isAfter(endDate)) {
+            throw new ValidationException("Perioadă invalidă")
+                    .addError("startDate", "Data de început trebuie să fie înainte de data de sfârșit", startDate)
+                    .addError("endDate", "Data de sfârșit trebuie să fie după data de început", endDate);
         }
-        //verifica daca contul exista
+
+        // Verifică dacă contul există
         accountService.findAccount(accountNumber);
 
-        return transactionRepository.generateAccountStatement(accountNumber,startDate,endDate);
+        return transactionRepository.generateAccountStatement(accountNumber, startDate, endDate);
     }
 
     /**
-     * returneaza tranzactiile dintr-o perioada
+     * Returnează tranzacțiile dintr-o perioadă
      */
-    public List<Transaction> getTransactionsBetween(LocalDateTime startDate,LocalDateTime endDate){
-        return transactionRepository.findByTimestampBetween(startDate,endDate);
+    public List<Transaction> getTransactionsBetween(LocalDateTime startDate, LocalDateTime endDate) {
+        return transactionRepository.findByTimestampBetween(startDate, endDate);
     }
 
     /**
-     * returneaza tranzactiile de un anumit tip
+     * Returnează tranzacțiile de un anumit tip
      */
-    public List<Transaction> getTransactionsByType(Transaction.TransactionType type){
+    public List<Transaction> getTransactionsByType(Transaction.TransactionType type) {
+        // Notă: Această metodă necesită o implementare în repository
+        // Pentru moment, filtrăm manual
         List<Transaction> allTransactions = transactionRepository.findAll();
         return allTransactions.stream()
-                .filter(t->t.getType() == type)
+                .filter(t -> t.getType() == type)
                 .toList();
     }
 
     /**
-     * returneaza suma totala depusa intr-un cont
+     * Returnează suma totală depusă într-un cont
      */
-    public double getTotalDeposits(String accounNumber){
-        return transactionRepository.getTotalDepositsForAccount(accounNumber);
+    public BigDecimal getTotalDeposits(String accountNumber) {
+        return transactionRepository.getTotalDepositsForAccount(accountNumber);
     }
 
     /**
-     * returneaza suma totala retrasa dintr-un cont
+     * Returnează suma totală retrasă dintr-un cont
      */
-    public double getTotalWithdrawals(String accountNumber){
+    public BigDecimal getTotalWithdrawals(String accountNumber) {
         return transactionRepository.getTotalWithdrawalsForAccount(accountNumber);
     }
 
     /**
-     * calculeaza fluxul de numerar pentru un cont
+     * Calculează fluxul de numerar pentru un cont
      */
-    public double getNetCashFlow(String accountNumber){
-        double deposits = getTotalDeposits(accountNumber);
-        double withdrawals = getTotalWithdrawals(accountNumber);
-        return deposits - withdrawals;
+    public BigDecimal getNetCashFlow(String accountNumber) {
+        BigDecimal deposits = getTotalDeposits(accountNumber);
+        BigDecimal withdrawals = getTotalWithdrawals(accountNumber);
+        return deposits.subtract(withdrawals);
     }
 
-    //Statistici
+    // ===== STATISTICI =====
+
     /**
-     * returneaza numarul total de tranzactii
+     * Returnează numărul total de tranzacții
      */
-    public long getTotalTransactionsCount(){
+    public long getTotalTransactionCount() {
         return transactionRepository.count();
     }
 
     /**
-     * returneaza numarul de tranzactii pentru un cont
+     * Returnează numărul de tranzacții pentru un cont
      */
-    public long getTransactionCountForAccount(String accountNumber){
+    public long getTransactionCountForAccount(String accountNumber) {
         return transactionRepository.countByAccountNumber(accountNumber);
     }
 
     /**
-     * returneaza tranzactiile esuate
+     * Returnează tranzacțiile eșuate
      */
-    public List<Transaction> getFailedTransactions(){
-        return transactionRepository.findFailedTransaction();
+    public List<Transaction> getFailedTransactions() {
+        return transactionRepository.findFailedTransactions();
     }
 
     /**
-     * returneaza tranzactiile in asteptare
+     * Returnează tranzacțiile în așteptare
      */
-    public List<Transaction> getPendingTransactions(){
-        return transactionRepository.findPendingTransaction();
+    public List<Transaction> getPendingTransactions() {
+        return transactionRepository.findPendingTransactions();
     }
 
     /**
-     * returneaza suma totala a tuturor tranzactiilor
+     * Returnează suma totală a tuturor tranzacțiilor
      */
-    public double getTotalTransactionAmount(){
+    public BigDecimal getTotalTransactionAmount() {
         return transactionRepository.getTotalTransactionAmount();
     }
 
-    //Operatiuni administrative
+    // ===== OPERAȚIUNI ADMINISTRATIVE =====
+
     /**
-     * marcheaza o operatiune ca finalizata
+     * Marchează o tranzacție ca finalizată
      */
-    public Transaction markAsCompleted(String transactionId){
+    public Transaction markAsCompleted(String transactionId) {
         Transaction transaction = findTransaction(transactionId);
 
-        if (transaction.isPending()){
-            transaction.markASCompleted();
+        if (transaction.isPending()) {
+            transaction.markAsCompleted();
             return transactionRepository.save(transaction);
         }
 
         throw new BankingException(BankingErrorCode.INVALID_TRANSACTION,
-                "Tranzactia nu poate fi marcata ca finalizata. Status curent: " + transaction.getStatus());
+                "Tranzacția nu poate fi marcată ca finalizată. Status curent: " + transaction.getStatus());
     }
 
     /**
-     * marcheaza o tranzactie ca esuata
+     * Marchează o tranzacție ca eșuată
      */
-    public Transaction markAsFailed(String transactionId,String reason){
+    public Transaction markAsFailed(String transactionId, String reason) {
         Transaction transaction = findTransaction(transactionId);
 
-        if (transaction.isPending()){
+        if (transaction.isPending()) {
             transaction.markAsFailed();
 
-            //actualizeaza descrierea cu motivul esuarii
-            String newDescription = transaction.getDescription() + " (Esuat: " + reason + ")";
+            // Actualizează descrierea cu motivul eșuării
+            String newDescription = transaction.getDescription() + " (Eșuat: " + reason + ")";
+            // Notă: Ar trebui să avem o metodă setDescription în Transaction
+
             return transactionRepository.save(transaction);
         }
+
         throw new BankingException(BankingErrorCode.INVALID_TRANSACTION,
-                "Tranzactia nu poate fi marcata ca esuata. Status curent: " + transaction.getStatus());
+                "Tranzacția nu poate fi marcată ca eșuată. Status curent: " + transaction.getStatus());
     }
 
     /**
-     * anualeaza o tranzactie
+     * Anulează o tranzacție
      */
     public Transaction cancelTransaction(String transactionId, String reason) {
-        // 1. Găsește tranzacția
         Transaction transaction = findTransaction(transactionId);
 
-        // 2. Verifică dacă poate fi anulată (doar dacă e în așteptare)
-        if (!transaction.isPending()) {
-            throw new BankingException(BankingErrorCode.INVALID_TRANSACTION,
-                    "Doar tranzacțiile în așteptare pot fi anulate. Status curent: " +
-                            transaction.getStatus());
+        if (transaction.isPending()) {
+            transaction.markAsCancelled();
+
+            // În cazul unui transfer, ar trebui să returnăm banii
+            if (transaction.getType() == Transaction.TransactionType.TRANSFER_OUT ||
+                    transaction.getType() == Transaction.TransactionType.TRANSFER_IN) {
+                // Logica de returnare a banilor ar fi aici
+                // Pentru simplitate, doar marcam ca anulat
+            }
+
+            return transactionRepository.save(transaction);
         }
 
-        // 3. Marchează ca anulată
-        transaction.markAsCancelled();
-
-        // 4. Adaugă motivul anulării în descriere (simplu)
-        String currentDesc = transaction.getDescription();
-        String newDesc = currentDesc + " [ANULAT: " + reason + "]";
-
-        // Notă: Dacă Transaction nu are setDescription, poți să salvezi altfel
-
-        // 5. Pentru transferuri, doar afișează un mesaj (fără rollback automat)
-        if (transaction.getType() == Transaction.TransactionType.TRANSFER_OUT ||
-                transaction.getType() == Transaction.TransactionType.TRANSFER_IN) {
-
-            System.out.println("⚠️ ATENȚIE: Transfer anulat!");
-            System.out.println("   ID: " + transactionId);
-            System.out.println("   Suma: " + transaction.getAmount() + " " +
-                    transaction.getCurrency());
-            System.out.println("   Motiv: " + reason);
-            System.out.println("   Contactați un manager pentru returnarea banilor.");
-        }
-
-        // 6. Salvează tranzacția actualizată
-        return transactionRepository.save(transaction);
+        throw new BankingException(BankingErrorCode.INVALID_TRANSACTION,
+                "Tranzacția nu poate fi anulată. Status curent: " + transaction.getStatus());
     }
 }

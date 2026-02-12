@@ -1,5 +1,6 @@
 package com.bank.infrastructure.persistence.repository;
 
+import com.bank.infrastructure.persistence.entity.AccountEntity;
 import com.bank.infrastructure.persistence.entity.TransactionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,6 +22,7 @@ public interface JpaTransactionRepository extends JpaRepository<TransactionEntit
 
     // Find by currency
     List<TransactionEntity> findByCurrency(String currency);
+
 
     // Find by status
     List<TransactionEntity> findByStatus(String status);
@@ -44,6 +46,13 @@ public interface JpaTransactionRepository extends JpaRepository<TransactionEntit
 
     // Find by description containing text
     List<TransactionEntity> findByDescriptionContainingIgnoreCase(String text);
+    List<TransactionEntity> findByAccountAccountNumberAndTransactionType(
+            String accountNumber,
+            String transactionType
+    );
+
+
+
 
     // Custom JPQL queries
     @Query("SELECT t FROM TransactionEntity t WHERE t.account.accountNumber = :accountNumber " +

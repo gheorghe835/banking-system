@@ -55,9 +55,20 @@ public class Transaction {
                        Currency currency, String description) {
         this();
         this.type = Objects.requireNonNull(type, "Tipul tranzacției este obligatoriu");
-        setAmount(amount);
+
+        // Validare directă, fără setter privat
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Suma trebuie să fie pozitivă");
+        }
+        this.amount = amount;  // ← SETEAZĂ DIRECT!
+
         this.currency = Objects.requireNonNull(currency, "Moneda este obligatorie");
-        setDescription(description);
+
+        // Validare directă
+        this.description = description != null ? description.trim() : "";
+        if (this.description.length() > 200) {
+            this.description = this.description.substring(0, 197) + "...";
+        }
     }
 
     public Transaction(String sourceAccountNumber, String targetAccountNumber,
@@ -69,14 +80,14 @@ public class Transaction {
     }
 
     // Validări
-    private void setAmount(BigDecimal amount) {
+    public void setAmount(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Suma trebuie să fie pozitivă");
         }
         this.amount = amount;
     }
 
-    private void setDescription(String description) {
+    public void setDescription(String description) {
         this.description = description != null ? description.trim() : "";
         if (this.description.length() > 200) {
             this.description = this.description.substring(0, 197) + "...";
@@ -164,6 +175,15 @@ public class Transaction {
     public boolean isPending() {
         return status == TransactionStatus.PENDING;
     }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
+
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
+
 
     // Conversie în MDL
     public BigDecimal getAmountInMDL() {

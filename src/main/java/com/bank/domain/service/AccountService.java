@@ -2,14 +2,14 @@ package com.bank.domain.service;
 
 import com.bank.domain.exception.*;
 import com.bank.domain.model.*;
+import com.bank.domain.model.Currency;
 import com.bank.domain.repository.AccountRepository;
 import com.bank.domain.repository.TransactionRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Serviciu pentru gestionarea conturilor bancare
@@ -404,4 +404,71 @@ public class AccountService {
         Account account = findActiveAccount(accountNumber);
         return account.hasSufficientFunds(amount, currency);
     }
+
+    //////////////////////////////////////////////////////////
+    public Map<Currency, BigDecimal> getTotalBalancePerCurrency() {
+        List<Account> allAccounts = accountRepository.findAll();
+        Map<Currency, BigDecimal> totals = new HashMap<>();
+
+        // Inițializează cu 0
+        for (Currency currency : Currency.values()) {
+            totals.put(currency, BigDecimal.ZERO);
+        }
+
+        // Adună soldurile
+        for (Account account : allAccounts) {
+            for (Currency currency : Currency.values()) {
+                BigDecimal balance = account.getBalance(currency);
+                totals.merge(currency, balance, BigDecimal::add);
+            }
+        }
+
+        return totals;
+    }
+
+    public Map<String, Object> getDetailedBankStatistics() {
+        Map<String, Object> stats = new HashMap<>();
+
+        stats.put("totalAccounts", accountRepository.count());
+        stats.put("activeAccounts", accountRepository.findActiveAccounts().size());
+        stats.put("inactiveAccounts", accountRepository.findInactiveAccounts().size());
+        stats.put("totalBalanceMDL", getTotalBankBalance());
+        stats.put("balancePerCurrency", getTotalBalancePerCurrency());
+        stats.put("averageBalanceMDL", accountRepository.getAverageBalanceInMDL());
+        stats.put("richestAccount", findRichestAccount());
+        stats.put("poorestActiveAccount", findPoorestActiveAccount());
+        stats.put("accountsCreatedToday", countAccountsCreatedToday());
+        stats.put("accountsByType", getAccountsCountByType());
+
+        return stats;
+    }
+
+    public Optional<Account> findRichestAccount() {
+        return accountRepository.findAll().stream()
+                .max(Comparator.comparing(Account::getTotalBalanceInMDL));
+    }
+
+    public Optional<Account> findPoorestActiveAccount() {
+        return accountRepository.findActiveAccounts().stream()
+                .min(Comparator.comparing(Account::getTotalBalanceInMDL));
+    }
+
+    public long countAccountsCreatedToday() {
+        LocalDate today = LocalDate.now();
+        return accountRepository.findByCreationDateBetween(today, today).size();
+    }
+
+    public Map<String, Long> getAccountsCountByType() {
+        Map<String, Long> countByType = new HashMap<>();
+
+        countByType.put("CURRENT",
+                (long) accountRepository.findByAccountType(Account.ACCOUNT_TYPE_CURRENT).size());
+        countByType.put("SAVINGS",
+                (long) accountRepository.findByAccountType(Account.ACCOUNT_TYPE_SAVINGS).size());
+        countByType.put("BUSINESS",
+                (long) accountRepository.findByAccountType(Account.ACCOUNT_TYPE_BUSINESS).size());
+
+        return countByType;
+    }
+
 }

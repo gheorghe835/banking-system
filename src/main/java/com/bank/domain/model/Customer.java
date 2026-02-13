@@ -135,6 +135,10 @@ public class Customer {
         return registrationDate;
     }
 
+    public void setRegistrationDate(LocalDateTime registrationDate) {
+        this.registrationDate = registrationDate;
+    }
+
     public boolean isActive() {
         return isActive;
     }
@@ -185,5 +189,13 @@ public class Customer {
     public String toString() {
         return String.format("Customer[ID=%s, Name=%s %s, Email=%s, Active=%s]",
                 customerId, firstName, lastName, email, isActive);
+    }
+
+    //////////////////
+    public boolean hasActiveAccounts() {
+        // În arhitectura actuală, Customer nu știe de conturile sale
+        // Această metodă va fi implementată când vom avea nevoie de ea
+        // Deocamdată, returnăm false și delegăm verificarea la AccountService
+        return false;
     }
 }

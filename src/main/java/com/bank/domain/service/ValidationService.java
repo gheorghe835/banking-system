@@ -234,4 +234,35 @@ public class ValidationService {
             throw exception;
         }
     }
+
+    /**
+     * Validează numele clientului.
+     */
+    public void validateCustomerName(String firstName, String lastName) {
+        ValidationException exception = new ValidationException("Validare nume client");
+
+        if (firstName == null || firstName.trim().length() < 2) {
+            exception.addError("firstName",
+                    "Prenumele trebuie să aibă minim 2 caractere", firstName);
+        }
+
+        if (lastName == null || lastName.trim().length() < 2) {
+            exception.addError("lastName",
+                    "Numele trebuie să aibă minim 2 caractere", lastName);
+        }
+
+        if (firstName != null && firstName.length() > 50) {
+            exception.addError("firstName",
+                    "Prenumele trebuie să aibă maxim 50 caractere", firstName);
+        }
+
+        if (lastName != null && lastName.length() > 50) {
+            exception.addError("lastName",
+                    "Numele trebuie să aibă maxim 50 caractere", lastName);
+        }
+
+        if (exception.hasErrors()) {
+            throw exception;
+        }
+    }
 }

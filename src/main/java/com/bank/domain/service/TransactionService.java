@@ -2,11 +2,15 @@ package com.bank.domain.service;
 
 import com.bank.domain.exception.*;
 import com.bank.domain.model.*;
+import com.bank.domain.model.Currency;
 import com.bank.domain.repository.TransactionRepository;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Serviciu pentru gestionarea tranzacțiilor bancare
@@ -217,5 +221,154 @@ public class TransactionService {
 
         throw new BankingException(BankingErrorCode.INVALID_TRANSACTION,
                 "Tranzacția nu poate fi anulată. Status curent: " + transaction.getStatus());
+    }
+
+    ////////////////////////////////////////////
+
+    public Map<Transaction.TransactionType, Long> getTransactionCountByType() {
+        List<Transaction> allTransactions = transactionRepository.findAll();
+        Map<Transaction.TransactionType, Long> countByType = new HashMap<>();
+
+        for (Transaction.TransactionType type : Transaction.TransactionType.values()) {
+            countByType.put(type, 0L);
+        }
+
+        for (Transaction transaction : allTransactions) {
+            countByType.merge(transaction.getType(), 1L, Long::sum);
+        }
+
+        return countByType;
+    }
+
+    public Map<Currency, BigDecimal> getTotalAmountByCurrency() {
+        List<Transaction> allTransactions = transactionRepository.findAll();
+        Map<Currency, BigDecimal> totalByCurrency = new HashMap<>();
+
+        for (Currency currency : Currency.values()) {
+            totalByCurrency.put(currency, BigDecimal.ZERO);
+        }
+
+        for (Transaction transaction : allTransactions) {
+            if (transaction.getStatus() == Transaction.TransactionStatus.COMPLETED) {
+                totalByCurrency.merge(
+                        transaction.getCurrency(),
+                        transaction.getAmount(),
+                        BigDecimal::add
+                );
+            }
+        }
+
+        return totalByCurrency;
+    }
+
+    public List<Account> getTopActiveAccounts(int limit) {
+        // Conturile cu cele mai multe tranzacții
+        Map<String, Long> transactionCountByAccount = new HashMap<>();
+
+        for (Transaction transaction : transactionRepository.findAll()) {
+            if (transaction.getSourceAccountNumber() != null) {
+                transactionCountByAccount.merge(
+                        transaction.getSourceAccountNumber(), 1L, Long::sum);
+            }
+            if (transaction.getTargetAccountNumber() != null) {
+                transactionCountByAccount.merge(
+                        transaction.getTargetAccountNumber(), 1L, Long::sum);
+            }
+        }
+
+        return transactionCountByAccount.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .limit(limit)
+                .map(entry -> {
+                    try {
+                        return accountService.findAccount(entry.getKey());
+                    } catch (Exception e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+    }
+
+    public Map<LocalDate, Long> getDailyTransactionCount(int days) {
+        Map<LocalDate, Long> dailyCount = new LinkedHashMap<>();
+        LocalDateTime endDate = LocalDateTime.now();
+        LocalDateTime startDate = endDate.minusDays(days);
+
+        List<Transaction> transactions = transactionRepository
+                .findByTimestampBetween(startDate, endDate);
+
+        for (Transaction transaction : transactions) {
+            LocalDate date = transaction.getTimestamp().toLocalDate();
+            dailyCount.merge(date, 1L, Long::sum);
+        }
+
+        return dailyCount;
+    }
+
+    public Map<LocalDate, BigDecimal> getDailyTransactionVolume(int days) {
+        Map<LocalDate, BigDecimal> dailyVolume = new LinkedHashMap<>();
+        LocalDateTime endDate = LocalDateTime.now();
+        LocalDateTime startDate = endDate.minusDays(days);
+
+        List<Transaction> transactions = transactionRepository
+                .findByTimestampBetween(startDate, endDate);
+
+        for (Transaction transaction : transactions) {
+            if (transaction.getStatus() == Transaction.TransactionStatus.COMPLETED) {
+                LocalDate date = transaction.getTimestamp().toLocalDate();
+                BigDecimal amountInMDL = transaction.getAmountInMDL();
+                dailyVolume.merge(date, amountInMDL, BigDecimal::add);
+            }
+        }
+
+        return dailyVolume;
+    }
+
+    public BigDecimal getAverageTransactionAmount() {
+        BigDecimal total = getTotalTransactionAmount();
+        long count = transactionRepository.count();
+        return count > 0 ? total.divide(BigDecimal.valueOf(count), 2, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO;
+    }
+
+    public List<Transaction> getLargestTransactions(int limit) {
+        return transactionRepository.findAll().stream()
+                .sorted((t1, t2) -> t2.getAmountInMDL().compareTo(t1.getAmountInMDL()))
+                .limit(limit)
+                .collect(Collectors.toList());
+    }
+
+    public Map<Integer, Long> getTransactionCountByHour() {
+        Map<Integer, Long> countByHour = new HashMap<>();
+
+        for (int i = 0; i < 24; i++) {
+            countByHour.put(i, 0L);
+        }
+
+        for (Transaction transaction : transactionRepository.findAll()) {
+            int hour = transaction.getTimestamp().getHour();
+            countByHour.merge(hour, 1L, Long::sum);
+        }
+
+        return countByHour;
+    }
+
+    public Map<String, Object> getCompleteTransactionStatistics() {
+        Map<String, Object> stats = new HashMap<>();
+
+        stats.put("totalTransactions", transactionRepository.count());
+        stats.put("totalAmount", getTotalTransactionAmount());
+        stats.put("averageAmount", getAverageTransactionAmount());
+        stats.put("countByType", getTransactionCountByType());
+        stats.put("amountByCurrency", getTotalAmountByCurrency());
+        stats.put("pendingTransactions",
+                transactionRepository.findPendingTransactions().size());
+        stats.put("failedTransactions",
+                transactionRepository.findFailedTransactions().size());
+        stats.put("topAccounts", getTopActiveAccounts(5));
+        stats.put("largestTransactions", getLargestTransactions(5));
+
+        return stats;
     }
 }

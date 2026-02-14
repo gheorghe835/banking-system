@@ -15,11 +15,10 @@ import java.util.regex.Pattern;
 public class ValidationService {
 
     // Patterns for validation
-    private static final Pattern ACCOUNT_NUMBER_PATTERN = Pattern.compile("\\d{16}");
+    private static final Pattern ACCOUNT_NUMBER_PATTERN = Pattern.compile("^[0-9]{16}$");
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d).{6,}$");
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
-    private static final Pattern PHONE_PATTERN = Pattern.compile("^[+]?[0-9]{10,15}$");
-    private static final Pattern IDENTITY_NUMBER_PATTERN = Pattern.compile("^[0-9]{13}$");
+    private static final Pattern EMAIL_PATTERN =  Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^\\+?[0-9]{9,15}$");    private static final Pattern IDENTITY_NUMBER_PATTERN = Pattern.compile("^[0-9]{13}$");
 
     // Validation constants
     public static final int MIN_ACCOUNT_NUMBER_LENGTH = 16;
@@ -33,7 +32,8 @@ public class ValidationService {
     /**
      * Validează un număr de cont
      */
-    public void validateAccountNumber(String accountNumber) throws ValidationException {
+    //1
+    public void validateAccountNumber(String accountNumber) {
         ValidationException exception = new ValidationException("Validare număr cont");
 
         if (accountNumber == null || accountNumber.trim().isEmpty()) {
@@ -54,7 +54,8 @@ public class ValidationService {
     /**
      * Validează o parolă
      */
-    public void validatePassword(String password) throws ValidationException {
+    //2
+    public void validatePassword(String password) {
         ValidationException exception = new ValidationException("Validare parolă");
 
         if (password == null || password.trim().isEmpty()) {
@@ -104,12 +105,15 @@ public class ValidationService {
     /**
      * Validează data nașterii (trebuie să aibă minim 18 ani)
      */
-    public void validateBirthDate(LocalDate birthDate) throws ValidationException {
+    //3
+    public void validateBirthDate(LocalDate birthDate) {
         if (birthDate == null) {
             throw ValidationException.withError("birthDate", "Data nașterii este obligatorie", null);
         }
 
         LocalDate eighteenYearsAgo = LocalDate.now().minusYears(18);
+        System.out.println("18 ani în urmă: " + eighteenYearsAgo); // ← Adaugă log
+        System.out.println("Data nașterii: " + birthDate);
         if (birthDate.isAfter(eighteenYearsAgo)) {
             throw ValidationException.withError("birthDate",
                     "Clientul trebuie să aibă minim 18 ani",

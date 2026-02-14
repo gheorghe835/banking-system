@@ -75,9 +75,10 @@ public class ExchangeService {
         BigDecimal exchangedAmount = calculateExchange(amount, fromCurrency, toCurrency);
 
         // Aplică comision
-        BigDecimal commission = exchangedAmount.multiply(EXCHANGE_COMMISSION);
+        //BigDecimal commission = exchangedAmount.multiply(EXCHANGE_COMMISSION);
+        //exchangedAmount = exchangedAmount.subtract(commission);
+        BigDecimal commission = calculateCommission(amount, fromCurrency, toCurrency);
         exchangedAmount = exchangedAmount.subtract(commission);
-
         // Efectuează schimbul
         // Retrage din moneda sursă
         account.withdraw(amount, fromCurrency);
@@ -100,7 +101,8 @@ public class ExchangeService {
     /**
      * Calculează suma schimbată între două monede
      */
-    public BigDecimal calculateExchange(BigDecimal amount, Currency fromCurrency, Currency toCurrency) {
+    /*public BigDecimal calculateExchange(BigDecimal amount, Currency fromCurrency,
+                                        Currency toCurrency) {
         BigDecimal rateFrom = exchangeRates.get(fromCurrency);
         BigDecimal rateTo = exchangeRates.get(toCurrency);
 
@@ -111,8 +113,13 @@ public class ExchangeService {
 
         // Conversie: amount * (rateFrom / rateTo)
         return amount.multiply(rateFrom).divide(rateTo, 4, RoundingMode.HALF_UP);
+    }*/
+    public BigDecimal calculateExchange(BigDecimal amount, Currency fromCurrency, Currency toCurrency) {
+        BigDecimal rateFrom = exchangeRates.get(fromCurrency);
+        BigDecimal rateTo = exchangeRates.get(toCurrency);
+        BigDecimal result = amount.multiply(rateFrom).divide(rateTo, 4, RoundingMode.HALF_UP);
+        return result.setScale(2, RoundingMode.HALF_UP);  // ← ADAUGĂ ASTA!
     }
-
     /**
      * Calculează suma schimbată între două monede (cu string-uri)
      */
@@ -225,9 +232,22 @@ public class ExchangeService {
     /**
      * Calculează comisionul pentru un schimb valutar
      */
-    public BigDecimal calculateCommission(BigDecimal amount, Currency fromCurrency, Currency toCurrency) {
+    /*public BigDecimal calculateCommission(BigDecimal amount,
+                                          Currency fromCurrency,
+                                          Currency toCurrency) {
         BigDecimal exchangedAmount = calculateExchange(amount, fromCurrency, toCurrency);
         return exchangedAmount.multiply(EXCHANGE_COMMISSION);
+    }*/
+
+    public BigDecimal calculateCommission(BigDecimal amount, Currency fromCurrency, Currency toCurrency) {
+        // 1. Calculează suma schimbată (deja rotunjită)
+        BigDecimal exchangedAmount = calculateExchange(amount, fromCurrency, toCurrency);
+
+        // 2. Calculează comisionul (0.5%)
+        BigDecimal commission = exchangedAmount.multiply(EXCHANGE_COMMISSION);
+
+        // 3. Rotunjește comisionul la 2 zecimale
+        return commission.setScale(2, RoundingMode.HALF_UP);
     }
 
     /**

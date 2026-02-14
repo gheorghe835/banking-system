@@ -2,6 +2,7 @@ package com.bank.infrastructure.persistence.repository;
 
 import com.bank.domain.model.Transaction;
 import com.bank.domain.repository.TransactionRepository;
+import com.bank.infrastructure.persistence.entity.AccountEntity;
 import com.bank.infrastructure.persistence.entity.TransactionEntity;
 import com.bank.infrastructure.persistence.mapper.TransactionMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,18 +18,41 @@ import java.util.stream.Collectors;
 public class JpaTransactionRepositoryAdapter implements TransactionRepository {
 
     private final JpaTransactionRepository jpaTransactionRepository;
+    private final JpaAccountRepository jpaAccountRepository;  // ← ADUGĂ ASTA
     private final TransactionMapper transactionMapper;
 
     @Autowired
     public JpaTransactionRepositoryAdapter(JpaTransactionRepository jpaTransactionRepository,
+                                           JpaAccountRepository jpaAccountRepository,
                                            TransactionMapper transactionMapper) {
         this.jpaTransactionRepository = jpaTransactionRepository;
+        this.jpaAccountRepository = jpaAccountRepository;
         this.transactionMapper = transactionMapper;
     }
 
+    /*@Override
+    public Transaction save(Transaction transaction) {
+        TransactionEntity entity = transactionMapper.toEntity(transaction);
+        TransactionEntity savedEntity = jpaTransactionRepository.save(entity);
+        return transactionMapper.toDomain(savedEntity);
+    }*/
     @Override
     public Transaction save(Transaction transaction) {
         TransactionEntity entity = transactionMapper.toEntity(transaction);
+
+        // 🔴 ATAȘEAZĂ CONTUL AICI
+        if (transaction.getTargetAccountNumber() != null) {
+            AccountEntity accountEntity = jpaAccountRepository
+                    .findById(transaction.getTargetAccountNumber())
+                    .orElse(null);
+            entity.setAccount(accountEntity);
+        } else if (transaction.getSourceAccountNumber() != null) {
+            AccountEntity accountEntity = jpaAccountRepository
+                    .findById(transaction.getSourceAccountNumber())
+                    .orElse(null);
+            entity.setAccount(accountEntity);
+        }
+
         TransactionEntity savedEntity = jpaTransactionRepository.save(entity);
         return transactionMapper.toDomain(savedEntity);
     }

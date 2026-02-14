@@ -151,7 +151,8 @@ public class AuthService {
             lockedAccounts.put(accountNumber, LocalDateTime.now());
             throw new BankingSecurityException(BankingErrorCode.TOO_MANY_ATTEMPTS,
                     accountNumber, BankingSecurityException.SecurityAction.LOGIN_ATTEMPT,
-                    "Cont blocat pentru " + LOCK_DURATION_MINUTES + " minute");
+                    "Cont blocat pentru " + LOCK_DURATION_MINUTES + " minute" +
+                            "Prea multe încercări");
         }
     }
 

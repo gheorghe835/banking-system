@@ -30,6 +30,12 @@ public class AccountService {
         this.validationService = validationService;
     }
 
+    /////////////
+    Transaction transaction = new Transaction(
+            Transaction.TransactionType.ACCOUNT_DEACTIVATED,
+            "Cont blocat"
+    );
+
     // ===== OPERAȚIUNI DE BAZĂ PE CONTURI =====
 
     /**
@@ -40,6 +46,7 @@ public class AccountService {
         // Validare input
         validationService.validateAccountNumber(accountNumber);
         validationService.validateCustomer(owner);
+        validationService.validateDepositAmount(initialBalance, Currency.MDL);
 
         // Verifică dacă contul există deja
         if (accountRepository.existsByAccountNumber(accountNumber)) {
@@ -274,7 +281,7 @@ public class AccountService {
         account.deactivate();
         Account blockedAccount = accountRepository.save(account);
 
-        // Înregistrează evenimentul
+        /*/ Înregistrează evenimentul
         Transaction transaction = new Transaction(
                 Transaction.TransactionType.ACCOUNT_DEACTIVATED,
                 BigDecimal.ZERO,
@@ -283,6 +290,16 @@ public class AccountService {
         );
         transaction.setSourceAccountNumber(accountNumber);
         transaction.markAsCompleted();
+        transactionRepository.save(transaction);*/
+        Transaction transaction = new Transaction();
+        transaction.setTransactionId("BLK" + System.currentTimeMillis());
+        transaction.setType(Transaction.TransactionType.ACCOUNT_DEACTIVATED);
+        transaction.setAmount(BigDecimal.ZERO);
+        transaction.setCurrency(Currency.MDL);
+        transaction.setDescription("Cont blocat");
+        transaction.setSourceAccountNumber(accountNumber);
+        transaction.markAsCompleted();
+
         transactionRepository.save(transaction);
 
         return blockedAccount;
@@ -302,7 +319,7 @@ public class AccountService {
         account.activate();
         Account unblockedAccount = accountRepository.save(account);
 
-        // Înregistrează evenimentul
+        /*/ Înregistrează evenimentul
         Transaction transaction = new Transaction(
                 Transaction.TransactionType.ACCOUNT_REACTIVATED,
                 BigDecimal.ZERO,
@@ -311,6 +328,16 @@ public class AccountService {
         );
         transaction.setSourceAccountNumber(accountNumber);
         transaction.markAsCompleted();
+        transactionRepository.save(transaction);*/
+        Transaction transaction = new Transaction();
+        transaction.setTransactionId("UNB" + System.currentTimeMillis());
+        transaction.setType(Transaction.TransactionType.ACCOUNT_REACTIVATED);
+        transaction.setAmount(BigDecimal.ZERO);
+        transaction.setCurrency(Currency.MDL);
+        transaction.setDescription("Cont deblocat");
+        transaction.setSourceAccountNumber(accountNumber);
+        transaction.markAsCompleted();
+
         transactionRepository.save(transaction);
 
         return unblockedAccount;

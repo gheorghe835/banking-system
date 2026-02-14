@@ -34,10 +34,13 @@ public class AccountMapper {
         entity.setBalanceGBP(account.getBalance(Currency.GBP));
         entity.setBalanceRON(account.getBalance(Currency.RON));
 
-        // Mapează owner (simplificat)
+        // Mapează owner (simplificat)////////////
         if (account.getOwner() != null) {
             CustomerEntity customerEntity = new CustomerEntity();
             customerEntity.setCustomerId(account.getOwner().getCustomerId());
+            customerEntity.setFirstName(account.getOwner().getFirstName());
+            customerEntity.setLastName(account.getOwner().getLastName());
+            customerEntity.setEmail(account.getOwner().getEmail());
             entity.setOwner(customerEntity);
         }
 
@@ -49,6 +52,7 @@ public class AccountMapper {
             return null;
         }
 
+        // Construiește Customer
         Customer customer = null;
         if (entity.getOwner() != null) {
             customer = new Customer();
@@ -58,27 +62,23 @@ public class AccountMapper {
             customer.setEmail(entity.getOwner().getEmail());
         }
 
+        // Construiește Account
         Account account = new Account();
         account.setAccountNumber(entity.getAccountNumber());
         account.setAccountType(entity.getAccountType());
-        //account.setCreationDate(entity.getCreationDate());
+        account.setCreationDate(entity.getCreationDate());
         account.setActive(entity.isActive());
         account.setDailyWithdrawalLimit(entity.getDailyWithdrawalLimit());
-        //account.setDailyWithdrawalUsed(entity.getDailyWithdrawalUsed());
+        account.setDailyWithdrawalUsed(entity.getDailyWithdrawalUsed());
+        account.setLastResetDate(entity.getLastResetDate());
+        account.setOwner(customer);
 
-        // Setează solduri
-        Map<Currency, BigDecimal> balances = new HashMap<>();
-        balances.put(Currency.MDL, entity.getBalanceMDL() != null ? entity.getBalanceMDL() : BigDecimal.ZERO);
-        balances.put(Currency.EUR, entity.getBalanceEUR() != null ? entity.getBalanceEUR() : BigDecimal.ZERO);
-        balances.put(Currency.USD, entity.getBalanceUSD() != null ? entity.getBalanceUSD() : BigDecimal.ZERO);
-        balances.put(Currency.GBP, entity.getBalanceGBP() != null ? entity.getBalanceGBP() : BigDecimal.ZERO);
-        balances.put(Currency.RON, entity.getBalanceRON() != null ? entity.getBalanceRON() : BigDecimal.ZERO);
-
-        // Aici ar trebui de a seta balances în Account - necesită modificare în Account
-
-        if (customer != null) {
-            account.setOwner(customer);
-        }
+        // 🔴 FOLOSEȘTE setBalance în loc de deposit
+        account.setBalance(Currency.MDL, entity.getBalanceMDL() != null ? entity.getBalanceMDL() : BigDecimal.ZERO);
+        account.setBalance(Currency.EUR, entity.getBalanceEUR() != null ? entity.getBalanceEUR() : BigDecimal.ZERO);
+        account.setBalance(Currency.USD, entity.getBalanceUSD() != null ? entity.getBalanceUSD() : BigDecimal.ZERO);
+        account.setBalance(Currency.GBP, entity.getBalanceGBP() != null ? entity.getBalanceGBP() : BigDecimal.ZERO);
+        account.setBalance(Currency.RON, entity.getBalanceRON() != null ? entity.getBalanceRON() : BigDecimal.ZERO);
 
         return account;
     }

@@ -57,7 +57,7 @@ public class Transaction {
         this.type = Objects.requireNonNull(type, "Tipul tranzacției este obligatoriu");
 
         // Validare directă, fără setter privat
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Suma trebuie să fie pozitivă");
         }
         this.amount = amount;  // ← SETEAZĂ DIRECT!
@@ -79,9 +79,18 @@ public class Transaction {
         this.targetAccountNumber = targetAccountNumber;
     }
 
+    /////////////
+    public Transaction(TransactionType type, String description) {
+        this();
+        this.type = Objects.requireNonNull(type, "Tipul tranzacției este obligatoriu");
+        this.amount = BigDecimal.ZERO;  // Sumă zero pentru evenimente
+        this.currency = Currency.MDL;    // Monedă default
+        this.description = description != null ? description.trim() : "";
+    }
+
     // Validări
     public void setAmount(BigDecimal amount) {
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Suma trebuie să fie pozitivă");
         }
         this.amount = amount;

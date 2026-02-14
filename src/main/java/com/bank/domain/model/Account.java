@@ -1,5 +1,7 @@
 package com.bank.domain.model;
 
+import com.bank.domain.exception.InsufficientFundsException;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -85,11 +87,29 @@ public class Account {
         return accountNumber;
     }
 
+    public void setCreationDate(LocalDate creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public void setDailyWithdrawalUsed(BigDecimal dailyWithdrawalUsed) {
+        this.dailyWithdrawalUsed = dailyWithdrawalUsed;
+    }
+
+    public void setLastResetDate(LocalDate lastResetDate) {
+        this.lastResetDate = lastResetDate;
+    }
+
     public void setAccountNumber(String accountNumber) {
         validateAccountNumber(accountNumber);
         this.accountNumber = accountNumber;
     }
 
+    public void setBalance(Currency currency, BigDecimal amount) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Suma nu poate fi negativă");
+        }
+        this.balances.put(currency, amount);
+    }
     public Customer getOwner() {
         return owner;
     }
@@ -232,8 +252,11 @@ public class Account {
         // Verifică soldul
         BigDecimal currentBalance = getBalance(currency);
         if (currentBalance.compareTo(amount) < 0) {
-            throw new IllegalArgumentException(
-                    String.format("Fonduri insuficiente. Disponibil: %s %s", currentBalance, currency));
+            throw new InsufficientFundsException(
+                    accountNumber,
+                    amount,
+                    currentBalance,
+                    currency);
         }
 
         // Efectuează retragerea
@@ -250,6 +273,17 @@ public class Account {
     // Metode utilitare
     public int getAccountAgeInDays() {
         return (int) java.time.temporal.ChronoUnit.DAYS.between(creationDate, LocalDate.now());
+    }
+
+    public void setBalancesFromMap(Map<Currency, BigDecimal> balancesMap) {
+        for (Map.Entry<Currency, BigDecimal> entry : balancesMap.entrySet()) {
+            this.balances.put(entry.getKey(), entry.getValue());
+        }
+    }
+    public void clearBalances() {
+        for (Currency currency : Currency.values()) {
+            balances.put(currency, BigDecimal.ZERO);
+        }
     }
 
     // Override metode

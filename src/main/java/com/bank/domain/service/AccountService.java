@@ -5,8 +5,10 @@ import com.bank.domain.model.*;
 import com.bank.domain.model.Currency;
 import com.bank.domain.repository.AccountRepository;
 import com.bank.domain.repository.TransactionRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -109,6 +111,7 @@ public class AccountService {
     /**
      * Returnează conturile unui client
      */
+    @Transactional(readOnly = true)
     public List<Account> getCustomerAccounts(String customerId) {
         return accountRepository.findByCustomerId(customerId);
     }
@@ -496,6 +499,43 @@ public class AccountService {
                 (long) accountRepository.findByAccountType(Account.ACCOUNT_TYPE_BUSINESS).size());
 
         return countByType;
+    }
+
+    public Account exchangeCurrency(String accountNumber, Currency fromCurrency,
+                                    Currency toCurrency, BigDecimal amount) {
+
+        Account account = findActiveAccount(accountNumber);
+
+        // Verifică dacă are suficienți bani în moneda sursă
+        if (!account.hasSufficientFunds(amount, fromCurrency)) {
+            throw new InsufficientFundsException(accountNumber, amount,
+                    account.getBalance(fromCurrency), fromCurrency);
+        }
+
+        // Calculează suma în moneda destinație
+        BigDecimal amountInMDL = amount.multiply(BigDecimal.valueOf(fromCurrency.getExchangeRateToMDL()));
+        BigDecimal targetAmount = amountInMDL.divide(BigDecimal.valueOf(toCurrency.getExchangeRateToMDL()),
+                2, RoundingMode.HALF_UP);
+
+        // Efectuează schimbul
+        account.withdraw(amount, fromCurrency);
+        account.deposit(targetAmount, toCurrency);
+
+        Account updatedAccount = accountRepository.save(account);
+
+        // Înregistrează tranzacția
+        Transaction transaction = new Transaction(
+                Transaction.TransactionType.CURRENCY_EXCHANGE,
+                amount,
+                fromCurrency,
+                String.format("Schimb %s -> %s", fromCurrency, toCurrency)
+        );
+        transaction.setSourceAccountNumber(accountNumber);
+        transaction.setTargetAccountNumber(accountNumber);
+        transaction.markAsCompleted();
+        transactionRepository.save(transaction);
+
+        return updatedAccount;
     }
 
 }

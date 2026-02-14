@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Schimb Valutar</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="/js/app.js"></script>
+    <style>
+        /* Stiluri moderne pentru schimb valutar */
+        :root {
+            --primary-color: #007bff;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --dark-color: #2c3e50;
+            --light-color: #f8f9fa;
+            --border-radius: 15px;
+            --box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), #764ba2, var(--warning-color));
+        }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .title-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            background: var(--light-color);
+            color: var(--dark-color);
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 0.9em;
+            transition: var(--transition);
+        }
+
+        .back-link:hover {
+            background: #e9ecef;
+            transform: translateX(-3px);
+        }
+
+        .page-header h2 {
+            color: var(--dark-color);
+            font-size: 2em;
+            margin: 0;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        /* Card informații cont */
+        .account-card {
+            background: linear-gradient(135deg, #667eea10, #764ba210);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .account-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .account-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-color), #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .account-number {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: var(--dark-color);
+            background: white;
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 0.95em;
+        }
+
+        .balances-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .balance-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .balance-currency {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        .balance-amount {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        /* Curs valutar */
+        .rates-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .rates-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            color: var(--dark-color);
+            font-weight: 600;
+        }
+
+        .rates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .rate-card {
+            background: var(--light-color);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .rate-currency {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .rate-value {
+            font-size: 0.95em;
+            color: var(--dark-color);
+        }
+
+        /* Formular */
+        .form-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark-color);
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        /* Select personalizat */
+        .currency-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: var(--transition);
+            background: white;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+        }
+
+        .currency-select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(0,123,255,0.1);
+        }
+
+        .currency-select:hover {
+            border-color: #adb5bd;
+        }
+
+        /* Swap button */
+        .swap-button {
+            display: flex;
+            justify-content: center;
+            margin: -5px 0 10px 0;
+        }
+
+        .swap-btn {
+            width: 40px;
+            height: 40px;
+            background: var(--light-color);
+            border: 2px solid #dee2e6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1.2em;
+        }
+
+        .swap-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: rotate(180deg);
+        }
+
+        /* Input sumă */
+        .amount-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1.2em;
+            transition: var(--transition);
+        }
+
+        .amount-input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(0,123,255,0.1);
+        }
+
+        /* Estimated amount */
+        .estimated-container {
+            background: linear-gradient(135deg, #667eea10, #764ba210);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .estimated-label {
+            color: #6c757d;
+            margin-bottom: 10px;
+        }
+
+        .estimated-amount {
+            font-size: 2.2em;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .estimated-sub {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        /* Quick amounts */
+        .quick-amounts {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .quick-amount {
+            flex: 1;
+            min-width: 60px;
+            padding: 8px;
+            background: var(--light-color);
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .quick-amount:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Butoane */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 150px;
+            padding: 14px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #0056b3);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,123,255,0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-3px);
+        }
+
+        /* Mesaje */
+        .error {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border-left: 4px solid var(--danger-color);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            color: #721c24;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .error:before {
+            content: '⚠️';
+            font-size: 1.2em;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Info box */
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid var(--primary-color);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-box:before {
+            content: 'ℹ️';
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .estimated-amount {
+                font-size: 1.8em;
+            }
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading:after {
+            content: '';
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid var(--light-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="title-section">
+            <a href="/web/client/dashboard" class="back-link">
+                ← Înapoi
+            </a>
+            <h2>💱 Schimb Valutar</h2>
+        </div>
+    </div>
+
+    <!-- Mesaj eroare -->
+    <div th:if="${error}" class="error">
+        <p th:text="${error}">A apărut o eroare la procesarea cererii</p>
+    </div>
+
+    <!-- Card informații cont -->
+    <div class="account-card">
+        <div class="account-header">
+            <span class="account-icon">💳</span>
+            <span class="account-number" th:text="${session.accountNumber}">MD1234567890123456</span>
+        </div>
+
+        <div class="balances-grid">
+            <div th:each="entry : ${balances}" class="balance-item">
+                <div class="balance-currency" th:text="${entry.key}">MDL</div>
+                <div class="balance-amount" th:text="${#numbers.formatDecimal(entry.value, 0, 'COMMA', 2, 'POINT')}">1,000.00</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cursuri valutare -->
+    <div class="rates-section">
+        <div class="rates-title">
+            <span>📊</span> Cursuri valutare actuale
+        </div>
+        <div id="exchange-rates" class="rates-grid">
+            <!-- Încărcat dinamic de app.js -->
+            <div class="loading">Se încarcă cursurile...</div>
+        </div>
+    </div>
+
+    <!-- Formular schimb valutar -->
+    <div class="form-card">
+        <form th:action="@{/web/client/exchange}" method="post" id="exchangeForm">
+            <div class="form-group">
+                <label for="fromCurrency">📤 Din moneda:</label>
+                <select id="fromCurrency" name="fromCurrency" class="currency-select" required>
+                    <option value="MDL" data-icon="🇲🇩">🇲🇩 MDL - Leu Moldovenesc</option>
+                    <option value="EUR" data-icon="🇪🇺">🇪🇺 EUR - Euro</option>
+                    <option value="USD" data-icon="🇺🇸">🇺🇸 USD - Dolar American</option>
+                    <option value="GBP" data-icon="🇬🇧">🇬🇧 GBP - Liră Sterlină</option>
+                    <option value="RON" data-icon="🇷🇴">🇷🇴 RON - Leu Românesc</option>
+                </select>
+            </div>
+
+            <!-- Buton swap -->
+            <div class="swap-button">
+                <div class="swap-btn" onclick="swapCurrencies()" title="Schimbă direcția">⇅</div>
+            </div>
+
+            <div class="form-group">
+                <label for="toCurrency">📥 În moneda:</label>
+                <select id="toCurrency" name="toCurrency" class="currency-select" required>
+                    <option value="MDL" data-icon="🇲🇩">🇲🇩 MDL - Leu Moldovenesc</option>
+                    <option value="EUR" data-icon="🇪🇺">🇪🇺 EUR - Euro</option>
+                    <option value="USD" data-icon="🇺🇸">🇺🇸 USD - Dolar American</option>
+                    <option value="GBP" data-icon="🇬🇧">🇬🇧 GBP - Liră Sterlină</option>
+                    <option value="RON" data-icon="🇷🇴">🇷🇴 RON - Leu Românesc</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="amount">💰 Suma de schimbat:</label>
+                <input type="number" id="amount" name="amount"
+                       step="0.01" min="0.01"
+                       class="amount-input"
+                       placeholder="0.00"
+                       required>
+
+                <!-- Butoane sume rapide -->
+                <div class="quick-amounts">
+                    <div class="quick-amount" onclick="setAmount(100)">100</div>
+                    <div class="quick-amount" onclick="setAmount(200)">200</div>
+                    <div class="quick-amount" onclick="setAmount(500)">500</div>
+                    <div class="quick-amount" onclick="setAmount(1000)">1,000</div>
+                    <div class="quick-amount" onclick="setAmount(5000)">5,000</div>
+                </div>
+            </div>
+
+            <!-- Sumă estimată -->
+            <div class="estimated-container">
+                <div class="estimated-label">📊 Veți primi aproximativ:</div>
+                <div id="estimatedAmount" class="estimated-amount">-</div>
+                <div class="estimated-sub" id="exchangeRate">Curs: -</div>
+            </div>
+
+            <!-- Info box -->
+            <div class="info-box">
+                <span>Comision 0.5% pentru schimb valutar. Suma minimă: 10 MDL/EUR/USD</span>
+            </div>
+
+            <!-- Butoane -->
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    🔄 Efectuează Schimbul
+                </button>
+                <a href="/web/client/dashboard" class="btn btn-secondary">
+                    ✖ Anulează
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Rate hardcodate (vor fi înlocuite cu cele din app.js)
+        window.exchangeRates = {
+            'MDL': 1,
+            'EUR': 19.45,
+            'USD': 17.55,
+            'GBP': 22.10,
+            'RON': 4.00
+        };
+
+        // Încarcă cursurile
+        loadExchangeRates();
+
+        // Elemente DOM
+        const amountInput = document.getElementById('amount');
+        const fromSelect = document.getElementById('fromCurrency');
+        const toSelect = document.getElementById('toCurrency');
+        const estimatedDiv = document.getElementById('estimatedAmount');
+        const exchangeRateDiv = document.getElementById('exchangeRate');
+        const submitBtn = document.getElementById('submitBtn');
+        const form = document.getElementById('exchangeForm');
+
+        // Funcție calcul estimare
+        function calculateEstimate() {
+            const amount = parseFloat(amountInput.value) || 0;
+            const from = fromSelect.value;
+            const to = toSelect.value;
+
+            if (amount > 0 && from && to && window.exchangeRates) {
+                const amountInMDL = amount * window.exchangeRates[from];
+                const result = amountInMDL / window.exchangeRates[to];
+
+                estimatedDiv.textContent = result.toFixed(2) + ' ' + to;
+
+                // Afișează cursul
+                const rate = window.exchangeRates[from] / window.exchangeRates[to];
+                exchangeRateDiv.textContent = `Curs: 1 ${from} = ${rate.toFixed(4)} ${to}`;
+            } else {
+                estimatedDiv.textContent = '-';
+                exchangeRateDiv.textContent = 'Curs: -';
+            }
+        }
+
+        // Evenimente
+        amountInput.addEventListener('input', calculateEstimate);
+        fromSelect.addEventListener('change', function() {
+            calculateEstimate();
+            validateCurrencies();
+        });
+        toSelect.addEventListener('change', function() {
+            calculateEstimate();
+            validateCurrencies();
+        });
+
+        // Validare monede
+        function validateCurrencies() {
+            if (fromSelect.value === toSelect.value) {
+                estimatedDiv.textContent = '❌ Alegeți monede diferite';
+                estimatedDiv.style.color = '#dc3545';
+                submitBtn.disabled = true;
+            } else {
+                estimatedDiv.style.color = 'var(--primary-color)';
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Validare formular
+        form.addEventListener('submit', function(e) {
+            if (fromSelect.value === toSelect.value) {
+                e.preventDefault();
+                alert('Moneda sursă și moneda destinație trebuie să fie diferite!');
+                return;
+            }
+
+            const amount = parseFloat(amountInput.value);
+            if (amount < 10) {
+                if (!confirm('Suma este mai mică decât minimul recomandat (10). Continuați?')) {
+                    e.preventDefault();
+                    return;
+                }
+            }
+
+            // Arată loading
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+        });
+
+        // Inițializare
+        calculateEstimate();
+    });
+
+    // Funcție swap valute
+    function swapCurrencies() {
+        const fromSelect = document.getElementById('fromCurrency');
+        const toSelect = document.getElementById('toCurrency');
+
+        const temp = fromSelect.value;
+        fromSelect.value = toSelect.value;
+        toSelect.value = temp;
+
+        // Trigger events
+        fromSelect.dispatchEvent(new Event('change'));
+        toSelect.dispatchEvent(new Event('change'));
+    }
+
+    // Funcție setare sumă
+    function setAmount(amount) {
+        const amountInput = document.getElementById('amount');
+        amountInput.value = amount;
+        amountInput.dispatchEvent(new Event('input'));
+
+        // Evidențiere temporară
+        amountInput.style.borderColor = '#28a745';
+        setTimeout(() => {
+            amountInput.style.borderColor = '#e9ecef';
+        }, 500);
+    }
+
+    // Suprascriere loadExchangeRates
+    function loadExchangeRates() {
+        const container = document.getElementById('exchange-rates');
+
+        setTimeout(() => {
+            let html = '';
+            for (const [currency, rate] of Object.entries(window.exchangeRates)) {
+                if (currency !== 'MDL') {
+                    html += `
+                        <div class="rate-card">
+                            <div class="rate-currency">${currency}</div>
+                            <div class="rate-value">${rate.toFixed(4)} MDL</div>
+                        </div>
+                    `;
+                }
+            }
+            container.innerHTML = html;
+        }, 500);
+    }
+</script>
+</body>
+</html>

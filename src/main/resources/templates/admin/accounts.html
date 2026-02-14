@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista Conturi Bancare</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        /* Stiluri moderne pentru tabel și layout */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .page-header h2 {
+            color: #2c3e50;
+            font-size: 2em;
+            margin: 0;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 20px;
+            background: #f8f9fa;
+            padding: 15px 25px;
+            border-radius: 50px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #34495e;
+        }
+
+        .stat-item span {
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .stat-item.activ span {
+            color: #28a745;
+        }
+
+        .stat-item.inactiv span {
+            color: #dc3545;
+        }
+
+        /* Tabel modern */
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            overflow-x: auto;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95em;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+        }
+
+        th {
+            padding: 15px 20px;
+            text-align: left;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #ecf0f1;
+            transition: background-color 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        td {
+            padding: 15px 20px;
+            color: #2c3e50;
+        }
+
+        /* Tip cont badge */
+        .account-type {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .account-type.current {
+            background: #e3f2fd;
+            color: #007bff;
+        }
+
+        .account-type.savings {
+            background: #e8f5e9;
+            color: #28a745;
+        }
+
+        .account-type.business {
+            background: #fff3e0;
+            color: #fd7e14;
+        }
+
+        /* Status badge */
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status-badge.active {
+            background: #d4edda;
+            color: #28a745;
+        }
+
+        .status-badge.inactive {
+            background: #f8d7da;
+            color: #dc3545;
+        }
+
+        /* Sold cu efect vizual */
+        .balance {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .balance.positive {
+            color: #28a745;
+        }
+
+        .balance.negative {
+            color: #dc3545;
+        }
+
+        /* Butoane acțiuni - STILURILE TALE MODIFICATE */
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-small {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.85em;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-small:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Buton Detalii */
+        .btn-small:not(.btn-warning):not(.btn-success) {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .btn-small:not(.btn-warning):not(.btn-success):hover {
+            background-color: #0056b3;
+        }
+
+        /* Buton Blochează */
+        .btn-warning {
+            background-color: #ffc107;
+            color: #2c3e50;
+        }
+
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+
+        /* Buton Deblochează */
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        /* Filtru și căutare */
+        .filters-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+            padding-left: 40px;
+        }
+
+        .search-box input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .search-box:before {
+            content: '🔍';
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+        }
+
+        .filter-select {
+            padding: 12px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            background: white;
+            cursor: pointer;
+            min-width: 150px;
+        }
+
+        .filter-select:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        /* Buton înapoi */
+        .btn-back {
+            display: inline-block;
+            padding: 12px 25px;
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            transition: all 0.2s ease;
+            margin-top: 20px;
+        }
+
+        .btn-back:hover {
+            background: #5a6268;
+            transform: translateX(-5px);
+        }
+
+        /* Mesaj când nu sunt conturi */
+        .no-accounts {
+            text-align: center;
+            padding: 50px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            color: #6c757d;
+            font-size: 1.2em;
+        }
+
+        .no-accounts:before {
+            content: '📭';
+            display: block;
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .stats-container {
+                width: 100%;
+                justify-content: space-around;
+            }
+
+            td {
+                padding: 10px;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn-small {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header cu titlu și statistici -->
+    <div class="page-header">
+        <h2>📊 Lista Conturi Bancare</h2>
+
+        <!-- Statistici -->
+        <div class="stats-container" th:if="${accounts != null}">
+            <div class="stat-item">
+                <span>📋</span> Total: <span th:text="${#lists.size(accounts)}"></span>
+            </div>
+            <div class="stat-item activ">
+                <span>✅</span> Active: <span th:text="${#lists.size(accounts.?[active == true])}"></span>
+            </div>
+            <div class="stat-item inactiv">
+                <span>❌</span> Inactive: <span th:text="${#lists.size(accounts.?[active == false])}"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secțiune de filtrare și căutare -->
+    <div class="filters-section">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Caută după număr cont sau proprietar...">
+        </div>
+        <select class="filter-select" id="typeFilter">
+            <option value="all">Toate tipurile</option>
+            <option value="CURRENT">💳 Curent</option>
+            <option value="SAVINGS">💰 Economii</option>
+            <option value="BUSINESS">🏢 Business</option>
+        </select>
+        <select class="filter-select" id="statusFilter">
+            <option value="all">Toate statusurile</option>
+            <option value="active">✅ Active</option>
+            <option value="inactive">❌ Inactive</option>
+        </select>
+    </div>
+
+    <!-- Tabel cu conturi -->
+    <div class="table-container">
+        <table id="accountsTable">
+            <thead>
+            <tr>
+                <th>Număr Cont</th>
+                <th>Proprietar</th>
+                <th>Tip</th>
+                <th>Sold (MDL)</th>
+                <th>Status</th>
+                <th>Acțiuni</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="account : ${accounts}" th:attr="data-type=${account.accountType}, data-status=${account.active ? 'active' : 'inactive'}">
+                <td>
+                    <strong th:text="${account.accountNumber}">1234567890</strong>
+                </td>
+                <td th:text="${account.owner.fullName}">Ion Popescu</td>
+                <td>
+                    <span class="account-type"
+                          th:classappend="|${account.accountType.toString().toLowerCase()}|"
+                          th:text="${account.accountType == 'CURRENT' ? '💳 Curent' :
+                                   (account.accountType == 'SAVINGS' ? '💰 Economii' :
+                                   (account.accountType == 'BUSINESS' ? '🏢 Business' : account.accountType))}">
+                        Curent
+                    </span>
+                </td>
+                <td>
+                    <span class="balance"
+                          th:classappend="${account.getBalance(T(com.bank.domain.model.Currency).MDL) >= 0} ? 'positive' : 'negative'"
+                          th:text="${#numbers.formatDecimal(account.getBalance(T(com.bank.domain.model.Currency).MDL), 0, 'COMMA', 2, 'POINT')} + ' MDL'">
+                        1,000.00 MDL
+                    </span>
+                </td>
+                <td>
+                    <span class="status-badge"
+                          th:classappend="${account.active} ? 'active' : 'inactive'"
+                          th:text="${account.active} ? '✅ Activ' : '❌ Inactiv'">
+                        Activ
+                    </span>
+                </td>
+                <td>
+                    <!-- ACESTEA SUNT BUTOANELE TALE -->
+                    <div class="actions">
+                        <a th:href="@{/web/admin/accounts/{id}(id=${account.accountNumber})}"
+                           class="btn-small">Detalii</a>
+                        <a th:href="@{/web/admin/accounts/block/{id}(id=${account.accountNumber})}"
+                           class="btn-small btn-warning"
+                           th:if="${account.active}">Blochează</a>
+                        <a th:href="@{/web/admin/accounts/unblock/{id}(id=${account.accountNumber})}"
+                           class="btn-small btn-success"
+                           th:unless="${account.active}">Deblochează</a>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- Mesaj când nu există conturi -->
+        <div th:if="${accounts == null or #lists.isEmpty(accounts)}" class="no-accounts">
+            Nu există conturi bancare în sistem
+        </div>
+    </div>
+
+    <!-- Buton înapoi -->
+    <a href="/web/admin/management" class="btn-back">←  Înapoi la panoul de administrare</a>
+</div>
+
+<!-- Script pentru filtrare și căutare -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const typeFilter = document.getElementById('typeFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        const table = document.getElementById('accountsTable');
+        const rows = table ? table.querySelectorAll('tbody tr') : [];
+
+        function filterTable() {
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const selectedType = typeFilter ? typeFilter.value : 'all';
+            const selectedStatus = statusFilter ? statusFilter.value : 'all';
+
+            rows.forEach(row => {
+                const accountNumber = row.cells[0]?.textContent.toLowerCase() || '';
+                const ownerName = row.cells[1]?.textContent.toLowerCase() || '';
+                const accountType = row.getAttribute('data-type');
+                const accountStatus = row.getAttribute('data-status');
+
+                const matchesSearch = accountNumber.includes(searchTerm) || ownerName.includes(searchTerm);
+                const matchesType = selectedType === 'all' || accountType === selectedType;
+                const matchesStatus = selectedStatus === 'all' || accountStatus === selectedStatus;
+
+                if (matchesSearch && matchesType && matchesStatus) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        if (searchInput) searchInput.addEventListener('input', filterTable);
+        if (typeFilter) typeFilter.addEventListener('change', filterTable);
+        if (statusFilter) statusFilter.addEventListener('change', filterTable);
+    });
+</script>
+</body>
+</html>

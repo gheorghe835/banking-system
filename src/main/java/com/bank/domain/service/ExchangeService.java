@@ -13,20 +13,22 @@ import java.util.Map;
  */
 public class ExchangeService {
 
-    private final AccountService accountService;
-    private final TransactionService transactionService;
-    private Map<Currency, BigDecimal> exchangeRates;
 
-    // Comision pentru schimb valutar (0.5%)
-    private static final BigDecimal EXCHANGE_COMMISSION = BigDecimal.valueOf(0.005);
+        private final AccountService accountService;
+        private final TransactionService transactionService;
+        private Map<Currency, BigDecimal> exchangeRates;
 
-    public ExchangeService(AccountService accountService, TransactionService transactionService) {
-        this.accountService = accountService;
-        this.transactionService = transactionService;
-        initializeExchangeRates();
-    }
+        // Comision pentru schimb valutar (0.5%)
+        private static final BigDecimal EXCHANGE_COMMISSION = BigDecimal.valueOf(0.005);
 
-    /**
+        public ExchangeService(AccountService accountService, TransactionService transactionService) {
+            this.accountService = accountService;
+            this.transactionService = transactionService;
+            initializeExchangeRates();
+        }
+
+
+        /**
      * Inițializează ratele de schimb
      */
     private void initializeExchangeRates() {
@@ -257,5 +259,25 @@ public class ExchangeService {
         BigDecimal exchangedAmount = calculateExchange(amount, fromCurrency, toCurrency);
         BigDecimal commission = exchangedAmount.multiply(EXCHANGE_COMMISSION);
         return exchangedAmount.subtract(commission);
+    }
+
+    /**
+     * Actualizează multiple rate deodată
+     */
+    public void updateMultipleRates(Map<Currency, BigDecimal> newRates) {
+        for (Map.Entry<Currency, BigDecimal> entry : newRates.entrySet()) {
+            if (entry.getValue() != null && entry.getValue().compareTo(BigDecimal.ZERO) > 0) {
+                exchangeRates.put(entry.getKey(), entry.getValue());
+            }
+        }
+        System.out.println("✅ Ratele de schimb au fost actualizate");
+    }
+
+    /**
+     * Resetează ratele la valorile implicite
+     */
+    public void resetToDefaultRates() {
+        initializeExchangeRates();
+        System.out.println("✅ Ratele de schimb au fost resetate la valorile implicite");
     }
 }

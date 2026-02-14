@@ -18,7 +18,7 @@ public class AccountEntity {
     @Column(name = "account_number", length = 16, nullable = false, unique = true)
     private String accountNumber;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "customer_id", nullable = false)
     private CustomerEntity owner;
 

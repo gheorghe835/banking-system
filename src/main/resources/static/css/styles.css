@@ -1,0 +1,969 @@
+/* =========================================
+   DESIGN SYSTEM - Variabile Globale
+   ========================================= */
+:root {
+    /* Paleta de culori */
+    --primary-color: #007bff;
+    --primary-dark: #0056b3;
+    --primary-light: #e3f2fd;
+
+    --success-color: #28a745;
+    --success-dark: #218838;
+    --success-light: #d4edda;
+
+    --warning-color: #ffc107;
+    --warning-dark: #e0a800;
+    --warning-light: #fff3cd;
+
+    --danger-color: #dc3545;
+    --danger-dark: #bd2130;
+    --danger-light: #f8d7da;
+
+    --dark-color: #2c3e50;
+    --darker-color: #1a252f;
+    --light-color: #f8f9fa;
+    --lighter-color: #ffffff;
+
+    --gray-100: #f8f9fa;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+    --gray-400: #ced4da;
+    --gray-500: #adb5bd;
+    --gray-600: #6c757d;
+    --gray-700: #495057;
+    --gray-800: #343a40;
+    --gray-900: #212529;
+
+    /* Spacing system */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-xxl: 48px;
+
+    /* Border radius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 20px;
+    --radius-round: 50px;
+
+    /* Shadows */
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 8px rgba(0,0,0,0.1);
+    --shadow-lg: 0 8px 16px rgba(0,0,0,0.1);
+    --shadow-xl: 0 12px 24px rgba(0,0,0,0.15);
+
+    /* Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-base: 0.3s ease;
+    --transition-slow: 0.5s ease;
+
+    /* Typography */
+    --font-family: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-size-xs: 0.75rem;    /* 12px */
+    --font-size-sm: 0.875rem;   /* 14px */
+    --font-size-md: 1rem;       /* 16px */
+    --font-size-lg: 1.125rem;   /* 18px */
+    --font-size-xl: 1.25rem;    /* 20px */
+    --font-size-xxl: 1.5rem;    /* 24px */
+    --font-size-xxxl: 2rem;     /* 32px */
+    --font-size-huge: 3rem;     /* 48px */
+
+    /* Font weights */
+    --font-light: 300;
+    --font-regular: 400;
+    --font-medium: 500;
+    --font-semibold: 600;
+    --font-bold: 700;
+
+    /* Line heights */
+    --line-height-tight: 1.2;
+    --line-height-base: 1.5;
+    --line-height-loose: 1.8;
+
+    /* Z-index layers */
+    --z-index-dropdown: 1000;
+    --z-index-sticky: 1020;
+    --z-index-modal: 1030;
+    --z-index-popover: 1040;
+    --z-index-tooltip: 1050;
+}
+
+/* =========================================
+   RESET ȘI STILURI DE BAZĂ
+   ========================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-regular);
+    line-height: var(--line-height-base);
+    color: var(--gray-900);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    margin: 0;
+    padding: var(--spacing-lg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tipografie */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--dark-color);
+    font-weight: var(--font-semibold);
+    line-height: var(--line-height-tight);
+    margin-bottom: var(--spacing-md);
+}
+
+h1 { font-size: var(--font-size-xxxl); }
+h2 { font-size: var(--font-size-xxl); }
+h3 { font-size: var(--font-size-xl); }
+h4 { font-size: var(--font-size-lg); }
+h5 { font-size: var(--font-size-md); }
+h6 { font-size: var(--font-size-sm); }
+
+p {
+    margin-bottom: var(--spacing-md);
+}
+
+small, .text-small {
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+}
+
+/* Link-uri */
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+a:hover {
+    color: var(--primary-dark);
+    text-decoration: underline;
+}
+
+/* =========================================
+   LAYOUT ȘI CONTAINERE
+   ========================================= */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: var(--lighter-color);
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+}
+
+.container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg,
+    var(--primary-color),
+    #764ba2,
+    var(--success-color),
+    var(--warning-color)
+    );
+}
+
+/* Grid-uri */
+.grid {
+    display: grid;
+    gap: var(--spacing-lg);
+}
+
+.grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.grid-auto {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+/* Flexbox */
+.flex {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+/* =========================================
+   BUTOANE
+   ========================================= */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border: none;
+    border-radius: var(--radius-round);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-medium);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    text-decoration: none;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.3);
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Variante de butoane */
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+}
+
+.btn-secondary {
+    background: var(--gray-600);
+    color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: var(--gray-700);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, var(--success-color), var(--success-dark));
+    color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(40,167,69,0.3);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, var(--warning-color), var(--warning-dark));
+    color: var(--dark-color);
+}
+
+.btn-warning:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(255,193,7,0.3);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--danger-color), var(--danger-dark));
+    color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(220,53,69,0.3);
+}
+
+/* Butoane mici */
+.btn-small {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-medium);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    border: none;
+    cursor: pointer;
+}
+
+.btn-small.btn-warning {
+    background: var(--warning-color);
+    color: var(--dark-color);
+}
+
+.btn-small.btn-warning:hover {
+    background: var(--warning-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-small.btn-success {
+    background: var(--success-color);
+    color: white;
+}
+
+.btn-small.btn-success:hover {
+    background: var(--success-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Loading state */
+.btn.loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 3px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* =========================================
+   FORMULARE
+   ========================================= */
+.form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    color: var(--dark-color);
+    font-weight: var(--font-semibold);
+    font-size: var(--font-size-sm);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-md);
+    font-family: inherit;
+    transition: all var(--transition-fast);
+    background: white;
+}
+
+.form-group input:hover,
+.form-group select:hover,
+.form-group textarea:hover {
+    border-color: var(--gray-500);
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(0,123,255,0.1);
+    transform: translateY(-2px);
+}
+
+.form-group input:disabled,
+.form-group select:disabled,
+.form-group textarea:disabled {
+    background: var(--gray-100);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Validare */
+.valid {
+    border-color: var(--success-color) !important;
+}
+
+.invalid {
+    border-color: var(--danger-color) !important;
+}
+
+/* Hint text */
+.hint {
+    display: block;
+    margin-top: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+}
+
+.hint::before {
+    content: 'ℹ️ ';
+    opacity: 0.8;
+}
+
+/* =========================================
+   TABELE
+   ========================================= */
+.table-container {
+    background: white;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    margin: var(--spacing-lg) 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+thead {
+    background: linear-gradient(135deg, var(--dark-color), var(--gray-800));
+    color: white;
+}
+
+th {
+    padding: var(--spacing-md) var(--spacing-lg);
+    text-align: left;
+    font-weight: var(--font-semibold);
+    font-size: var(--font-size-sm);
+    white-space: nowrap;
+}
+
+tbody tr {
+    border-bottom: 1px solid var(--gray-200);
+    transition: background-color var(--transition-fast);
+}
+
+tbody tr:hover {
+    background-color: var(--gray-100);
+}
+
+tbody tr:last-child {
+    border-bottom: none;
+}
+
+td {
+    padding: var(--spacing-md) var(--spacing-lg);
+    color: var(--dark-color);
+}
+
+/* Status row */
+.completed {
+    background-color: var(--success-light);
+}
+
+.failed {
+    background-color: var(--danger-light);
+}
+
+.pending {
+    background-color: var(--warning-light);
+}
+
+.total {
+    font-weight: var(--font-bold);
+    background-color: var(--primary-light);
+}
+
+/* =========================================
+   CARDS ȘI STATISTICI
+   ========================================= */
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-lg);
+    margin: var(--spacing-lg) 0;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, var(--gray-100), white);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-200);
+    transition: all var(--transition-base);
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
+}
+
+.stat-card h3 {
+    color: var(--gray-600);
+    font-size: var(--font-size-sm);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: var(--spacing-sm);
+}
+
+.stat-card p {
+    font-size: var(--font-size-xxl);
+    font-weight: var(--font-bold);
+    color: var(--primary-color);
+    margin: 0;
+}
+
+.stat-card.large {
+    grid-column: span 2;
+    background: linear-gradient(135deg, var(--primary-light), white);
+}
+
+.stat-card.large p {
+    font-size: var(--font-size-huge);
+}
+
+/* Card informații */
+.info-card {
+    background: white;
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--gray-200);
+}
+
+.account-info {
+    background: linear-gradient(135deg, var(--gray-100), white);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-md);
+    margin: var(--spacing-lg) 0;
+    border: 1px solid var(--gray-200);
+}
+
+/* =========================================
+   BADGE-URI ȘI STATUS-URI
+   ========================================= */
+.status-badge {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-round);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-medium);
+    text-align: center;
+}
+
+.status-badge.completed {
+    background-color: var(--success-light);
+    color: var(--success-dark);
+}
+
+.status-badge.completed::before {
+    content: '✅ ';
+}
+
+.status-badge.pending {
+    background-color: var(--warning-light);
+    color: var(--warning-dark);
+}
+
+.status-badge.pending::before {
+    content: '⏳ ';
+}
+
+.status-badge.failed {
+    background-color: var(--danger-light);
+    color: var(--danger-dark);
+}
+
+.status-badge.failed::before {
+    content: '❌ ';
+}
+
+.active {
+    color: var(--success-color);
+}
+
+.active::before {
+    content: '✅ ';
+    margin-right: var(--spacing-xs);
+}
+
+.inactive {
+    color: var(--danger-color);
+}
+
+.inactive::before {
+    content: '❌ ';
+    margin-right: var(--spacing-xs);
+}
+
+/* Currency badges */
+.currency-badge {
+    display: inline-block;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-semibold);
+}
+
+.currency-badge.mdl {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+}
+
+.currency-badge.eur {
+    background: #fff3e0;
+    color: var(--warning-dark);
+}
+
+.currency-badge.usd {
+    background: #e8f5e9;
+    color: var(--success-dark);
+}
+
+/* =========================================
+   NUMERE MARI
+   ========================================= */
+.big-number {
+    font-size: var(--font-size-huge);
+    font-weight: var(--font-bold);
+    color: var(--primary-color);
+    margin: var(--spacing-md) 0;
+    line-height: var(--line-height-tight);
+}
+
+/* =========================================
+   MESAJE ȘI NOTIFICĂRI
+   ========================================= */
+.message {
+    padding: var(--spacing-md) var(--spacing-lg);
+    margin: var(--spacing-md) 0;
+    border-radius: var(--radius-md);
+    animation: slideIn var(--transition-base);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.message::before {
+    font-size: var(--font-size-lg);
+}
+
+.message.info {
+    background-color: var(--primary-light);
+    border-left: 4px solid var(--primary-color);
+    color: var(--primary-dark);
+}
+
+.message.info::before {
+    content: 'ℹ️';
+}
+
+.message.success {
+    background-color: var(--success-light);
+    border-left: 4px solid var(--success-color);
+    color: var(--success-dark);
+}
+
+.message.success::before {
+    content: '✅';
+}
+
+.message.error {
+    background-color: var(--danger-light);
+    border-left: 4px solid var(--danger-color);
+    color: var(--danger-dark);
+}
+
+.message.error::before {
+    content: '⚠️';
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.error {
+    background: var(--danger-light);
+    border: 1px solid var(--danger-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    color: var(--danger-dark);
+    margin: var(--spacing-md) 0;
+}
+
+.success {
+    background: var(--success-light);
+    border: 1px solid var(--success-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    color: var(--success-dark);
+    margin: var(--spacing-md) 0;
+}
+
+/* =========================================
+   ACȚIUNI ȘI BUTOANE DE ACȚIUNE
+   ========================================= */
+.actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+    margin-top: var(--spacing-lg);
+}
+
+.action-buttons {
+    display: flex;
+    gap: var(--spacing-xs);
+    flex-wrap: wrap;
+}
+
+/* =========================================
+   UTILITĂȚI
+   ========================================= */
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: var(--spacing-sm); }
+.mt-2 { margin-top: var(--spacing-md); }
+.mt-3 { margin-top: var(--spacing-lg); }
+.mt-4 { margin-top: var(--spacing-xl); }
+.mt-5 { margin-top: var(--spacing-xxl); }
+
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: var(--spacing-sm); }
+.mb-2 { margin-bottom: var(--spacing-md); }
+.mb-3 { margin-bottom: var(--spacing-lg); }
+.mb-4 { margin-bottom: var(--spacing-xl); }
+.mb-5 { margin-bottom: var(--spacing-xxl); }
+
+.p-0 { padding: 0; }
+.p-1 { padding: var(--spacing-sm); }
+.p-2 { padding: var(--spacing-md); }
+.p-3 { padding: var(--spacing-lg); }
+.p-4 { padding: var(--spacing-xl); }
+.p-5 { padding: var(--spacing-xxl); }
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+@media (max-width: 1200px) {
+    .container {
+        max-width: 960px;
+    }
+}
+
+@media (max-width: 992px) {
+    .container {
+        max-width: 720px;
+    }
+
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: var(--spacing-sm);
+    }
+
+    .container {
+        max-width: 100%;
+        padding: var(--spacing-lg);
+    }
+
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-card.large {
+        grid-column: span 1;
+    }
+
+    h1 { font-size: var(--font-size-xxl); }
+    h2 { font-size: var(--font-size-xl); }
+
+    .actions {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 800px;
+    }
+}
+
+@media (max-width: 576px) {
+    .container {
+        padding: var(--spacing-md);
+    }
+
+    .btn {
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+}
+
+/* =========================================
+   PRINT STYLES
+   ========================================= */
+@media print {
+    body {
+        background: white;
+        padding: 0;
+    }
+
+    .container {
+        box-shadow: none;
+        padding: var(--spacing-md);
+    }
+
+    .btn,
+    .actions {
+        display: none;
+    }
+}
+
+/* =========================================
+   ANIMAȚII SUPLIMENTARE
+   ========================================= */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+/* =========================================
+   ACCESIBILITATE
+   ========================================= */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
+:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}

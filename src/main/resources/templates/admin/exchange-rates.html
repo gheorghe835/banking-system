@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Curs Valutar</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="/js/app.js"></script>
+    <style>
+        /* Stiluri moderne pentru curs valutar */
+        :root {
+            --primary-color: #007bff;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --dark-color: #2c3e50;
+            --light-color: #f8f9fa;
+            --border-radius: 15px;
+            --box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), #764ba2, #ffc107);
+        }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .title-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            background: var(--light-color);
+            color: var(--dark-color);
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 0.9em;
+            transition: var(--transition);
+        }
+
+        .back-link:hover {
+            background: #e9ecef;
+            transform: translateX(-3px);
+        }
+
+        .page-header h2 {
+            color: var(--dark-color);
+            font-size: 2em;
+            margin: 0;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .title-icon {
+            font-size: 2em;
+        }
+
+        /* Data și ora */
+        .datetime-section {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea10, #764ba210);
+            border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .current-date {
+            font-size: 1.1em;
+            color: var(--dark-color);
+            margin-bottom: 5px;
+        }
+
+        .current-date span {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .update-info {
+            font-size: 0.9em;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .update-info:before {
+            content: '⏱️';
+        }
+
+        /* Tabel cursuri */
+        .rates-container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .rates-header {
+            background: linear-gradient(135deg, var(--dark-color), #34495e);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .rates-header h3 {
+            margin: 0;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .last-updated {
+            font-size: 0.85em;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 10px;
+            border-radius: 50px;
+        }
+
+        .rates-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .rates-table th {
+            background: var(--light-color);
+            padding: 15px 20px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--dark-color);
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .rates-table td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .rates-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .rates-table tr:hover td {
+            background-color: #f8f9fa;
+        }
+
+        /* Currency badge */
+        .currency-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-weight: 600;
+        }
+
+        .currency-badge.eur {
+            background: #e3f2fd;
+            color: #007bff;
+        }
+
+        .currency-badge.usd {
+            background: #e8f5e9;
+            color: #28a745;
+        }
+
+        .currency-badge.gbp {
+            background: #fff3e0;
+            color: #fd7e14;
+        }
+
+        .currency-badge.ron {
+            background: #f8d7da;
+            color: #dc3545;
+        }
+
+        /* Rate value */
+        .rate-value {
+            font-weight: 600;
+            font-size: 1.1em;
+            color: var(--dark-color);
+        }
+
+        .rate-change {
+            display: inline-block;
+            margin-left: 10px;
+            padding: 2px 8px;
+            border-radius: 50px;
+            font-size: 0.85em;
+        }
+
+        .rate-change.positive {
+            background: #d4edda;
+            color: #28a745;
+        }
+
+        .rate-change.positive:before {
+            content: '↑';
+            margin-right: 2px;
+        }
+
+        .rate-change.negative {
+            background: #f8d7da;
+            color: #dc3545;
+        }
+
+        .rate-change.negative:before {
+            content: '↓';
+            margin-right: 2px;
+        }
+
+        /* Secțiune admin */
+        .admin-section {
+            background: linear-gradient(135deg, #fff3e0, #ffe5d0);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 2px dashed var(--warning-color);
+        }
+
+        .admin-section h3 {
+            margin: 0 0 20px 0;
+            color: var(--dark-color);
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-section h3:before {
+            content: '🔧';
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .admin-table th {
+            background: var(--dark-color);
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .admin-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .admin-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .admin-table input {
+            width: 150px;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: var(--transition);
+        }
+
+        .admin-table input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
+        .admin-table input:hover {
+            border-color: #adb5bd;
+        }
+
+        .current-rate {
+            font-weight: 600;
+            color: var(--dark-color);
+            background: var(--light-color);
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+
+        /* Mesaje */
+        .message {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border-left: 4px solid var(--success-color);
+            color: #155724;
+        }
+
+        .success:before {
+            content: '✅';
+            font-size: 1.2em;
+        }
+
+        .error {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border-left: 4px solid var(--danger-color);
+            color: #721c24;
+        }
+
+        .error:before {
+            content: '⚠️';
+            font-size: 1.2em;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Butoane */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #0056b3);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,123,255,0.3);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning-color), #e0a800);
+            color: var(--dark-color);
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255,193,7,0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 50px;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateX(-5px);
+        }
+
+        /* Grafic (simulat) */
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .chart-placeholder {
+            height: 150px;
+            background: linear-gradient(90deg, #667eea20, #764ba220);
+            border-radius: 8px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 0 10px;
+        }
+
+        .chart-bar {
+            width: 60px;
+            background: linear-gradient(to top, var(--primary-color), #764ba2);
+            border-radius: 8px 8px 0 0;
+            transition: height 0.3s ease;
+            position: relative;
+            text-align: center;
+            color: white;
+            font-size: 0.8em;
+            padding-top: 5px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .admin-table {
+                display: block;
+                overflow-x: auto;
+            }
+
+            .admin-table td {
+                white-space: nowrap;
+            }
+
+            .admin-table input {
+                width: 120px;
+            }
+
+            .rates-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+
+        /* Loading */
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading-spinner:after {
+            content: '';
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--light-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Auto-refresh */
+        .auto-refresh {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-top: 10px;
+        }
+
+        .auto-refresh .badge {
+            background: var(--light-color);
+            padding: 2px 8px;
+            border-radius: 50px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="title-section">
+            <a href="/web/admin/management" class="back-link">
+                ← Înapoi
+            </a>
+            <span class="title-icon">💱</span>
+            <h2>Curs Valutar</h2>
+        </div>
+    </div>
+
+    <!-- Data și ora -->
+    <div class="datetime-section">
+        <div class="current-date">
+            📅 <span id="currentDate"></span>
+        </div>
+        <div class="update-info">
+            Cursurile sunt actualizate în timp real
+        </div>
+    </div>
+
+    <!-- Mesaje -->
+    <div th:if="${success}" class="message success">
+        <p th:text="${success}">Cursurile au fost actualizate cu succes!</p>
+    </div>
+
+    <div th:if="${error}" class="message error">
+        <p th:text="${error}">Eroare la actualizarea cursurilor</p>
+    </div>
+
+    <!-- Container pentru cursuri -->
+    <div class="rates-container">
+        <div class="rates-header">
+            <h3>💱 Cursuri Oficiale BNM</h3>
+            <span class="last-updated" id="lastUpdated">Încărcare...</span>
+        </div>
+
+        <div id="exchange-rates">
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
+    <!-- Auto-refresh info -->
+    <div class="auto-refresh">
+        <span class="badge">🔄 Auto-refresh la fiecare 30 secunde</span>
+    </div>
+
+    <!-- Secțiune administrator -->
+    <div class="admin-section" th:if="${session.manager != null}">
+        <h3>Actualizare Cursuri (Administrator)</h3>
+        <form th:action="@{/web/admin/exchange-rates/update}" method="post" id="adminForm">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>Monedă</th>
+                    <th>Curs Curent (MDL)</th>
+                    <th>Curs Nou</th>
+                    <th>Acțiune</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                            <span class="currency-badge eur">
+                                🇪🇺 EUR
+                            </span>
+                    </td>
+                    <td>
+                        <span class="current-rate" id="current-eur">19.45</span>
+                    </td>
+                    <td>
+                        <input type="number" name="rateEUR" step="0.0001" min="0"
+                               placeholder="19.45" class="rate-input" data-currency="EUR">
+                    </td>
+                    <td>
+                        <button type="button" class="btn-small" onclick="setRecommendedRate('EUR', 19.45)">↺</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                            <span class="currency-badge usd">
+                                🇺🇸 USD
+                            </span>
+                    </td>
+                    <td>
+                        <span class="current-rate" id="current-usd">17.55</span>
+                    </td>
+                    <td>
+                        <input type="number" name="rateUSD" step="0.0001" min="0"
+                               placeholder="17.55" class="rate-input" data-currency="USD">
+                    </td>
+                    <td>
+                        <button type="button" class="btn-small" onclick="setRecommendedRate('USD', 17.55)">↺</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                            <span class="currency-badge gbp">
+                                🇬🇧 GBP
+                            </span>
+                    </td>
+                    <td>
+                        <span class="current-rate" id="current-gbp">22.10</span>
+                    </td>
+                    <td>
+                        <input type="number" name="rateGBP" step="0.0001" min="0"
+                               placeholder="22.10" class="rate-input" data-currency="GBP">
+                    </td>
+                    <td>
+                        <button type="button" class="btn-small" onclick="setRecommendedRate('GBP', 22.10)">↺</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                            <span class="currency-badge ron">
+                                🇷🇴 RON
+                            </span>
+                    </td>
+                    <td>
+                        <span class="current-rate" id="current-ron">4.00</span>
+                    </td>
+                    <td>
+                        <input type="number" name="rateRON" step="0.0001" min="0"
+                               placeholder="4.00" class="rate-input" data-currency="RON">
+                    </td>
+                    <td>
+                        <button type="button" class="btn-small" onclick="setRecommendedRate('RON', 4.00)">↺</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" class="btn btn-secondary" onclick="resetAdminForm()">Reset</button>
+                <button type="submit" class="btn btn-warning">Actualizează Cursurile</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Buton înapoi -->
+    <div style="text-align: center; margin-top: 25px;">
+        <a href="/web/admin/management" class="btn-secondary">← Înapoi la Panoul de Administrare</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Afișează data curentă
+        updateDateTime();
+
+        // Încarcă cursurile
+        if (document.getElementById('exchange-rates')) {
+            loadExchangeRates();
+
+            // Auto-refresh la fiecare 30 secunde
+            setInterval(loadExchangeRates, 30000);
+        }
+
+        // Actualizează data în fiecare secundă
+        setInterval(updateDateTime, 1000);
+
+        // Validare formular admin
+        const adminForm = document.getElementById('adminForm');
+        if (adminForm) {
+            adminForm.addEventListener('submit', function(e) {
+                const inputs = this.querySelectorAll('input[type="number"]');
+                let hasValue = false;
+
+                inputs.forEach(input => {
+                    if (input.value) {
+                        hasValue = true;
+                        if (input.value <= 0) {
+                            e.preventDefault();
+                            alert('Valoarea cursului trebuie să fie mai mare decât 0!');
+                            input.focus();
+                        }
+                    }
+                });
+
+                if (!hasValue) {
+                    e.preventDefault();
+                    alert('Completați cel puțin un curs valutar pentru actualizare!');
+                }
+            });
+        }
+
+        // Formatare input-uri numere
+        const rateInputs = document.querySelectorAll('.rate-input');
+        rateInputs.forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (!/[0-9.]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete') {
+                    e.preventDefault();
+                }
+            });
+        });
+    });
+
+    function updateDateTime() {
+        const now = new Date();
+        const options = {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        };
+        const dateStr = now.toLocaleDateString('ro-RO', options);
+        const dateElement = document.getElementById('currentDate');
+        if (dateElement) {
+            dateElement.textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+        }
+    }
+
+    function loadExchangeRates() {
+        const container = document.getElementById('exchange-rates');
+
+        // Simulare încărcare date
+        setTimeout(() => {
+            const rates = [
+                { currency: 'EUR', rate: 19.45, change: '+0.05', trend: 'positive' },
+                { currency: 'USD', rate: 17.55, change: '-0.03', trend: 'negative' },
+                { currency: 'GBP', rate: 22.10, change: '+0.12', trend: 'positive' },
+                { currency: 'RON', rate: 4.00, change: '0.00', trend: 'neutral' }
+            ];
+
+            let html = '<table class="rates-table">';
+            html += '<thead><tr><th>Monedă</th><th>Curs (MDL)</th><th>Variație</th></tr></thead>';
+            html += '<tbody>';
+
+            rates.forEach(rate => {
+                const trendClass = rate.trend === 'positive' ? 'positive' : (rate.trend === 'negative' ? 'negative' : '');
+                const currencyClass = rate.currency.toLowerCase();
+
+                html += `<tr>
+                    <td>
+                        <span class="currency-badge ${currencyClass}">
+                            ${rate.currency === 'EUR' ? '🇪🇺' :
+                    rate.currency === 'USD' ? '🇺🇸' :
+                        rate.currency === 'GBP' ? '🇬🇧' : '🇷🇴'} ${rate.currency}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="rate-value">${rate.rate.toFixed(4)}</span>
+                    </td>
+                    <td>
+                        <span class="rate-change ${trendClass}">${rate.change}</span>
+                    </td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+
+            // Actualizează și valorile din secțiunea admin
+            document.getElementById('current-eur').textContent = rates[0].rate.toFixed(4);
+            document.getElementById('current-usd').textContent = rates[1].rate.toFixed(4);
+            document.getElementById('current-gbp').textContent = rates[2].rate.toFixed(4);
+            document.getElementById('current-ron').textContent = rates[3].rate.toFixed(4);
+
+            // Actualizează ultima actualizare
+            const lastUpdated = document.getElementById('lastUpdated');
+            if (lastUpdated) {
+                const now = new Date();
+                lastUpdated.textContent = `Actualizat: ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+            }
+        }, 500);
+    }
+
+    function setRecommendedRate(currency, rate) {
+        const input = document.querySelector(`input[name="rate${currency}"]`);
+        if (input) {
+            input.value = rate;
+            input.style.borderColor = '#28a745';
+            setTimeout(() => {
+                input.style.borderColor = '#e9ecef';
+            }, 1000);
+        }
+    }
+
+    function resetAdminForm() {
+        const inputs = document.querySelectorAll('.rate-input');
+        inputs.forEach(input => {
+            input.value = '';
+        });
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Editare Client</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        /* Stiluri moderne pentru pagina de editare client */
+        :root {
+            --primary-color: #007bff;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --dark-color: #2c3e50;
+            --light-color: #f8f9fa;
+            --border-radius: 15px;
+            --box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), #764ba2, var(--success-color));
+        }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .title-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            background: var(--light-color);
+            color: var(--dark-color);
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 0.9em;
+            transition: var(--transition);
+        }
+
+        .back-link:hover {
+            background: #e9ecef;
+            transform: translateX(-3px);
+        }
+
+        .page-header h2 {
+            color: var(--dark-color);
+            font-size: 1.8em;
+            margin: 0;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 8px;
+        }
+
+        /* Card client info */
+        .client-info-card {
+            background: linear-gradient(135deg, #667eea10, #764ba210);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .client-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-color), #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            color: white;
+        }
+
+        .client-quick-info {
+            flex: 1;
+        }
+
+        .client-id {
+            display: inline-block;
+            padding: 4px 12px;
+            background: white;
+            border-radius: 50px;
+            font-size: 0.85em;
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .client-name {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .client-email {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        /* Formular */
+        .form-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .form-section h3 {
+            margin: 0 0 20px 0;
+            color: var(--dark-color);
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--light-color);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark-color);
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .form-group label i {
+            color: var(--primary-color);
+            margin-right: 5px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: var(--transition);
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(0,123,255,0.1);
+            transform: translateY(-2px);
+        }
+
+        .form-group input:hover,
+        .form-group textarea:hover,
+        .form-group select:hover {
+            border-color: #adb5bd;
+        }
+
+        .form-group input:disabled {
+            background: var(--light-color);
+            cursor: not-allowed;
+        }
+
+        /* Input cu icon */
+        .input-with-icon {
+            position: relative;
+        }
+
+        .input-with-icon input,
+        .input-with-icon textarea {
+            padding-left: 45px;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 38px;
+            color: #adb5bd;
+            transition: var(--transition);
+        }
+
+        .input-with-icon:focus-within .input-icon {
+            color: var(--primary-color);
+        }
+
+        /* Validare */
+        .form-group input:valid,
+        .form-group textarea:valid {
+            border-color: var(--success-color);
+        }
+
+        .form-group input:invalid:not(:placeholder-shown),
+        .form-group textarea:invalid:not(:placeholder-shown) {
+            border-color: var(--warning-color);
+        }
+
+        .validation-message {
+            font-size: 0.8em;
+            margin-top: 5px;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .validation-message i {
+            color: var(--warning-color);
+        }
+
+        /* Textarea */
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Butoane */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 14px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #0056b3);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,123,255,0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(108,117,125,0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger-color), #bd2130);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(220,53,69,0.3);
+        }
+
+        /* Eroare */
+        .error {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border-left: 4px solid var(--danger-color);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            color: #721c24;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .error:before {
+            content: '⚠️';
+            font-size: 1.2em;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Loading state */
+        .btn.loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .btn.loading:after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 3px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Tooltip */
+        .field-tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 5px;
+            cursor: help;
+        }
+
+        .field-tooltip:before {
+            content: '?';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: #e9ecef;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 16px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .field-tooltip:hover:after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 1000;
+            margin-bottom: 5px;
+        }
+
+        /* Separator */
+        .separator {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--light-color), transparent);
+            margin: 20px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full-width {
+                grid-column: span 1;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .client-info-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .client-avatar {
+                margin: 0 auto;
+            }
+        }
+
+        /* Animații */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-section {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        .form-section:nth-child(1) { animation-delay: 0.1s; }
+        .form-section:nth-child(2) { animation-delay: 0.2s; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="title-section">
+            <a th:href="@{/web/admin/customers}" class="back-link">
+                ← Înapoi
+            </a>
+            <h2>Editare Client</h2>
+        </div>
+    </div>
+
+    <!-- Quick info client -->
+    <div class="client-info-card">
+        <div class="client-avatar">
+            👤
+        </div>
+        <div class="client-quick-info">
+            <div class="client-id" th:text="'ID: ' + ${customer.customerId}">ID: CUST001</div>
+            <div class="client-name" th:text="${customer.fullName}">Ion Popescu</div>
+            <div class="client-email" th:text="${customer.email}">ion.popescu@email.com</div>
+        </div>
+    </div>
+
+    <!-- Mesaj eroare -->
+    <div th:if="${error}" class="error">
+        <p th:text="${error}">Eroare la salvarea datelor</p>
+    </div>
+
+    <form th:action="@{/web/admin/customers/update}" method="post" id="editForm">
+        <input type="hidden" name="customerId" th:value="${customer.customerId}">
+
+        <!-- Secțiune Informații Personale -->
+        <div class="form-section">
+            <h3>👤 Informații Personale</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="firstName">
+                        Prenume <span class="field-tooltip" data-tooltip="Introduceți prenumele clientului"></span>
+                    </label>
+                    <div class="input-with-icon">
+                        <span class="input-icon">👤</span>
+                        <input type="text" id="firstName" name="firstName"
+                               th:value="${customer.firstName}"
+                               required
+                               minlength="2"
+                               maxlength="50"
+                               pattern="[A-Za-zăâîșțĂÂÎȘȚ\s-]+"
+                               placeholder="Ex: Ion">
+                    </div>
+                    <div class="validation-message">
+                        <i>ℹ️</i> Doar litere, spații și cratimă
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="lastName">Nume</label>
+                    <div class="input-with-icon">
+                        <span class="input-icon">👤</span>
+                        <input type="text" id="lastName" name="lastName"
+                               th:value="${customer.lastName}"
+                               required
+                               minlength="2"
+                               maxlength="50"
+                               pattern="[A-Za-zăâîșțĂÂÎȘȚ\s-]+"
+                               placeholder="Ex: Popescu">
+                    </div>
+                    <div class="validation-message">
+                        <i>ℹ️</i> Doar litere, spații și cratimă
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secțiune Informații Contact -->
+        <div class="form-section">
+            <h3>📞 Informații Contact</h3>
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label for="email">Email</label>
+                    <div class="input-with-icon">
+                        <span class="input-icon">📧</span>
+                        <input type="email" id="email" name="email"
+                               th:value="${customer.email}"
+                               required
+                               pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                               placeholder="exemplu@domeniu.com">
+                    </div>
+                    <div class="validation-message">
+                        <i>ℹ️</i> Introduceți o adresă de email validă
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="phoneNumber">Telefon</label>
+                    <div class="input-with-icon">
+                        <span class="input-icon">📱</span>
+                        <input type="tel" id="phoneNumber" name="phoneNumber"
+                               th:value="${customer.phoneNumber}"
+                               required
+                               pattern="[0-9+\s]{10,15}"
+                               placeholder="+37369123456">
+                    </div>
+                    <div class="validation-message">
+                        <i>ℹ️</i> Format: +373XXXXXXXXX sau 069XXXXXX
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Secțiune Adresă -->
+        <div class="form-section">
+            <h3>📍 Adresă</h3>
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label for="address">Adresă completă</label>
+                    <div class="input-with-icon">
+                        <span class="input-icon">🏠</span>
+                        <textarea id="address" name="address" rows="3"
+                                  placeholder="Str. Exemplu, nr. 1, bl. A, ap. 10, Chișinău"
+                                  minlength="5"
+                                  maxlength="200">[[${customer.address}]]</textarea>
+                    </div>
+                    <div class="validation-message">
+                        <i>ℹ️</i> Adresa completă de domiciliu
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Separator -->
+        <div class="separator"></div>
+
+        <!-- Butoane acțiune -->
+        <div class="button-group">
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+                💾 Salvează Modificările
+            </button>
+            <a th:href="@{/web/admin/customers}" class="btn btn-secondary">
+                ✖ Anulează
+            </a>
+        </div>
+
+        <!-- Buton adițional pentru reset parolă sau alte acțiuni (opțional) -->
+        <div style="margin-top: 15px; text-align: center;">
+            <small style="color: #6c757d;">
+                Ultima modificare: <span th:text="${#temporals.format(customer.registrationDate, 'dd.MM.yyyy HH:mm')}">01.01.2024 10:30</span>
+            </small>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('editForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const inputs = document.querySelectorAll('input[required], textarea[required]');
+
+        // Validare în timp real
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                validateField(this);
+            });
+
+            input.addEventListener('blur', function() {
+                validateField(this);
+            });
+        });
+
+        function validateField(field) {
+            if (field.checkValidity()) {
+                field.style.borderColor = '#28a745';
+                field.classList.add('valid');
+                field.classList.remove('invalid');
+            } else {
+                field.style.borderColor = '#ffc107';
+                field.classList.remove('valid');
+                if (field.value) {
+                    field.classList.add('invalid');
+                }
+            }
+        }
+
+        // Prevenire submit dacă formularul nu e valid
+        form.addEventListener('submit', function(e) {
+            if (!form.checkValidity()) {
+                e.preventDefault();
+
+                // Evidențiază câmpurile invalide
+                const invalidFields = form.querySelectorAll(':invalid');
+                invalidFields.forEach(field => {
+                    field.style.borderColor = '#dc3545';
+                    field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                });
+
+                // Arată un mesaj de eroare
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                errorDiv.innerHTML = '<p>⚠️ Vă rugăm să completați corect toate câmpurile obligatorii!</p>';
+
+                const existingError = form.querySelector('.error');
+                if (existingError) {
+                    existingError.remove();
+                }
+
+                form.insertBefore(errorDiv, form.firstChild);
+
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 5000);
+            } else {
+                // Arată loading pe buton
+                submitBtn.classList.add('loading');
+                submitBtn.disabled = true;
+
+                // Schimbă textul butonului
+                submitBtn.innerHTML = '⏳ Se salvează...';
+            }
+        });
+
+        // Formatare telefon
+        const phoneInput = document.getElementById('phoneNumber');
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function(e) {
+                let value = this.value.replace(/[^\d+\s]/g, '');
+                this.value = value;
+            });
+        }
+
+        // Confirmare înainte de abandonare
+        let formChanged = false;
+
+        inputs.forEach(input => {
+            input.addEventListener('change', function() {
+                formChanged = true;
+            });
+        });
+
+        window.addEventListener('beforeunload', function(e) {
+            if (formChanged) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        form.addEventListener('submit', function() {
+            formChanged = false;
+        });
+    });
+</script>
+</body>
+</html>

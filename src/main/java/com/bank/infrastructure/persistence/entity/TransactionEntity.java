@@ -15,7 +15,7 @@ public class TransactionEntity {
     @Column(name = "transaction_id", length = 20, nullable = false, unique = true)
     private String transactionId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "account_number", nullable = false)
     private AccountEntity account;
 

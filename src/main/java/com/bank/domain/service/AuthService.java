@@ -43,6 +43,10 @@ public class AuthService {
             // Găsește contul
             Account account = accountService.findAccount(accountNumber);
 
+            if (account.getOwner() != null) {
+                account.getOwner().getFullName(); // Forțează încărcarea
+            }
+
             // Verifică dacă contul este activ
             if (!account.isActive()) {
                 throw new BankingException(BankingErrorCode.ACCOUNT_INACTIVE,

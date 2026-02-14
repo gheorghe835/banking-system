@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script src="/js/app.js"></script>
+    <meta charset="UTF-8">
+    <title>Panoul Meu</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        /* Stiluri moderne pentru panoul clientului */
+        :root {
+            --primary-color: #007bff;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --dark-color: #2c3e50;
+            --light-color: #f8f9fa;
+            --border-radius: 15px;
+            --box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), #764ba2, var(--success-color));
+        }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .welcome-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .client-avatar {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--primary-color), #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+        }
+
+        .welcome-text h2 {
+            margin: 0 0 5px 0;
+            color: var(--dark-color);
+            font-size: 1.8em;
+        }
+
+        .welcome-text .account-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: var(--light-color);
+            border-radius: 50px;
+            font-size: 0.9em;
+            color: var(--dark-color);
+        }
+
+        .date-time {
+            background: var(--light-color);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 0.95em;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Card cont */
+        .account-card {
+            background: linear-gradient(135deg, #667eea10, #764ba210);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(0,0,0,0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .account-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, var(--primary-color), #764ba2);
+            opacity: 0.1;
+            border-radius: 50%;
+            transform: translate(50px, -50px);
+        }
+
+        .account-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .account-title h3 {
+            margin: 0 0 5px 0;
+            color: var(--dark-color);
+            font-size: 1.2em;
+        }
+
+        .account-number {
+            font-family: 'Courier New', monospace;
+            font-size: 1.3em;
+            font-weight: 600;
+            color: var(--primary-color);
+            background: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            display: inline-block;
+            letter-spacing: 2px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 50px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .status-badge.active {
+            background: #d4edda;
+            color: #28a745;
+        }
+
+        .status-badge.active:before {
+            content: '✅ ';
+        }
+
+        .status-badge.inactive {
+            background: #f8d7da;
+            color: #dc3545;
+        }
+
+        .status-badge.inactive:before {
+            content: '❌ ';
+        }
+
+        /* Tabel solduri */
+        .balances-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .balances-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--dark-color);
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .balances-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .balances-table th {
+            text-align: left;
+            padding: 12px 15px;
+            background: var(--light-color);
+            color: var(--dark-color);
+            font-weight: 600;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .balances-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .balances-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .balances-table .total-row {
+            background: #e3f2fd;
+            font-weight: 600;
+            color: var(--primary-color);
+            border-radius: 0 0 8px 8px;
+        }
+
+        .currency-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .currency-badge.mdl {
+            background: #e3f2fd;
+            color: #007bff;
+        }
+
+        .currency-badge.eur {
+            background: #fff3e0;
+            color: #fd7e14;
+        }
+
+        .currency-badge.usd {
+            background: #e8f5e9;
+            color: #28a745;
+        }
+
+        /* Grid acțiuni */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .action-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px 15px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--dark-color);
+            border: 2px solid var(--light-color);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .action-icon {
+            font-size: 2em;
+            transition: var(--transition);
+        }
+
+        .action-card:hover .action-icon {
+            transform: scale(1.1);
+        }
+
+        .action-title {
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        /* Secțiune tranzacții */
+        .transactions-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px dashed var(--light-color);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .section-header h3 {
+            margin: 0;
+            color: var(--dark-color);
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .load-btn {
+            background: linear-gradient(135deg, var(--primary-color), #0056b3);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .load-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,123,255,0.3);
+        }
+
+        .load-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Tabel tranzacții */
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .transactions-table th {
+            background: linear-gradient(135deg, var(--dark-color), #34495e);
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .transactions-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .transactions-table tr:hover td {
+            background-color: #f8f9fa;
+        }
+
+        .transaction-type {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .transaction-type.deposit {
+            background: #d4edda;
+            color: #28a745;
+        }
+
+        .transaction-type.withdrawal {
+            background: #f8d7da;
+            color: #dc3545;
+        }
+
+        .transaction-type.transfer {
+            background: #e3f2fd;
+            color: #007bff;
+        }
+
+        .amount {
+            font-weight: 600;
+        }
+
+        .amount.positive {
+            color: #28a745;
+        }
+
+        .amount.negative {
+            color: #dc3545;
+        }
+
+        .status-badge.small {
+            padding: 3px 10px;
+            font-size: 0.8em;
+        }
+
+        .no-transactions {
+            text-align: center;
+            padding: 40px;
+            background: var(--light-color);
+            border-radius: 12px;
+            color: #6c757d;
+        }
+
+        .no-transactions:before {
+            content: '📭';
+            display: block;
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        /* Butoane */
+        .logout-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 25px;
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .logout-btn:hover {
+            background: #5a6268;
+            transform: translateX(-5px);
+        }
+
+        /* Mesaje */
+        .message {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border-left: 4px solid var(--success-color);
+            color: #155724;
+        }
+
+        .success:before {
+            content: '✅';
+            font-size: 1.2em;
+        }
+
+        .error {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border-left: 4px solid var(--danger-color);
+            color: #721c24;
+        }
+
+        .error:before {
+            content: '⚠️';
+            font-size: 1.2em;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .welcome-section {
+                flex-direction: column;
+                text-align: center;
+                width: 100%;
+            }
+
+            .account-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .actions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .transactions-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .loading:after {
+            content: '';
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid var(--light-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="welcome-section">
+            <div class="client-avatar">
+                👤
+            </div>
+            <div class="welcome-text">
+                <h2>Bun venit, <span th:text="${account.owner.fullName}">Ion Popescu</span>!</h2>
+                <span class="account-badge">Client din <span th:text="${#temporals.format(account.owner.registrationDate, 'yyyy')}">2024</span></span>
+            </div>
+        </div>
+
+        <div class="date-time">
+            <span>📅</span>
+            <span th:text="${#dates.format(#dates.createNow(), 'dd.MM.yyyy HH:mm')}">14.02.2026 15:30</span>
+        </div>
+    </div>
+
+    <!-- Mesaje -->
+    <div th:if="${success}" class="message success">
+        <p th:text="${success}">Operațiune realizată cu succes!</p>
+    </div>
+
+    <div th:if="${error}" class="message error">
+        <p th:text="${error}">A apărut o eroare!</p>
+    </div>
+
+    <!-- Card cont -->
+    <div class="account-card">
+        <div class="account-header">
+            <div class="account-title">
+                <h3>Cont principal</h3>
+                <span class="account-number" th:text="${account.accountNumber}">1234567890123456</span>
+            </div>
+            <div>
+                <span class="status-badge" th:classappend="${account.active} ? 'active' : 'inactive'"
+                      th:text="${account.active} ? 'Activ' : 'Inactiv'">Activ</span>
+            </div>
+        </div>
+
+        <!-- Solduri -->
+        <div class="balances-container">
+            <div class="balances-title">
+                <span>💰</span> Solduri disponibile
+            </div>
+            <table class="balances-table">
+                <thead>
+                <tr>
+                    <th>Monedă</th>
+                    <th>Sold</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="entry : ${account.allBalances}">
+                    <td>
+                            <span class="currency-badge" th:classappend="${entry.key.toString().toLowerCase()}"
+                                  th:text="${entry.key == 'MDL' ? '🇲🇩 MDL' :
+                                           (entry.key == 'EUR' ? '🇪🇺 EUR' :
+                                           (entry.key == 'USD' ? '🇺🇸 USD' : entry.key))}">
+                                MDL
+                            </span>
+                    </td>
+                    <td>
+                            <span class="amount positive" th:text="${#numbers.formatDecimal(entry.value, 0, 'COMMA', 2, 'POINT')} + ' ' + ${entry.key}">
+                                1,000.00 MDL
+                            </span>
+                    </td>
+                </tr>
+                <tr class="total-row">
+                    <td><strong>Total (MDL):</strong></td>
+                    <td><strong th:text="${#numbers.formatDecimal(account.totalBalanceInMDL, 0, 'COMMA', 2, 'POINT')} + ' MDL'">10,000.00 MDL</strong></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Grid acțiuni -->
+    <div class="actions-grid">
+        <a href="/web/client/deposit" class="action-card">
+            <span class="action-icon">➕</span>
+            <span class="action-title">Depunere</span>
+            <small style="color: #6c757d;">Adaugă bani</small>
+        </a>
+
+        <a href="/web/client/withdraw" class="action-card">
+            <span class="action-icon">➖</span>
+            <span class="action-title">Retragere</span>
+            <small style="color: #6c757d;">Extrage bani</small>
+        </a>
+
+        <a href="/web/client/exchange" class="action-card">
+            <span class="action-icon">💱</span>
+            <span class="action-title">Schimb Valutar</span>
+            <small style="color: #6c757d;">Conversie valută</small>
+        </a>
+
+        <a href="/web/client/transfer" class="action-card">
+            <span class="action-icon">🔄</span>
+            <span class="action-title">Transfer</span>
+            <small style="color: #6c757d;">Trimite bani</small>
+        </a>
+
+        <a href="/web/client/history" class="action-card">
+            <span class="action-icon">📜</span>
+            <span class="action-title">Istoric</span>
+            <small style="color: #6c757d;">Vezi tranzacțiile</small>
+        </a>
+    </div>
+
+    <!-- Secțiune tranzacții recente -->
+    <div class="transactions-section">
+        <div class="section-header">
+            <h3>
+                <span>📋</span> Ultimele tranzacții
+            </h3>
+            <button onclick="loadTransactions('1234567890123456', 5)" class="load-btn">
+                🔄 Încarcă tranzacțiile
+            </button>
+        </div>
+
+        <!-- Container tranzacții -->
+        <div id="transactions-container">
+            <table class="transactions-table" id="transactions-table">
+                <thead>
+                <tr>
+                    <th>Data/Ora</th>
+                    <th>Tip</th>
+                    <th>Sumă</th>
+                    <th>Monedă</th>
+                    <th>Descriere</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody id="transactions-body">
+                <tr>
+                    <td colspan="6" class="no-transactions">
+                        Apasă butonul pentru a încărca tranzacțiile
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--light-color);">
+        <small style="color: #6c757d;">
+            ⚠️ Pentru operațiuni sigure, deconectați-vă după utilizare
+        </small>
+        <a href="/web/logout" class="logout-btn">
+            🚪 Deconectare
+        </a>
+    </div>
+</div>
+
+<script>
+    function loadTransactions(accountNumber, limit) {
+        const tbody = document.getElementById('transactions-body');
+        tbody.innerHTML = '<tr><td colspan="6" class="loading">Se încarcă...</td></tr>';
+
+        // Simulare încărcare date
+        setTimeout(() => {
+            const transactions = [
+                {
+                    date: '14.02.2026 10:30',
+                    type: 'DEPOSIT',
+                    amount: 1000.00,
+                    currency: 'MDL',
+                    description: 'Depunere numerar',
+                    status: 'COMPLETED'
+                },
+                {
+                    date: '13.02.2026 15:45',
+                    type: 'TRANSFER',
+                    amount: 500.00,
+                    currency: 'MDL',
+                    description: 'Transfer către Ion Popescu',
+                    status: 'COMPLETED'
+                },
+                {
+                    date: '12.02.2026 09:20',
+                    type: 'WITHDRAWAL',
+                    amount: 200.00,
+                    currency: 'EUR',
+                    description: 'Retragere ATM',
+                    status: 'COMPLETED'
+                },
+                {
+                    date: '11.02.2026 14:10',
+                    type: 'EXCHANGE',
+                    amount: 1000.00,
+                    currency: 'MDL',
+                    description: 'Schimb valutar EUR',
+                    status: 'COMPLETED'
+                },
+                {
+                    date: '10.02.2026 11:30',
+                    type: 'PAYMENT',
+                    amount: 350.75,
+                    currency: 'MDL',
+                    description: 'Plată factură electricitate',
+                    status: 'COMPLETED'
+                }
+            ];
+
+            let html = '';
+            transactions.forEach(t => {
+                const typeClass = t.type === 'DEPOSIT' ? 'deposit' :
+                    (t.type === 'WITHDRAWAL' ? 'withdrawal' : 'transfer');
+                const typeIcon = t.type === 'DEPOSIT' ? '💰' :
+                    (t.type === 'WITHDRAWAL' ? '💸' : '🔄');
+                const amountClass = t.type === 'DEPOSIT' ? 'positive' :
+                    (t.type === 'WITHDRAWAL' ? 'negative' : '');
+
+                html += `<tr>
+                    <td>${t.date}</td>
+                    <td><span class="transaction-type ${typeClass}">${typeIcon} ${t.type}</span></td>
+                    <td><span class="amount ${amountClass}">${t.amount.toFixed(2)}</span></td>
+                    <td><span class="currency-badge ${t.currency.toLowerCase()}">${t.currency}</span></td>
+                    <td>${t.description}</td>
+                    <td><span class="status-badge small completed">✅ Finalizat</span></td>
+                </tr>`;
+            });
+
+            tbody.innerHTML = html;
+        }, 1000);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Încarcă automat ultimele tranzacții
+        setTimeout(() => {
+            loadTransactions('1234567890123456', 5);
+        }, 500);
+    });
+</script>
+</body>
+</html>

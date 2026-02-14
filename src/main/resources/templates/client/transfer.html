@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Transfer Bancar</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        /* Stiluri moderne pentru transfer bancar */
+        :root {
+            --primary-color: #007bff;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --dark-color: #2c3e50;
+            --light-color: #f8f9fa;
+            --border-radius: 15px;
+            --box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), #764ba2, var(--warning-color));
+        }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .title-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            background: var(--light-color);
+            color: var(--dark-color);
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 0.9em;
+            transition: var(--transition);
+        }
+
+        .back-link:hover {
+            background: #e9ecef;
+            transform: translateX(-3px);
+        }
+
+        .page-header h2 {
+            color: var(--dark-color);
+            font-size: 2em;
+            margin: 0;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .title-icon {
+            font-size: 2em;
+        }
+
+        /* Card informații cont */
+        .account-card {
+            background: linear-gradient(135deg, #667eea10, #764ba210);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .account-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary-color), #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            color: white;
+        }
+
+        .account-details {
+            flex: 1;
+        }
+
+        .account-number {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin-bottom: 5px;
+        }
+
+        .balance-preview {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+
+        /* Secțiuni formular */
+        .form-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            color: var(--dark-color);
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark-color);
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .form-group label i {
+            color: var(--primary-color);
+            margin-right: 5px;
+        }
+
+        /* Input container */
+        .input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #adb5bd;
+            font-size: 1.1em;
+        }
+
+        .input-container input,
+        .input-container select,
+        .input-container textarea {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: var(--transition);
+            background: white;
+        }
+
+        .input-container input:focus,
+        .input-container select:focus,
+        .input-container textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(0,123,255,0.1);
+        }
+
+        .input-container input:hover,
+        .input-container select:hover,
+        .input-container textarea:hover {
+            border-color: #adb5bd;
+        }
+
+        /* Cont destinație special */
+        .target-account-input {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+
+        /* Quick amounts */
+        .quick-amounts {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .quick-amount-btn {
+            flex: 1;
+            min-width: 60px;
+            padding: 8px 12px;
+            background: var(--light-color);
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: var(--dark-color);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .quick-amount-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Select valută */
+        .currency-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: var(--transition);
+            background: white;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+        }
+
+        /* Info box */
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid var(--primary-color);
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-box:before {
+            content: 'ℹ️';
+        }
+
+        /* Fee calculator */
+        .fee-calculator {
+            background: var(--light-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .fee-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .fee-row.total {
+            border-top: 1px solid #dee2e6;
+            margin-top: 8px;
+            padding-top: 8px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        /* Summary card */
+        .summary-card {
+            background: linear-gradient(135deg, #667eea10, #764ba210);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .summary-label {
+            color: #6c757d;
+        }
+
+        .summary-value {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .summary-value.highlight {
+            color: var(--primary-color);
+            font-size: 1.2em;
+        }
+
+        /* Butoane */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 150px;
+            padding: 14px 25px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #0056b3);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,123,255,0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-3px);
+        }
+
+        /* Validare */
+        .validation-message {
+            font-size: 0.85em;
+            margin-top: 5px;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .validation-message.invalid {
+            color: var(--danger-color);
+        }
+
+        .validation-message.valid {
+            color: var(--success-color);
+        }
+
+        /* Loading state */
+        .btn.loading {
+            position: relative;
+            color: transparent;
+        }
+
+        .btn.loading:after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 3px solid white;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .account-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .quick-amounts {
+                justify-content: center;
+            }
+        }
+
+        /* Animații */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-section {
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        .form-section:nth-child(1) { animation-delay: 0.1s; }
+        .form-section:nth-child(2) { animation-delay: 0.2s; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="title-section">
+            <a href="/web/client/dashboard" class="back-link">
+                ← Înapoi
+            </a>
+            <span class="title-icon">🔄</span>
+            <h2>Transfer Bancar</h2>
+        </div>
+    </div>
+
+    <!-- Card informații cont sursă -->
+    <div class="account-card">
+        <div class="account-icon">💳</div>
+        <div class="account-details">
+            <div class="account-number" th:text="${session.accountNumber}">MD1234567890123456</div>
+            <div class="balance-preview">
+                <span>🇲🇩 5,250.00</span>
+                <span>🇪🇺 1,200.00</span>
+                <span>🇺🇸 800.00</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formular transfer -->
+    <form th:action="@{/web/client/transfer}" method="post" id="transferForm">
+
+        <!-- Secțiune Destinație -->
+        <div class="form-section">
+            <div class="section-title">
+                <span>📍</span> Date Destinație
+            </div>
+
+            <div class="form-group">
+                <label for="targetAccount">
+                    <i>🏦</i> Cont Destinație:
+                </label>
+                <div class="input-container">
+                    <span class="input-icon">🔢</span>
+                    <input type="text" id="targetAccount" name="targetAccount"
+                           pattern="[0-9]{16}"
+                           maxlength="16"
+                           class="target-account-input"
+                           placeholder="1234567890123456"
+                           title="16 cifre"
+                           required>
+                </div>
+                <div class="validation-message">
+                    <i>ℹ️</i> Introduceți numărul contului destinatar (16 cifre)
+                </div>
+            </div>
+        </div>
+
+        <!-- Secțiune Sumă și Monedă -->
+        <div class="form-section">
+            <div class="section-title">
+                <span>💰</span> Detalii Transfer
+            </div>
+
+            <div class="form-group">
+                <label for="amount">Suma:</label>
+                <div class="input-container">
+                    <span class="input-icon">💵</span>
+                    <input type="number" id="amount" name="amount"
+                           step="0.01" min="0.01"
+                           placeholder="0.00"
+                           required>
+                </div>
+
+                <!-- Butoane sume rapide -->
+                <div class="quick-amounts">
+                    <button type="button" class="quick-amount-btn" onclick="setAmount(100)">100</button>
+                    <button type="button" class="quick-amount-btn" onclick="setAmount(200)">200</button>
+                    <button type="button" class="quick-amount-btn" onclick="setAmount(500)">500</button>
+                    <button type="button" class="quick-amount-btn" onclick="setAmount(1000)">1,000</button>
+                    <button type="button" class="quick-amount-btn" onclick="setAmount(5000)">5,000</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="currency">Moneda:</label>
+                <div class="input-container">
+                    <span class="input-icon">💱</span>
+                    <select id="currency" name="currencyCode" class="currency-select">
+                        <option value="MDL">🇲🇩 MDL - Leu Moldovenesc</option>
+                        <option value="EUR">🇪🇺 EUR - Euro</option>
+                        <option value="USD">🇺🇸 USD - Dolar American</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Descriere (opțional):</label>
+                <div class="input-container">
+                    <span class="input-icon">📝</span>
+                    <input type="text" id="description" name="description"
+                           placeholder="Ex: Rambursare împrumut, Plată factură, etc.">
+                </div>
+                <div class="validation-message">
+                    <i>ℹ️</i> Puteți adăuga o descriere pentru acest transfer
+                </div>
+            </div>
+        </div>
+
+        <!-- Calculator comision -->
+        <div class="fee-calculator">
+            <div class="fee-row">
+                <span>Suma transferată:</span>
+                <span id="transferAmount">0.00 MDL</span>
+            </div>
+            <div class="fee-row">
+                <span>Comision (0.5%):</span>
+                <span id="feeAmount">0.00 MDL</span>
+            </div>
+            <div class="fee-row total">
+                <span>Total de debitat:</span>
+                <span id="totalAmount">0.00 MDL</span>
+            </div>
+        </div>
+
+        <!-- Sumar transfer -->
+        <div class="summary-card">
+            <div class="summary-row">
+                <span class="summary-label">Cont destinatar:</span>
+                <span class="summary-value" id="previewAccount">-</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Suma netă primită:</span>
+                <span class="summary-value highlight" id="previewNetAmount">0.00 MDL</span>
+            </div>
+        </div>
+
+        <!-- Info box -->
+        <div class="info-box">
+            <span>Transferurile se procesează în maxim 24h. Comision: 0.5% din sumă.</span>
+        </div>
+
+        <!-- Butoane -->
+        <div class="button-group">
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+                🔄 Transferă
+            </button>
+            <a href="/web/client/dashboard" class="btn btn-secondary">
+                ✖ Anulează
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const amountInput = document.getElementById('amount');
+        const currencySelect = document.getElementById('currency');
+        const targetAccount = document.getElementById('targetAccount');
+        const submitBtn = document.getElementById('submitBtn');
+        const form = document.getElementById('transferForm');
+
+        // Elemente pentru preview
+        const transferAmount = document.getElementById('transferAmount');
+        const feeAmount = document.getElementById('feeAmount');
+        const totalAmount = document.getElementById('totalAmount');
+        const previewNetAmount = document.getElementById('previewNetAmount');
+        const previewAccount = document.getElementById('previewAccount');
+
+        // Comision fix 0.5%
+        const FEE_PERCENTAGE = 0.5;
+
+        // Funcție actualizare calculator
+        function updateCalculator() {
+            const amount = parseFloat(amountInput.value) || 0;
+            const currency = currencySelect.value;
+            const fee = amount * (FEE_PERCENTAGE / 100);
+            const total = amount + fee;
+
+            transferAmount.textContent = `${amount.toFixed(2)} ${currency}`;
+            feeAmount.textContent = `${fee.toFixed(2)} ${currency}`;
+            totalAmount.textContent = `${total.toFixed(2)} ${currency}`;
+            previewNetAmount.textContent = `${amount.toFixed(2)} ${currency}`;
+        }
+
+        // Actualizare preview cont
+        function updateAccountPreview() {
+            const account = targetAccount.value;
+            if (account && account.length === 16) {
+                previewAccount.textContent = account.replace(/(.{4})/g, '$1 ').trim();
+                previewAccount.style.color = '#28a745';
+            } else {
+                previewAccount.textContent = '-';
+                previewAccount.style.color = '';
+            }
+        }
+
+        // Evenimente
+        amountInput.addEventListener('input', updateCalculator);
+        currencySelect.addEventListener('change', updateCalculator);
+        targetAccount.addEventListener('input', updateAccountPreview);
+
+        // Formatare număr cont în timp real
+        targetAccount.addEventListener('input', function(e) {
+            let value = this.value.replace(/\D/g, '');
+            if (value.length > 16) value = value.substr(0, 16);
+            this.value = value;
+        });
+
+        // Validare formular
+        form.addEventListener('submit', function(e) {
+            const amount = parseFloat(amountInput.value);
+            const account = targetAccount.value;
+
+            if (account.length !== 16) {
+                e.preventDefault();
+                alert('Numărul contului destinatar trebuie să aibă exact 16 cifre!');
+                targetAccount.focus();
+                return;
+            }
+
+            if (amount <= 0) {
+                e.preventDefault();
+                alert('Suma trebuie să fie mai mare decât 0!');
+                amountInput.focus();
+                return;
+            }
+
+            if (amount > 50000) {
+                if (!confirm('Atenție! Suma depășește 50,000 MDL/EUR/USD. Continuați?')) {
+                    e.preventDefault();
+                    return;
+                }
+            }
+
+            // Confirmare finală
+            const total = amount + (amount * (FEE_PERCENTAGE / 100));
+            if (!confirm(`Confirmați transferul sumei de ${amount.toFixed(2)} ${currencySelect.value} către contul ${account}?\nTotal de debitat: ${total.toFixed(2)} ${currencySelect.value}`)) {
+                e.preventDefault();
+                return;
+            }
+
+            // Arată loading
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+        });
+
+        // Inițializare
+        updateCalculator();
+    });
+
+    // Funcție setare sumă rapidă
+    function setAmount(amount) {
+        const amountInput = document.getElementById('amount');
+        amountInput.value = amount;
+        amountInput.dispatchEvent(new Event('input'));
+
+        // Evidențiere temporară
+        amountInput.style.borderColor = '#28a745';
+        setTimeout(() => {
+            amountInput.style.borderColor = '#e9ecef';
+        }, 500);
+    }
+</script>
+</body>
+</html>

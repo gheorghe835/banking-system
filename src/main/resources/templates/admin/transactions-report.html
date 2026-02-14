@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Raport Tranzacții</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="/js/app.js"></script>
+    <style>
+        /* Stiluri moderne pentru raport tranzacții */
+        :root {
+            --primary-color: #007bff;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --dark-color: #2c3e50;
+            --light-color: #f8f9fa;
+            --border-radius: 15px;
+            --box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), #764ba2, var(--success-color));
+        }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .title-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            background: var(--light-color);
+            color: var(--dark-color);
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 0.9em;
+            transition: var(--transition);
+        }
+
+        .back-link:hover {
+            background: #e9ecef;
+            transform: translateX(-3px);
+        }
+
+        .page-header h2 {
+            color: var(--dark-color);
+            font-size: 2em;
+            margin: 0;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .title-icon {
+            font-size: 2em;
+        }
+
+        /* Secțiune filtre */
+        .filters-section {
+            background: linear-gradient(135deg, #667eea10, #764ba210);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .filters-section h3 {
+            margin: 0 0 20px 0;
+            color: var(--dark-color);
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filters-section h3:before {
+            content: '🔍';
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            position: relative;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark-color);
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: var(--transition);
+            background: white;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(0,123,255,0.1);
+        }
+
+        .filter-group input:hover,
+        .filter-group select:hover {
+            border-color: #adb5bd;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        /* Statistici */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        .stat-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), #764ba2);
+        }
+
+        .stat-icon {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+
+        .stat-card h3 {
+            color: #6c757d;
+            font-size: 0.95em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0 0 10px 0;
+        }
+
+        .stat-value {
+            font-size: 2.2em;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+
+        /* Tabel tranzacții */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            margin: 20px 0;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, var(--dark-color), #34495e);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h3 {
+            margin: 0;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .export-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .export-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--light-color);
+        }
+
+        th {
+            padding: 15px 20px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--dark-color);
+            font-size: 0.95em;
+            white-space: nowrap;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #ecf0f1;
+            transition: background-color 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        td {
+            padding: 15px 20px;
+            color: var(--dark-color);
+            vertical-align: middle;
+        }
+
+        /* Badge-uri pentru tip tranzacție */
+        .transaction-type {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .transaction-type.transfer {
+            background: #e3f2fd;
+            color: #007bff;
+        }
+
+        .transaction-type.deposit {
+            background: #d4edda;
+            color: #28a745;
+        }
+
+        .transaction-type.withdrawal {
+            background: #fff3e0;
+            color: #fd7e14;
+        }
+
+        .transaction-type.payment {
+            background: #f8d7da;
+            color: #dc3545;
+        }
+
+        /* Status badge */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-align: center;
+            min-width: 90px;
+        }
+
+        .status-badge.completed {
+            background: #d4edda;
+            color: #28a745;
+        }
+
+        .status-badge.completed:before {
+            content: '✅ ';
+        }
+
+        .status-badge.pending {
+            background: #fff3e0;
+            color: #fd7e14;
+        }
+
+        .status-badge.pending:before {
+            content: '⏳ ';
+        }
+
+        .status-badge.failed {
+            background: #f8d7da;
+            color: #dc3545;
+        }
+
+        .status-badge.failed:before {
+            content: '❌ ';
+        }
+
+        /* Suma */
+        .amount {
+            font-weight: 600;
+        }
+
+        .amount.positive {
+            color: #28a745;
+        }
+
+        .amount.negative {
+            color: #dc3545;
+        }
+
+        /* ID tranzacție */
+        .transaction-id {
+            font-family: 'Courier New', monospace;
+            background: var(--light-color);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        /* Conturi */
+        .account-number {
+            font-family: 'Courier New', monospace;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        /* Mesaj când nu sunt tranzacții */
+        .no-transactions {
+            text-align: center;
+            padding: 60px;
+            background: var(--light-color);
+            border-radius: 12px;
+            color: #6c757d;
+        }
+
+        .no-transactions:before {
+            content: '📭';
+            display: block;
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+
+        /* Butoane */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1em;
+            font-weight: 600;
+            transition: var(--transition);
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #0056b3);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,123,255,0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn-reset {
+            background: var(--light-color);
+            color: var(--dark-color);
+        }
+
+        .btn-reset:hover {
+            background: #e9ecef;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .container {
+                padding: 20px;
+            }
+
+            .table-container {
+                overflow-x: auto;
+            }
+
+            table {
+                min-width: 1200px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animații */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        tbody tr {
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        /* Tooltip */
+        [data-tooltip] {
+            position: relative;
+            cursor: help;
+        }
+
+        [data-tooltip]:before {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 1000;
+        }
+
+        [data-tooltip]:hover:before {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="title-section">
+            <a href="/web/admin/management" class="back-link">
+                ← Înapoi
+            </a>
+            <span class="title-icon">📈</span>
+            <h2>Raport Tranzacții</h2>
+        </div>
+
+        <!-- Perioada selectată -->
+        <div class="stat-pill" th:if="${startDate != null and endDate != null}">
+            📅 <span th:text="${#temporals.format(startDate, 'dd.MM.yyyy')} + ' - ' + ${#temporals.format(endDate, 'dd.MM.yyyy')}">01.01.2026 - 31.01.2026</span>
+        </div>
+    </div>
+
+    <!-- Secțiune filtre -->
+    <div class="filters-section">
+        <h3>Filtre căutare</h3>
+        <form th:action="@{/web/admin/reports/transactions}" method="get" id="filterForm">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label for="startDate">📅 Data început:</label>
+                    <input type="date" id="startDate" name="startDate"
+                           th:value="${#temporals.format(startDate, 'yyyy-MM-dd')}"
+                           th:max="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}">
+                </div>
+
+                <div class="filter-group">
+                    <label for="endDate">📅 Data sfârșit:</label>
+                    <input type="date" id="endDate" name="endDate"
+                           th:value="${#temporals.format(endDate, 'yyyy-MM-dd')}"
+                           th:max="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}">
+                </div>
+
+                <div class="filter-group">
+                    <label for="accountNumber">💳 Număr cont:</label>
+                    <input type="text" id="accountNumber" name="accountNumber"
+                           th:value="${accountNumber}"
+                           placeholder="Toate conturile"
+                           pattern="[0-9]{16}">
+                    <small style="color: #6c757d; font-size: 0.8em;">16 cifre, opțional</small>
+                </div>
+
+                <div class="filter-group">
+                    <label for="transactionType">📊 Tip tranzacție:</label>
+                    <select id="transactionType" name="type">
+                        <option value="">Toate tipurile</option>
+                        <option value="TRANSFER">Transfer</option>
+                        <option value="DEPOSIT">Depunere</option>
+                        <option value="WITHDRAWAL">Retragere</option>
+                        <option value="PAYMENT">Plată</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    🔍 Aplică filtrele
+                </button>
+                <a href="/web/admin/reports/transactions" class="btn btn-reset">
+                    🗑️ Resetează filtrele
+                </a>
+                <a href="/web/admin/management" class="btn btn-secondary">
+                    ← Panou administrare
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Statistici -->
+    <div class="stats-grid" th:if="${totalAmount != null}">
+        <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <h3>Total Tranzacții</h3>
+            <div class="stat-value" th:text="${totalCount}">0</div>
+            <div class="stat-label">tranzacții în perioadă</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <h3>Suma Totală</h3>
+            <div class="stat-value" th:text="${#numbers.formatDecimal(totalAmount, 0, 'COMMA', 2, 'POINT')} + ' MDL'">0.00 MDL</div>
+            <div class="stat-label">valoare totală</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <h3>Media/zi</h3>
+            <div class="stat-value" th:text="${#numbers.formatDecimal(totalAmount div (totalCount > 0 ? totalCount : 1), 0, 'COMMA', 2, 'POINT')} + ' MDL'">0.00 MDL</div>
+            <div class="stat-label">valoare medie</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">⏱️</div>
+            <h3>Perioada</h3>
+            <div class="stat-value" th:text="${#temporals.format(startDate, 'dd.MM')} + ' - ' + ${#temporals.format(endDate, 'dd.MM')}">01.01 - 31.01</div>
+            <div class="stat-label" th:text="${totalDays} + ' zile'">30 zile</div>
+        </div>
+    </div>
+
+    <!-- Lista tranzacții -->
+    <div class="table-container">
+        <div class="table-header">
+            <h3>📋 Lista Tranzacții</h3>
+            <button class="export-btn" onclick="exportToCSV()" data-tooltip="Exportă în CSV">
+                📥 Exportă
+            </button>
+        </div>
+
+        <table id="transactionsTable">
+            <thead>
+            <tr>
+                <th>ID Tranzacție</th>
+                <th>Data/Ora</th>
+                <th>Cont Sursă</th>
+                <th>Cont Destinație</th>
+                <th>Tip</th>
+                <th>Sumă</th>
+                <th>Monedă</th>
+                <th>Descriere</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="t : ${transactions}" th:unless="${#lists.isEmpty(transactions)}">
+                <td>
+                    <span class="transaction-id" th:text="${t.transactionId}">TRX001</span>
+                </td>
+                <td>
+                    <span th:text="${#temporals.format(t.timestamp, 'dd.MM.yyyy HH:mm')}">14.02.2026 15:30</span>
+                </td>
+                <td>
+                    <span class="account-number" th:text="${t.sourceAccountNumber} ?: '-'">1234567890123456</span>
+                </td>
+                <td>
+                    <span class="account-number" th:text="${t.targetAccountNumber} ?: '-'">6543210987654321</span>
+                </td>
+                <td>
+                    <span class="transaction-type"
+                          th:classappend="${t.type == 'TRANSFER' ? 'transfer' :
+                                          (t.type == 'DEPOSIT' ? 'deposit' :
+                                          (t.type == 'WITHDRAWAL' ? 'withdrawal' : 'payment'))}"
+                          th:text="${t.type == 'TRANSFER' ? '↔️ Transfer' :
+                                    (t.type == 'DEPOSIT' ? '💰 Depunere' :
+                                    (t.type == 'WITHDRAWAL' ? '💸 Retragere' : '💳 Plată'))}">
+                        Transfer
+                    </span>
+                </td>
+                <td>
+                    <span class="amount"
+                          th:classappend="${t.type == 'DEPOSIT' ? 'positive' :
+                                          (t.type == 'WITHDRAWAL' ? 'negative' : '')}"
+                          th:text="${#numbers.formatDecimal(t.amount, 0, 'COMMA', 2, 'POINT')}">
+                        1,000.00
+                    </span>
+                </td>
+                <td>
+                    <span class="currency-badge" th:classappend="${t.currency.toString().toLowerCase()}"
+                          th:text="${t.currency}">
+                        MDL
+                    </span>
+                </td>
+                <td>
+                    <span th:text="${t.description} ?: '-'" style="max-width: 200px; display: inline-block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        Descriere tranzacție
+                    </span>
+                </td>
+                <td>
+                    <span class="status-badge"
+                          th:classappend="${t.status.name() == 'COMPLETED'} ? 'completed' :
+                                          (${t.status.name() == 'FAILED'} ? 'failed' : 'pending')"
+                          th:text="${t.status.name() == 'COMPLETED' ? 'Finalizat' :
+                                    (t.status.name() == 'FAILED' ? 'Eșuat' : 'În procesare')}">
+                        Finalizat
+                    </span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- Mesaj când nu sunt tranzacții -->
+        <div th:if="${transactions.empty}" class="no-transactions">
+            <p>Nu există tranzacții în perioada selectată.</p>
+            <p style="font-size: 0.9em;">Încercați să modificați filtrele de căutare.</p>
+        </div>
+    </div>
+
+    <!-- Footer cu informații -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; color: #6c757d; font-size: 0.9em;">
+        <span>🕒 Ultima actualizare: <span th:text="${#dates.format(#dates.createNow(), 'dd.MM.yyyy HH:mm:ss')}">14.02.2026 15:30:45</span></span>
+        <span>📊 Total afișat: <span th:text="${#lists.size(transactions)} + ' tranzacții'">0 tranzacții</span></span>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Validare date
+        const form = document.getElementById('filterForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const startDate = document.getElementById('startDate').value;
+                const endDate = document.getElementById('endDate').value;
+
+                if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+                    e.preventDefault();
+                    alert('Data de început nu poate fi mai mare decât data de sfârșit!');
+                }
+            });
+        }
+
+        // Tooltip-uri
+        const tooltips = document.querySelectorAll('[data-tooltip]');
+        tooltips.forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                el.style.position = 'relative';
+            });
+        });
+
+        // Formatare numere în tabel
+        formatTableNumbers();
+    });
+
+    function exportToCSV() {
+        const table = document.getElementById('transactionsTable');
+        const rows = table.querySelectorAll('tr');
+        const csv = [];
+
+        // Headers
+        const headers = [];
+        table.querySelectorAll('thead th').forEach(th => {
+            headers.push(th.textContent);
+        });
+        csv.push(headers.join(','));
+
+        // Data
+        rows.forEach(row => {
+            if (row.parentElement.tagName === 'TBODY') {
+                const cells = row.querySelectorAll('td');
+                const rowData = [];
+                cells.forEach(cell => {
+                    // Elimină HTML și ia textul
+                    let text = cell.textContent.trim().replace(/,/g, ';');
+                    rowData.push(`"${text}"`);
+                });
+                csv.push(rowData.join(','));
+            }
+        });
+
+        // Download
+        const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `tranzactii_${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+    }
+
+    function formatTableNumbers() {
+        // Formatare numere cu separator de mii
+        const amountCells = document.querySelectorAll('.amount');
+        amountCells.forEach(cell => {
+            let text = cell.textContent;
+            if (text && !isNaN(text.replace(',', '.'))) {
+                // Deja formatat în Thymeleaf
+            }
+        });
+    }
+</script>
+</body>
+</html>

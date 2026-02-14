@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista Clienți</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="/js/app.js"></script>
+    <style>
+        /* Stiluri moderne pentru lista de clienți */
+        :root {
+            --primary-color: #007bff;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --dark-color: #2c3e50;
+            --light-color: #f8f9fa;
+            --border-radius: 15px;
+            --box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), #764ba2, var(--success-color));
+        }
+
+        /* Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .title-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .title-section h2 {
+            color: var(--dark-color);
+            font-size: 2.2em;
+            margin: 0;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .title-icon {
+            font-size: 2em;
+        }
+
+        /* Statistici */
+        .stats-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-badge {
+            background: var(--light-color);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .stat-badge.total {
+            background: #e3f2fd;
+            color: var(--primary-color);
+        }
+
+        .stat-badge.active {
+            background: #d4edda;
+            color: var(--success-color);
+        }
+
+        .stat-badge.inactive {
+            background: #f8d7da;
+            color: var(--danger-color);
+        }
+
+        /* Bara de acțiuni */
+        .actions-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--light-color);
+            padding: 15px 20px;
+            border-radius: 12px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #0056b3);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .btn-back {
+            background: white;
+            color: var(--dark-color);
+            border: 2px solid #e9ecef;
+        }
+
+        .btn-back:hover {
+            background: var(--light-color);
+            transform: translateX(-5px);
+        }
+
+        /* Căutare și filtre */
+        .search-section {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .search-box {
+            flex: 1;
+            position: relative;
+            min-width: 250px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border: 2px solid #e9ecef;
+            border-radius: 50px;
+            font-size: 0.95em;
+            transition: var(--transition);
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
+        .search-box:before {
+            content: '🔍';
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #adb5bd;
+            font-size: 1.1em;
+        }
+
+        .filter-select {
+            padding: 10px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 50px;
+            font-size: 0.95em;
+            background: white;
+            cursor: pointer;
+            min-width: 140px;
+        }
+
+        .filter-select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        /* Mesaje */
+        .message {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border-left: 4px solid var(--success-color);
+            color: #155724;
+        }
+
+        .success:before {
+            content: '✅';
+            font-size: 1.2em;
+        }
+
+        .error {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border-left: 4px solid var(--danger-color);
+            color: #721c24;
+        }
+
+        .error:before {
+            content: '⚠️';
+            font-size: 1.2em;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Tabel */
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            margin: 25px 0;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--dark-color), #34495e);
+            color: white;
+        }
+
+        th {
+            padding: 15px 20px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.95em;
+            white-space: nowrap;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #ecf0f1;
+            transition: background-color 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        td {
+            padding: 15px 20px;
+            color: var(--dark-color);
+            vertical-align: middle;
+        }
+
+        /* ID badge */
+        .id-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #e3f2fd;
+            color: var(--primary-color);
+            border-radius: 50px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        /* Status badge */
+        .status-badge {
+            display: inline-block;
+            padding: 6px 15px;
+            border-radius: 50px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .status-badge.active {
+            background: #d4edda;
+            color: var(--success-color);
+        }
+
+        .status-badge.active:before {
+            content: '✅ ';
+        }
+
+        .status-badge.inactive {
+            background: #f8d7da;
+            color: var(--danger-color);
+        }
+
+        .status-badge.inactive:before {
+            content: '❌ ';
+        }
+
+        /* Butoane acțiune */
+        .action-cell {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn-small {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.85em;
+            font-weight: 500;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .btn-view {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .btn-edit {
+            background: #fd7e14;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #e06b0e;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: var(--dark-color);
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        /* Email și telefon */
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .contact-email {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 0.95em;
+        }
+
+        .contact-email:hover {
+            text-decoration: underline;
+        }
+
+        .contact-phone {
+            color: #6c757d;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Mesaj când nu sunt clienți */
+        .no-customers {
+            text-align: center;
+            padding: 60px;
+            background: var(--light-color);
+            border-radius: 12px;
+            color: #6c757d;
+        }
+
+        .no-customers:before {
+            content: '👥';
+            display: block;
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+
+        /* Paginare */
+        .pagination {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+
+        .page-item {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: white;
+            border: 1px solid #e9ecef;
+            color: var(--dark-color);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .page-item:hover {
+            background: var(--light-color);
+            transform: translateY(-2px);
+        }
+
+        .page-item.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .container {
+                padding: 20px;
+            }
+
+            .actions-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-section {
+                max-width: 100%;
+            }
+
+            .search-box {
+                min-width: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stats-container {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .table-container {
+                overflow-x: auto;
+            }
+
+            table {
+                min-width: 800px;
+            }
+
+            .action-cell {
+                flex-direction: column;
+            }
+
+            .btn-small {
+                text-align: center;
+                justify-content: center;
+            }
+        }
+
+        /* Animații */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        tbody tr {
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        tbody tr:nth-child(1) { animation-delay: 0.05s; }
+        tbody tr:nth-child(2) { animation-delay: 0.1s; }
+        tbody tr:nth-child(3) { animation-delay: 0.15s; }
+        tbody tr:nth-child(4) { animation-delay: 0.2s; }
+        tbody tr:nth-child(5) { animation-delay: 0.25s; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="title-section">
+            <span class="title-icon">👥</span>
+            <h2>Lista Clienți</h2>
+        </div>
+
+        <!-- Statistici -->
+        <div class="stats-container" th:if="${customers != null}">
+            <div class="stat-badge total">
+                📊 Total: <span th:text="${#lists.size(customers)}">0</span>
+            </div>
+            <div class="stat-badge active">
+                ✅ Activi: <span th:text="${#lists.size(customers.?[active == true])}">0</span>
+            </div>
+            <div class="stat-badge inactive">
+                ❌ Inactivi: <span th:text="${#lists.size(customers.?[active == false])}">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mesaje -->
+    <div th:if="${success}" class="message success">
+        <p th:text="${success}"></p>
+    </div>
+
+    <div th:if="${error}" class="message error">
+        <p th:text="${error}"></p>
+    </div>
+
+    <!-- Bara de acțiuni -->
+    <div class="actions-bar">
+        <div class="action-buttons">
+            <a href="/web/admin/customers/create" class="btn btn-primary">
+                ➕ Adaugă Client Nou
+            </a>
+            <a href="/web/admin/management" class="btn btn-back">
+                ← Înapoi la Panou
+            </a>
+        </div>
+
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Caută după nume, email sau telefon...">
+            </div>
+            <select class="filter-select" id="statusFilter">
+                <option value="all">Toți clienții</option>
+                <option value="active">Activi</option>
+                <option value="inactive">Inactivi</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Tabel -->
+    <div class="table-container">
+        <table id="customersTable">
+            <thead>
+            <tr>
+                <th>ID Client</th>
+                <th>Nume</th>
+                <th>Email / Telefon</th>
+                <th>Status</th>
+                <th>Acțiuni</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="customer : ${customers}"
+                th:attr="data-status=${customer.active ? 'active' : 'inactive'}">
+                <td>
+                    <span class="id-badge" th:text="${customer.customerId}">CUST001</span>
+                </td>
+                <td>
+                    <strong th:text="${customer.fullName}">Ion Popescu</strong>
+                </td>
+                <td>
+                    <div class="contact-info">
+                        <a th:href="'mailto:' + ${customer.email}"
+                           class="contact-email"
+                           th:text="${customer.email}">
+                            ion.popescu@email.com
+                        </a>
+                        <span class="contact-phone">
+                            📞 <span th:text="${customer.phoneNumber}">+37369123456</span>
+                        </span>
+                    </div>
+                </td>
+                <td>
+                    <span class="status-badge"
+                          th:classappend="${customer.active} ? 'active' : 'inactive'"
+                          th:text="${customer.active} ? 'Activ' : 'Inactiv'">
+                        Activ
+                    </span>
+                </td>
+                <td>
+                    <div class="action-cell">
+                        <!-- Buton Detalii -->
+                        <a th:href="@{/web/admin/customers/{id}(id=${customer.customerId})}"
+                           class="btn-small btn-view" title="Vezi detalii">
+                            🔍 Detalii
+                        </a>
+
+                        <!-- Buton Editare -->
+                        <a th:href="@{/web/admin/customers/edit/{id}(id=${customer.customerId})}"
+                           class="btn-small btn-edit" title="Editează client">
+                            ✏️ Editează
+                        </a>
+
+                        <!-- Buton Activare/Dezactivare -->
+                        <a th:href="@{/web/admin/customers/toggle/{id}(id=${customer.customerId})}"
+                           class="btn-small"
+                           th:classappend="${customer.active} ? 'btn-warning' : 'btn-success'"
+                           th:title="${customer.active} ? 'Dezactivează client' : 'Activează client'">
+                            <span th:text="${customer.active} ? '🔴 Dezactivează' : '🟢 Activează'"></span>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            <tr th:if="${customers == null or #lists.isEmpty(customers)}">
+                <td colspan="5" class="no-customers">
+                    Nu există clienți în sistem
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Informații export (opțional) -->
+    <div style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 15px;">
+        <small style="color: #6c757d;">
+            ⏱️ Ultima actualizare: <span th:text="${#dates.format(#dates.createNow(), 'dd.MM.yyyy HH:mm')}"></span>
+        </small>
+    </div>
+</div>
+
+<!-- Script pentru filtrare și căutare -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+        const table = document.getElementById('customersTable');
+        const rows = table ? table.querySelectorAll('tbody tr:not(:last-child)') : [];
+
+        function filterTable() {
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+            const selectedStatus = statusFilter ? statusFilter.value : 'all';
+
+            rows.forEach(row => {
+                const customerName = row.cells[1]?.textContent.toLowerCase() || '';
+                const customerEmail = row.cells[2]?.querySelector('.contact-email')?.textContent.toLowerCase() || '';
+                const customerPhone = row.cells[2]?.querySelector('.contact-phone')?.textContent.toLowerCase() || '';
+                const customerStatus = row.getAttribute('data-status');
+
+                const matchesSearch = customerName.includes(searchTerm) ||
+                    customerEmail.includes(searchTerm) ||
+                    customerPhone.includes(searchTerm);
+                const matchesStatus = selectedStatus === 'all' || customerStatus === selectedStatus;
+
+                if (matchesSearch && matchesStatus) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('input', filterTable);
+        }
+
+        if (statusFilter) {
+            statusFilter.addEventListener('change', filterTable);
+        }
+
+        // Animație pentru hover pe rânduri
+        rows.forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.01)';
+                this.style.transition = 'transform 0.2s ease';
+            });
+
+            row.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+
+        // Confirmare pentru activare/dezactivare
+        const toggleButtons = document.querySelectorAll('a[href*="toggle"]');
+        toggleButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                const action = this.textContent.includes('Dezactivează') ? 'dezactiva' : 'activa';
+                if (!confirm(`Sunteți sigur că doriți să ${action}ți acest client?`)) {
+                    e.preventDefault();
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

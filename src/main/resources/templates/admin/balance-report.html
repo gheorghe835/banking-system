@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Raport Solduri</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="container">
+    <h2>Raport Solduri Bancare</h2>
+
+    <div class="stats">
+        <div class="stat-card">
+            <h3>Total Conturi</h3>
+            <p th:text="${totalAccounts}">0</p>
+        </div>
+        <div class="stat-card">
+            <h3>Conturi Active</h3>
+            <p th:text="${activeAccounts}">0</p>
+        </div>
+        <div class="stat-card">
+            <h3>Conturi Inactive</h3>
+            <p th:text="${totalAccounts - activeAccounts}">0</p>
+        </div>
+    </div>
+
+    <div class="stat-card large">
+        <h3>Sold Total Bancă</h3>
+        <p class="big-number" th:text="${totalBalance} + ' MDL'">0 MDL</p>
+    </div>
+
+    <h3>Solduri pe Valute</h3>
+    <table>
+        <thead>
+        <tr>
+            <th>Monedă</th>
+            <th>Sold Total</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="entry : ${balancePerCurrency}">
+            <td th:text="${entry.key}"></td>
+            <td th:text="${entry.value} + ' ' + ${entry.key}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <<a th:href="@{/web/admin/management(user=${param.user})}" class="btn-secondary">Înapoi</a>
+</div>
+</body>
+</html>

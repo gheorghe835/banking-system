@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Banca Comercială</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<header class="main-header">
+    <div class="header-left">
+        <h1>🏦 Banca Comercială</h1>
+        <p class="bank-description">
+            Banca Comercială este partenerul tău de încredere
+            în gestionarea finanțelor personale și ale afacerii tale.
+            Cu o experiență de peste 20 de ani în domeniul bancar,
+            oferim soluții personalizate pentru toate nevoile tale financiare.        </p>
+    </div>
+
+    <div class="header-right">
+        <div class="date-time">
+            <span id="date"></span>
+            <span id="time"></span>
+        </div>
+
+        <div class="auth-buttons">
+            <a th:href="@{/web/login}" class="btn login-btn">
+                Autentificare Client
+            </a>
+
+            <a th:href="@{/web/login(manager=true)}" class="btn register-btn">
+                Autentificare Manager
+            </a>
+        </div>
+    </div>
+</header>
+
+
+<section class="advertisement">
+    <h2>Ofertă Specială</h2>
+    <ul class="offers-list">
+        <li>✨ Cont curent cu 0 comisioane de administrare</li>
+        <li>💳 Card de credit cu cashback 5% la cumpărături</li>
+        <li>🏠 Credite ipotecare cu dobândă fixă pe 5 ani</li>
+        <li>📱 Aplicație mobile banking premium</li>
+        <li>💰 Depozite la termen cu dobândă promotională</li>
+    </ul>
+</section>
+
+
+<section class="exchange-rate">
+    <h2>Curs Valutar</h2>
+
+    <table class="modern-table exchange-table">
+        <thead>
+        <tr>
+            <th>Monedă</th>
+            <th>Curs (MDL)</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>EUR</td>
+            <td>19.75</td>
+        </tr>
+        <tr>
+            <td>USD</td>
+            <td>18.30</td>
+        </tr>
+        <tr>
+            <td>RON</td>
+            <td>4.05</td>
+        </tr>
+        <tr>
+            <td>GBP</td>
+            <td>23.10</td>
+        </tr>
+        </tbody>
+    </table>
+</section>
+
+
+<script>
+    function updateDateTime() {
+        const now = new Date();
+
+        const date = now.toLocaleDateString();
+        const time = now.toLocaleTimeString();
+
+        document.getElementById("date").innerText = date;
+        document.getElementById("time").innerText = time;
+    }
+
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+</script>
+
+</body>
+</html>

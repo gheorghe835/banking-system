@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Curs Valutar</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="/js/app.js"></script>
+</head>
+<body>
+<div class="container">
+    <h2>Curs Valutar</h2>
+
+    <div th:if="${success}" class="success">
+        <p th:text="${success}"></p>
+    </div>
+
+    <div th:if="${error}" class="error">
+        <p th:text="${error}"></p>
+    </div>
+
+    <div id="exchange-rates"></div>
+
+    <div class="admin-exchange-rates">
+        <h3>Actualizare Cursuri</h3>
+        <form th:action="@{/web/admin/exchange-rates/update}" method="post">
+
+            <input type="hidden" name="user" th:value="${param.user}" />
+
+            <table>
+                <tr>
+                    <th>Monedă</th>
+                    <th>Curs Curent (MDL)</th>
+                    <th>Curs Nou</th>
+                </tr>
+                <tr th:each="entry : ${rates}">
+                    <td th:text="${entry.key}"></td>
+                    <td th:text="${entry.value}"></td>
+                    <td>
+                        <input type="number"
+                               th:name="'rate' + ${entry.key}"
+                               step="0.01"
+                               min="0"
+                               th:placeholder="${entry.value}">
+                    </td>
+                </tr>
+            </table>
+
+            <button type="submit" class="btn">Actualizează Cursurile</button>
+            <a th:href="@{/web/admin/management(user=${param.user})}" class="btn-secondary">Înapoi</a>
+        </form>
+    </div>
+
+    <a href="/web/admin/management" class="btn-secondary">Înapoi</a>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.getElementById('exchange-rates')) {
+            loadExchangeRates();
+        }
+    });
+</script>
+</body>
+</html>
+

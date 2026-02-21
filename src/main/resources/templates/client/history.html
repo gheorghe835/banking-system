@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Istoric Tranzacții</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="container">
+    <h2>Istoric Tranzacții</h2>
+
+    <table class="transactions">
+        <thead>
+        <tr>
+            <th>Data</th>
+            <th>Tip</th>
+            <th>Sumă</th>
+            <th>Monedă</th>
+            <th>Descriere</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="t : ${transactions}">
+            <td th:text="${#temporals.format(t.timestamp, 'dd.MM.yyyy HH:mm')}"></td>
+            <td th:text="${t.type}"></td>
+            <td th:text="${t.amount}"></td>
+            <td th:text="${t.currency}"></td>
+            <td th:text="${t.description} ?: '-'"></td>
+            <td>
+        <span class="status-badge"
+              th:classappend="${t.status.name() == 'COMPLETED'} ? 'completed' : (${t.status.name() == 'FAILED'} ? 'failed' : 'pending')"
+              th:text="${t.status}"></span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <a th:href="@{/web/client/dashboard(account=${param.account})}" class="btn">Înapoi</a>
+</div>
+</body>
+</html>
+

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Autentificare</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="auth-body">
+
+<div class="auth-wrapper">
+
+    <div class="auth-card">
+
+        <div class="auth-header">
+            <h2 th:text="${manager} ? 'Autentificare Manager' : 'Autentificare Client'">
+                Autentificare
+            </h2>
+            <p class="auth-subtitle">
+                Introdu datele pentru a continua
+            </p>
+        </div>
+
+        <div th:if="${error}" class="modern-alert error-alert">
+            <span th:text="${error}"></span>
+        </div>
+
+        <form th:action="@{/web/login}" method="post" class="modern-form">
+
+            <input type="hidden" name="manager" th:value="${manager}">
+
+            <div class="form-group">
+                <label th:text="${manager} ? 'Utilizator' : 'Număr cont'"></label>
+                <input type="text" name="username" required>
+            </div>
+
+            <div class="form-group">
+                <label>Parolă</label>
+                <input type="password" name="password" required>
+            </div>
+
+            <button type="submit" class="btn btn-modern primary full-width">
+                Autentificare
+            </button>
+
+        </form>
+
+        <div class="auth-footer">
+            <a th:href="@{/web/}" class="back-link">
+                ← Înapoi la pagina principală
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

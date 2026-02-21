@@ -1,0 +1,368 @@
+package com.bank.domain.service;
+
+import com.bank.domain.exception.ValidationException;
+import com.bank.domain.model.Account;
+import com.bank.domain.model.Currency;
+import com.bank.domain.model.Customer;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.regex.Pattern;
+
+/**
+ * Serviciu pentru validarea datelor în sistemul bancar
+ */
+@Service
+public class ValidationService {
+
+    private static final Pattern ACCOUNT_NUMBER_PATTERN = Pattern.compile("^[0-9]{16}$");
+    private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d).{6,}$");
+    private static final Pattern EMAIL_PATTERN =  Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^\\+?[0-9]{9,15}$");
+    private static final Pattern IDENTITY_NUMBER_PATTERN = Pattern.compile("^[0-9]{13}$");
+
+    public static final int MIN_ACCOUNT_NUMBER_LENGTH = 16;
+    public static final int MAX_ACCOUNT_NUMBER_LENGTH = 16;
+    public static final int MIN_PASSWORD_LENGTH = 6;
+    public static final BigDecimal MIN_DEPOSIT_AMOUNT = BigDecimal.valueOf(1.0);
+    public static final BigDecimal MIN_WITHDRAWAL_AMOUNT = BigDecimal.valueOf(0.01);
+    public static final BigDecimal MIN_BALANCE = BigDecimal.valueOf(10.0);
+    public static final BigDecimal MIN_WITHDRAWAL_LIMIT = BigDecimal.valueOf(100.0);
+
+    /**
+     * Validează un număr de cont
+     */
+    //1
+    public void validateAccountNumber(String accountNumber) {
+        ValidationException exception = new ValidationException("Validare număr cont");
+
+        if (accountNumber == null || accountNumber.trim().isEmpty()) {
+            exception.addError("accountNumber", "Numărul contului este obligatoriu", accountNumber);
+        } else if (accountNumber.length() != MIN_ACCOUNT_NUMBER_LENGTH) {
+            exception.addError("accountNumber",
+                    String.format("Numărul contului trebuie să aibă %d cifre", MIN_ACCOUNT_NUMBER_LENGTH),
+                    accountNumber);
+        } else if (!ACCOUNT_NUMBER_PATTERN.matcher(accountNumber).matches()) {
+            exception.addError("accountNumber", "Numărul contului trebuie să conțină doar cifre", accountNumber);
+        }
+
+        if (exception.hasErrors()) {
+            throw exception;
+        }
+    }
+
+    public boolean isValidAccountNumber(String accountNumber) {
+        if (accountNumber == null || accountNumber.trim().isEmpty()) {
+            return false;
+        }
+        if (accountNumber.length() != 16) {
+            return false;
+        }
+        return ACCOUNT_NUMBER_PATTERN.matcher(accountNumber).matches();
+    }
+
+    /**
+     * Validează o parolă
+     */
+    //2
+    public void validatePassword(String password) {
+        ValidationException exception = new ValidationException("Validare parolă");
+
+        if (password == null || password.trim().isEmpty()) {
+            exception.addError("password", "Parola este obligatorie", password);
+        } else if (password.length() < MIN_PASSWORD_LENGTH) {
+            exception.addError("password",
+                    String.format("Parola trebuie să aibă minim %d caractere", MIN_PASSWORD_LENGTH),
+                    password);
+        } else if (!PASSWORD_PATTERN.matcher(password).matches()) {
+            exception.addError("password",
+                    "Parola trebuie să conțină atât litere cât și cifre",
+                    password);
+        }
+
+        if (exception.hasErrors()) {
+            throw exception;
+        }
+    }
+
+    public boolean isValidPassword(String password) {
+        System.out.println("🔍 Validare parolă executată pentru: " + password);
+
+        if (password == null || password.trim().isEmpty()) {
+            return false;
+        }
+        if (password.length() < MIN_PASSWORD_LENGTH) {
+            return false;
+        }
+        return PASSWORD_PATTERN.matcher(password).matches();
+    }
+
+    /**
+     * Validează un email
+     */
+    public void validateEmail(String email) throws ValidationException {
+        if (email == null || !EMAIL_PATTERN.matcher(email).matches()) {
+            throw ValidationException.withError("email", "Adresa de email este invalidă", email);
+        }
+    }
+
+    public boolean isValidEmail(String email) {
+        System.out.println("🔍 Validare email executată pentru: " + email);
+
+        if (email == null) return false;
+        return EMAIL_PATTERN.matcher(email).matches();
+    }
+
+    /**
+     * Validează un număr de telefon
+     */
+    public void validatePhoneNumber(String phoneNumber) throws ValidationException {
+        if (phoneNumber == null || !PHONE_PATTERN.matcher(phoneNumber).matches()) {
+            throw ValidationException.withError("phoneNumber", "Număr de telefon invalid", phoneNumber);
+        }
+    }
+
+    public boolean isValidPhoneNumber(String phoneNumber) {
+        System.out.println("🔍 Validare telefon executată pentru: " + phoneNumber);
+
+        if (phoneNumber == null) return false;
+        return PHONE_PATTERN.matcher(phoneNumber).matches();
+    }
+
+    /**
+     * Validează un număr de identitate (IDNP/CNP)
+     */
+    public void validateIdentityNumber(String identityNumber) throws ValidationException {
+        if (identityNumber == null || !IDENTITY_NUMBER_PATTERN.matcher(identityNumber).matches()) {
+            throw ValidationException.withError("identityNumber", "Număr de identitate invalid", identityNumber);
+        }
+    }
+
+    public boolean isValidIdentityNumber(String identityNumber) {
+        System.out.println("🔍 Validare IDNP executată pentru: " + identityNumber);
+
+        if (identityNumber == null) return false;
+        return IDENTITY_NUMBER_PATTERN.matcher(identityNumber).matches();
+    }
+
+    /**
+     * Validează data nașterii (trebuie să aibă minim 18 ani)
+     */
+    //3
+    public void validateBirthDate(LocalDate birthDate) {
+        if (birthDate == null) {
+            throw ValidationException.withError("birthDate", "Data nașterii este obligatorie", null);
+        }
+
+        LocalDate eighteenYearsAgo = LocalDate.now().minusYears(18);
+        System.out.println("18 ani în urmă: " + eighteenYearsAgo); // ← Adaugă log
+        System.out.println("Data nașterii: " + birthDate);
+        if (birthDate.isAfter(eighteenYearsAgo)) {
+            throw ValidationException.withError("birthDate",
+                    "Clientul trebuie să aibă minim 18 ani",
+                    birthDate);
+        }
+    }
+
+    public boolean isValidBirthDate(LocalDate birthDate) {
+        System.out.println("🔍 Validare dată naștere executată pentru: " + birthDate);
+
+        if (birthDate == null) return false;
+        LocalDate eighteenYearsAgo = LocalDate.now().minusYears(18);
+        return !birthDate.isAfter(eighteenYearsAgo);
+    }
+
+    /**
+     * Validează o sumă pentru depunere
+     */
+    public void validateDepositAmount(BigDecimal amount, Currency currency) throws ValidationException {
+        if (amount == null || amount.compareTo(MIN_DEPOSIT_AMOUNT) < 0) {
+            throw ValidationException.withError("amount",
+                    String.format("Suma minimă pentru depunere este %s %s",
+                            MIN_DEPOSIT_AMOUNT, currency),
+                    amount);
+        }
+    }
+
+    public boolean isValidDepositAmount(BigDecimal amount, Currency currency) {
+        System.out.println("🔍 Validare sumă depunere executată pentru: " + amount + " " + currency);
+
+        if (amount == null) return false;
+        return amount.compareTo(MIN_DEPOSIT_AMOUNT) >= 0;
+    }
+
+    /**
+     * Validează o sumă pentru retragere
+     */
+    public void validateWithdrawalAmount(BigDecimal amount, Currency currency) throws ValidationException {
+        if (amount == null || amount.compareTo(MIN_WITHDRAWAL_AMOUNT) < 0) {
+            throw ValidationException.withError("amount",
+                    String.format("Suma minimă pentru retragere este %s %s",
+                            MIN_WITHDRAWAL_AMOUNT, currency),
+                    amount);
+        }
+    }
+
+    /**
+     * Validează un sold
+     */
+    public void validateBalance(BigDecimal balance) throws ValidationException {
+        if (balance == null || balance.compareTo(MIN_BALANCE) < 0) {
+            throw ValidationException.withError("balance",
+                    String.format("Soldul minim este %s MDL", MIN_BALANCE),
+                    balance);
+        }
+    }
+
+    public boolean isValidBalance(BigDecimal balance) {
+        return balance != null && balance.compareTo(MIN_BALANCE) >= 0;
+    }
+
+    /**
+     * Validează o limită de retragere zilnică
+     */
+    public void validateWithdrawalLimit(BigDecimal limit) throws ValidationException {
+        if (limit == null || limit.compareTo(MIN_WITHDRAWAL_LIMIT) < 0) {
+            throw ValidationException.withError("withdrawalLimit",
+                    String.format("Limita zilnică trebuie să fie minim %s MDL", MIN_WITHDRAWAL_LIMIT),
+                    limit);
+        }
+    }
+
+    public boolean isValidWithdrawalLimit(BigDecimal limit) {
+        return limit != null && limit.compareTo(MIN_WITHDRAWAL_LIMIT) >= 0;
+    }
+
+    /**
+     * Validează un client
+     */
+    public void validateCustomer(Customer customer) throws ValidationException {
+        ValidationException exception = new ValidationException("Validare client");
+
+        try {
+            if (customer.getFirstName() == null || customer.getFirstName().trim().length() < 2) {
+                exception.addError("firstName", "Prenumele trebuie să aibă minim 2 caractere", customer.getFirstName());
+            }
+
+            if (customer.getLastName() == null || customer.getLastName().trim().length() < 2) {
+                exception.addError("lastName", "Numele trebuie să aibă minim 2 caractere", customer.getLastName());
+            }
+
+            validateEmail(customer.getEmail());
+        } catch (ValidationException e) {
+            exception.addErrors(e.getErrors());
+        }
+
+        if (exception.hasErrors()) {
+            throw exception;
+        }
+    }
+
+    /**
+     * Validează o monedă
+     */
+    public void validateCurrency(String currencyCode) throws ValidationException {
+        try {
+            Currency currency = Currency.fromCode(currencyCode);
+            // Dacă ajunge aici, moneda este validă
+        } catch (IllegalArgumentException e) {
+            throw ValidationException.withError("currency",
+                    String.format("Monedă invalidă: %s. Monede valide: %s",
+                            currencyCode, getValidCurrencies()),
+                    currencyCode);
+        }
+    }
+
+    public boolean isValidCurrency(String currencyCode) {
+        try {
+            Currency.fromCode(currencyCode);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Returnează lista monedelor valide
+     */
+    public String getValidCurrencies() {
+        StringBuilder sb = new StringBuilder();
+        for (Currency currency : Currency.values()) {
+            sb.append(currency.getCode()).append(", ");
+        }
+        return sb.substring(0, sb.length() - 2);
+    }
+
+
+
+
+    /**
+     * Validează un cont (verifică doar datele de bază)
+     */
+    public void validateAccount(Account account) throws ValidationException {
+        ValidationException exception = new ValidationException("Validare cont");
+
+        try {
+            validateAccountNumber(account.getAccountNumber());
+        } catch (ValidationException e) {
+            exception.addErrors(e.getErrors());
+        }
+
+        if (account.getOwner() == null) {
+            exception.addError("owner", "Proprietarul contului este obligatoriu", null);
+        }
+
+        if (exception.hasErrors()) {
+            throw exception;
+        }
+    }
+
+    /**
+     * Validează numele clientului.
+     */
+    public void validateCustomerName(String firstName, String lastName) {
+        ValidationException exception = new ValidationException("Validare nume client");
+
+        if (firstName == null || firstName.trim().length() < 2) {
+            exception.addError("firstName",
+                    "Prenumele trebuie să aibă minim 2 caractere", firstName);
+        }
+
+        if (lastName == null || lastName.trim().length() < 2) {
+            exception.addError("lastName",
+                    "Numele trebuie să aibă minim 2 caractere", lastName);
+        }
+
+        if (firstName != null && firstName.length() > 50) {
+            exception.addError("firstName",
+                    "Prenumele trebuie să aibă maxim 50 caractere", firstName);
+        }
+
+        if (lastName != null && lastName.length() > 50) {
+            exception.addError("lastName",
+                    "Numele trebuie să aibă maxim 50 caractere", lastName);
+        }
+
+        if (exception.hasErrors()) {
+            throw exception;
+        }
+    }
+
+    public boolean isValidCustomerName(String firstName, String lastName) {
+        boolean valid = true;
+
+        if (firstName == null || firstName.trim().length() < 2 || firstName.length() > 50) {
+            valid = false;
+        }
+
+        if (lastName == null || lastName.trim().length() < 2 || lastName.length() > 50) {
+            valid = false;
+        }
+
+        return valid;
+    }
+}

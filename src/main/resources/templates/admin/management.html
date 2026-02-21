@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Panou Administrator</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="dashboard-body">
+
+<div class="dashboard-wrapper">
+
+    <!-- ALERTS -->
+    <div th:if="${success}" class="modern-alert success-alert">
+        <span th:text="${success}"></span>
+    </div>
+
+    <div th:if="${error}" class="modern-alert error-alert">
+        <span th:text="${error}"></span>
+    </div>
+
+    <!-- CARD PRINCIPAL -->
+    <div class="dashboard-card">
+
+        <div class="dashboard-header">
+            <h2>Panou Administrator 👨‍💼</h2>
+            <p th:text="'Bun venit, ' + ${managerName} + '!'"></p>
+        </div>
+
+        <div class="account-status">
+            <div>
+                <p>Nivel acces: <strong th:text="${managerLevel}"></strong></p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="actions-grid">
+
+        <a th:href="@{/web/admin/accounts(user=${param.user})}" class="action-card">
+            📂 Gestiune Conturi
+        </a>
+
+        <a th:href="@{/web/admin/customers(user=${param.user})}" class="action-card">
+            👥 Gestiune Clienți
+        </a>
+
+        <a th:href="@{/web/admin/reports/balance(user=${param.user})}" class="action-card">
+            📊 Raport Solduri
+        </a>
+
+        <a th:href="@{/web/admin/reports/transactions(user=${param.user})}" class="action-card">
+            📜 Raport Tranzacții
+        </a>
+
+        <form th:action="@{/web/admin/interest/apply}" method="post">
+            <input type="hidden" name="user" th:value="${param.user}" />
+            <button type="submit" class="action-card interest-card">
+                💰 Aplică Dobândă
+            </button>
+        </form>
+
+        <a th:href="@{/web/admin/exchange-rates(user=${param.user})}" class="action-card">
+            💱 Curs Valutar
+        </a>
+
+        <a th:href="@{/web/admin/change-password(user=${param.user})}" class="action-card">
+            🔐 Schimbă Parola
+        </a>
+
+        <a href="/web/logout" class="action-card logout-card">
+            🚪 Deconectare
+        </a>
+
+    </div>
+
+</div>
+
+</body>
+</html>

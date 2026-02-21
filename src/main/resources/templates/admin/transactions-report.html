@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Raport Tranzacții</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="/js/app.js"></script>
+</head>
+<body>
+<div class="container">
+    <h2>Raport Tranzacții</h2>
+
+    <div class="filters">
+        <h3>Filtre</h3>
+        <form th:action="@{/web/admin/reports/transactions}" method="get">
+
+            <input type="hidden" name="user" th:value="${param.user}" />
+
+            <div class="form-group">
+                <label for="startDate">Data început:</label>
+                <input type="date" id="startDate" name="startDate"
+                       th:value="${#temporals.format(startDate, 'yyyy-MM-dd')}">
+            </div>
+
+            <div class="form-group">
+                <label for="endDate">Data sfârșit:</label>
+                <input type="date" id="endDate" name="endDate"
+                       th:value="${#temporals.format(endDate, 'yyyy-MM-dd')}">
+            </div>
+
+            <div class="form-group">
+                <label for="accountNumber">Număr cont (opțional):</label>
+                <input type="text" id="accountNumber" name="accountNumber"
+                       th:value="${accountNumber}">
+            </div>
+
+            <button type="submit" class="btn">Filtrează</button>
+            <a th:href="@{/web/admin/management(user=${param.user})}" class="btn-secondary">Înapoi</a>
+        </form>
+    </div>
+
+    <div class="stats" th:if="${totalAmount != null}">
+        <div class="stat-card">
+            <h3>Total Tranzacții</h3>
+            <p th:text="${totalCount}">0</p>
+        </div>
+        <div class="stat-card">
+            <h3>Suma Totală</h3>
+            <p th:text="${#numbers.formatDecimal(totalAmount, 0, 2)} + ' MDL'">0</p>
+        </div>
+    </div>
+
+    <h3>Lista Tranzacții</h3>
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Data</th>
+            <th>Cont Sursă</th>
+            <th>Cont Destinație</th>
+            <th>Tip</th>
+            <th>Sumă</th>
+            <th>Monedă</th>
+            <th>Descriere</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="t : ${transactions}">
+            <td th:text="${t.transactionId}"></td>
+            <td th:text="${#temporals.format(t.timestamp, 'dd.MM.yyyy HH:mm')}"></td>
+            <td th:text="${t.sourceAccountNumber} ?: '-'"></td>
+            <td th:text="${t.targetAccountNumber} ?: '-'"></td>
+            <td th:text="${t.type}"></td>
+            <td th:text="${#numbers.formatDecimal(t.amount, 0, 2)}"></td>
+            <td th:text="${t.currency}"></td>
+            <td th:text="${t.description} ?: '-'"></td>
+            <td>
+        <span class="status-badge"
+              th:classappend="${t.status.name() == 'COMPLETED'} ? 'completed' : (${t.status.name() == 'FAILED'} ? 'failed' : 'pending')"
+              th:text="${t.status}"></span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div th:if="${transactions.empty}" class="info">
+        <p>Nu există tranzacții în perioada selectată.</p>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Panoul Meu</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="dashboard-body">
+
+<div class="dashboard-wrapper">
+
+    <!-- ALERTS -->
+    <div th:if="${success}" class="modern-alert success-alert">
+        <span th:text="${success}"></span>
+    </div>
+
+    <div th:if="${error}" class="modern-alert error-alert">
+        <span th:text="${error}"></span>
+    </div>
+
+    <!-- CARD PRINCIPAL -->
+    <div class="dashboard-card">
+
+        <div class="dashboard-header">
+            <h2>
+                Bun venit, <span th:text="${account.owner.fullName}"></span>!
+            </h2>
+            <p class="account-number">
+                Cont: <strong th:text="${account.accountNumber}"></strong>
+            </p>
+        </div>
+
+        <!-- INFO CONT -->
+        <div class="account-status">
+            <div>
+                Tip cont:
+                <strong th:text="${account.accountType}"></strong>
+            </div>
+
+            <div>
+                Status:
+                <span th:text="${account.active} ? 'Activ' : 'Inactiv'"
+                      th:class="${account.active} ? 'status-active' : 'status-inactive'">
+                </span>
+            </div>
+        </div>
+
+        <!-- SOLDURI -->
+        <div class="balances-section">
+            <h3>Solduri disponibile</h3>
+
+            <table class="modern-table">
+                <thead>
+                <tr>
+                    <th>Monedă</th>
+                    <th>Sold</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="entry : ${account.allBalances}">
+                    <td th:text="${entry.key}"></td>
+                    <td th:text="${entry.value}"></td>
+                </tr>
+                <tr class="total-row">
+                    <td>Total (MDL)</td>
+                    <td th:text="${account.totalBalanceInMDL}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="actions">
+        <a th:href="@{/web/client/deposit(account=${param.account})}" class="btn">➕ Depunere</a>
+        <a th:href="@{/web/client/withdraw(account=${param.account})}" class="btn">➖ Retragere</a>
+        <a th:href="@{/web/client/transfer(account=${param.account})}" class="btn">🔄 Transfer</a>
+        <a th:href="@{/web/client/exchange(account=${param.account})}" class="btn">💱 Schimb Valutar</a>
+        <a th:href="@{/web/client/change-password(account=${param.account})}" class="btn">🔐 Schimbă Parola</a>        <a th:href="@{/web/client/history(account=${param.account})}" class="btn">📜 Istoric</a>
+        <a href="/web/logout" class="btn-secondary">🚪 Deconectare</a>
+    </div>
+
+</div>
+
+</body>
+</html>
+

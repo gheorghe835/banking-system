@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Schimb Valutar</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="/js/app.js"></script>
+</head>
+<body>
+<div class="container">
+    <h2>💱 Schimb Valutar</h2>
+
+    <div th:if="${error}" class="error">
+        <p th:text="${error}"></p>
+    </div>
+
+    <div class="account-info">
+        <p><strong>Cont:</strong> <span th:text="${session.accountNumber}"></span></p>
+        <p><strong>Solduri disponibile:</strong></p>
+        <ul>
+            <li th:each="entry : ${balances}">
+                <span th:text="${entry.key}"></span>:
+                <span th:text="${entry.value}"></span>
+            </li>
+        </ul>
+    </div>
+
+    <div class="exchange-rates" id="exchange-rates">
+    </div>
+
+    <form th:action="@{/web/client/exchange}" method="post">
+        <input type="hidden" name="account" th:value="${param.account}" />
+        <div class="form-group">
+            <label for="fromCurrency">Din moneda:</label>
+            <select id="fromCurrency" name="fromCurrency" required>
+                <option value="MDL">MDL - Leu Moldovenesc</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="USD">USD - Dolar American</option>
+                <option value="GBP">GBP - Liră Sterlină</option>
+                <option value="RON">RON - Leu Românesc</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="toCurrency">În moneda:</label>
+            <select id="toCurrency" name="toCurrency" required>
+                <option value="MDL">MDL - Leu Moldovenesc</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="USD">USD - Dolar American</option>
+                <option value="GBP">GBP - Liră Sterlină</option>
+                <option value="RON">RON - Leu Românesc</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="amount">Suma de schimbat:</label>
+            <input type="number" id="amount" name="amount" step="0.01" min="0.01" required>
+        </div>
+
+        <div class="form-group">
+            <label>Veți primi aproximativ:</label>
+            <div id="estimatedAmount" class="estimated">-</div>
+        </div>
+
+        <button type="submit" class="btn">Efectuează Schimbul</button>
+        <a th:href="@{/web/client/dashboard(account=${param.account})}" class="btn-secondary">Anulează</a>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        loadExchangeRates();
+
+        // Calculator în timp real
+        const amountInput = document.getElementById('amount');
+        const fromSelect = document.getElementById('fromCurrency');
+        const toSelect = document.getElementById('toCurrency');
+        const estimatedDiv = document.getElementById('estimatedAmount');
+
+        function calculateEstimate() {
+            const amount = parseFloat(amountInput.value) || 0;
+            const from = fromSelect.value;
+            const to = toSelect.value;
+
+            const rates = {
+                'MDL': 1,
+                'EUR': 19.45,
+                'USD': 17.55,
+                'GBP': 22.10,
+                'RON': 4.00
+            };
+
+            if (amount > 0 && from && to) {
+                const amountInMDL = amount * rates[from];
+                const result = amountInMDL / rates[to];
+                estimatedDiv.textContent = result.toFixed(2) + ' ' + to;
+            }
+        }
+
+        amountInput.addEventListener('input', calculateEstimate);
+        fromSelect.addEventListener('change', calculateEstimate);
+        toSelect.addEventListener('change', calculateEstimate);
+    });
+</script>
+</body>
+</html>

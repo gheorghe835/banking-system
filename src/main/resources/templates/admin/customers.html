@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista Clienți</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="container">
+    <h2>Lista Clienți</h2>
+
+    <div th:if="${success}" class="success">
+        <p th:text="${success}"></p>
+    </div>
+
+    <div th:if="${error}" class="error">
+        <p th:text="${error}"></p>
+    </div>
+
+    <a th:href="@{/web/admin/customers/create(user=${param.user})}" class="btn">
+        ➕ Adaugă Client Nou
+    </a>
+
+    <a th:href="@{/web/admin/management(user=${param.user})}" class="btn-secondary">Înapoi</a>
+
+    <table>
+        <thead>
+        <tr>
+            <th>ID Client</th>
+            <th>Nume</th>
+            <th>Email</th>
+            <th>Telefon</th>
+            <th>Status</th>
+            <th>Acțiuni</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="customer : ${customers}">
+            <td th:text="${customer.customerId}"></td>
+            <td th:text="${customer.fullName}"></td>
+            <td th:text="${customer.email}"></td>
+            <td th:text="${customer.phoneNumber}"></td>
+            <td>
+                    <span th:text="${customer.active} ? 'Activ' : 'Inactiv'"
+                          th:class="${customer.active} ? 'active' : 'inactive'"></span>
+            </td>
+            <td>
+
+                <a th:href="@{/web/admin/customers/{id}(id=${customer.customerId}, user=${param.user})}"
+                   class="btn-small">Detalii</a>
+                <a th:href="@{/web/admin/customers/edit/{id}(id=${customer.customerId}, user=${param.user})}"
+                   class="btn-small">Editează</a>
+                <a th:href="@{/web/admin/customers/toggle/{id}(id=${customer.customerId}, user=${param.user})}"
+                   class="btn-small" th:classappend="${customer.active} ? 'btn-warning' : 'btn-success'"
+                   th:text="${customer.active} ? 'Dezactivează' : 'Activează'"></a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

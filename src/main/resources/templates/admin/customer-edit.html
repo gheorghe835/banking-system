@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Editare Client</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="container">
+    <h2>Editare Client</h2>
+
+    <div th:if="${error}" class="error">
+        <p th:text="${error}"></p>
+    </div>
+
+    <form th:action="@{/web/admin/customers/update}" method="post">
+
+        <input type="hidden" name="customerId" th:value="${customer.customerId}" />
+        <input type="hidden" name="user" th:value="${param.user}" />
+
+        <div class="form-group">
+            <label for="firstName">Prenume:</label>
+            <input type="text" id="firstName" name="firstName"
+                   th:value="${customer.firstName}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="lastName">Nume:</label>
+            <input type="text" id="lastName" name="lastName"
+                   th:value="${customer.lastName}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email"
+                   th:value="${customer.email}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="phoneNumber">Telefon:</label>
+            <input type="tel" id="phoneNumber" name="phoneNumber"
+                   th:value="${customer.phoneNumber}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="address">Adresă:</label>
+            <textarea id="address" name="address" rows="3"
+                      th:text="${customer.address}"></textarea>
+        </div>
+
+        <button type="submit" class="btn">Salvează Modificările</button>
+        <a th:href="@{/web/admin/customers(user=${param.user})}" class="btn-secondary">Anulează</a>
+    </form>
+</div>
+</body>
+</html>

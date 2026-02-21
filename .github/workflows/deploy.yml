@@ -33,3 +33,4 @@ jobs:
             docker-compose down
             docker load -i banking-system.tar
             docker-compose up -d
+            

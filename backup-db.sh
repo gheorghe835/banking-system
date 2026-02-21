@@ -13,3 +13,8 @@ echo " Creating database backup..."
 docker exec banking-mysql mysqldump -u $DB_USER -p$DB_PASS $DB_NAME > $BACKUP_DIR/backup_$DATE.sql
 
 echo "✅ Backup saved to $BACKUP_DIR/backup_$DATE.sql"
+
+#!/bin/bash
+DATE=$(date +%Y%m%d_%H%M%S)
+docker exec banking-mysql mysqldump -u root -p1234 banking_system > backup_$DATE.sql
+echo "✅ Backup saved as backup_$DATE.sql"

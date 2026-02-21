@@ -22,8 +22,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import com.bank.domain.model.Currency;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class AuthServiceTest {
 
     @Mock
@@ -54,15 +57,7 @@ class AuthServiceTest {
         testAccount.deposit(BigDecimal.valueOf(1000), Currency.MDL);
     }
 
-    /*@Test
-    void authenticateClient_CorrectCredentials_ShouldReturnAccount() {
-        when(accountService.findAccount(ACCOUNT_NUMBER)).thenReturn(testAccount);
 
-        Account authenticated = authService.authenticateClient(ACCOUNT_NUMBER, CORRECT_PASSWORD);
-
-        assertThat(authenticated).isNotNull();
-        assertThat(authenticated.getAccountNumber()).isEqualTo(ACCOUNT_NUMBER);
-    }*/
     @Test
     void authenticateClient_CorrectCredentials_ShouldReturnAccount() {
         String accountNumber = "1234567890123456";

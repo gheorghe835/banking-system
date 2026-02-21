@@ -14,7 +14,7 @@ class DomainServicesIntegrationTest {
     @Test
     @DisplayName("Test că serviciile pot fi create")
     void testServicesCanBeCreated() {
-        // Acest test verifică doar că putem instanția serviciile
+
 
         ValidationService validationService = new ValidationService();
         assertNotNull(validationService);

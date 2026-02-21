@@ -1,12 +1,14 @@
 package com.bank.domain.model;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * Clasa care reprezintă un manager bancar
  * Are acces la toate funcționalitățile administrative
  */
-public class BankManager {
+public class BankManager implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private String employeeId;
     private String username;

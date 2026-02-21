@@ -25,7 +25,6 @@ public class TransactionMapper {
         entity.setSourceAccount(transaction.getSourceAccountNumber());
         entity.setTargetAccount(transaction.getTargetAccountNumber());
 
-        // Notă: AccountEntity trebuie setat separat în serviciu
         return entity;
     }
 

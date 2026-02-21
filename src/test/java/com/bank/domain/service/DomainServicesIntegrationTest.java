@@ -15,13 +15,9 @@ class DomainServicesIntegrationTest {
     @DisplayName("Test că serviciile pot fi create")
     void testServicesCanBeCreated() {
         // Acest test verifică doar că putem instanția serviciile
-        // Într-o implementare reală, am folosi mocks pentru repository-uri
 
         ValidationService validationService = new ValidationService();
         assertNotNull(validationService);
-
-        // Notă: Pentru a crea celelalte servicii, avem nevoie de repository-uri
-        // În teste reale, am folosi Mockito pentru a mock-ui repository-urile
 
         System.out.println("✅ Toate serviciile pot fi create");
         System.out.println("   - ValidationService ✓");

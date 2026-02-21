@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 
 /**
  * Component care pornește interfața consolă atunci când aplicația rulează.
- * Rulează doar când profilul "console" este activ.
  */
 @Component
 @Profile("console")

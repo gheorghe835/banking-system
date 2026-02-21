@@ -79,7 +79,6 @@ public class Transaction {
         this.targetAccountNumber = targetAccountNumber;
     }
 
-    /////////////
     public Transaction(TransactionType type, String description) {
         this();
         this.type = Objects.requireNonNull(type, "Tipul tranzacției este obligatoriu");

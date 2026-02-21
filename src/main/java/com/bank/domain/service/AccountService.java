@@ -6,6 +6,11 @@ import com.bank.domain.model.Currency;
 import com.bank.domain.repository.AccountRepository;
 import com.bank.domain.repository.TransactionRepository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -17,6 +22,7 @@ import java.util.*;
  * Serviciu pentru gestionarea conturilor bancare
  * Conține toată logica de business pentru operațiunile cu conturi
  */
+@Service
 public class AccountService {
 
     private final AccountRepository accountRepository;
@@ -32,7 +38,6 @@ public class AccountService {
         this.validationService = validationService;
     }
 
-    /////////////
     Transaction transaction = new Transaction(
             Transaction.TransactionType.ACCOUNT_DEACTIVATED,
             "Cont blocat"
@@ -43,36 +48,37 @@ public class AccountService {
     /**
      * Creează un nou cont bancar
      */
+
+    @CacheEvict(value = "accounts", allEntries = true)
+    @Transactional
     public Account createAccount(String accountNumber, Customer owner,
-                                 String accountType, BigDecimal initialBalance) {
-        // Validare input
+                                 String accountType, BigDecimal initialBalance,
+                                 String password) {  // ← PARAMETRU NOU
+
         validationService.validateAccountNumber(accountNumber);
         validationService.validateCustomer(owner);
-        validationService.validateDepositAmount(initialBalance, Currency.MDL);
+        validationService.validatePassword(password);  // ← VALIDEAZĂ PAROLA
 
-        // Verifică dacă contul există deja
         if (accountRepository.existsByAccountNumber(accountNumber)) {
             throw new BankingException(BankingErrorCode.ACCOUNT_ALREADY_EXISTS,
                     "Contul cu numărul " + accountNumber + " există deja");
         }
 
-        // Creează contul
         Account account = new Account(accountNumber, owner, accountType, initialBalance);
 
-        // Salvează contul
         Account savedAccount = accountRepository.save(account);
 
-        // Înregistrează tranzacția de creare
-        Transaction transaction = new Transaction(
-                Transaction.TransactionType.ACCOUNT_CREATION,
-                initialBalance,
-                Currency.MDL,
-                "Creare cont cu sold inițial"
-        );
-        transaction.setSourceAccountNumber(null);
-        transaction.setTargetAccountNumber(accountNumber);
-        transaction.markAsCompleted();
-        transactionRepository.save(transaction);
+        if (initialBalance.compareTo(BigDecimal.ZERO) > 0) {
+            Transaction transaction = new Transaction(
+                    Transaction.TransactionType.ACCOUNT_CREATION,
+                    initialBalance,
+                    Currency.MDL,
+                    "Creare cont cu sold inițial"
+            );
+            transaction.setTargetAccountNumber(accountNumber);
+            transaction.markAsCompleted();
+            transactionRepository.save(transaction);
+        }
 
         return savedAccount;
     }
@@ -80,12 +86,14 @@ public class AccountService {
     /**
      * Găsește un cont după număr
      */
+
     public Account findAccount(String accountNumber) {
         validationService.validateAccountNumber(accountNumber);
 
         return accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new AccountNotFoundException(accountNumber));
     }
+
 
     /**
      * Găsește un cont după număr cu verificare de activitate
@@ -112,6 +120,7 @@ public class AccountService {
      * Returnează conturile unui client
      */
     @Transactional(readOnly = true)
+    @Cacheable(value = "accounts", key = "'customer-' + #customerId", unless = "#result == null")
     public List<Account> getCustomerAccounts(String customerId) {
         return accountRepository.findByCustomerId(customerId);
     }
@@ -119,6 +128,8 @@ public class AccountService {
     /**
      * Șterge un cont (doar dacă soldul este zero)
      */
+    @CacheEvict(value = "accounts", allEntries = true)
+    @Transactional
     public boolean deleteAccount(String accountNumber) {
         Account account = findAccount(accountNumber);
 
@@ -140,6 +151,8 @@ public class AccountService {
     /**
      * Depune bani într-un cont
      */
+    @CachePut(value = "accounts", key = "#result.accountNumber")
+    @Transactional
     public Account deposit(String accountNumber, BigDecimal amount, Currency currency) {
         validationService.validateDepositAmount(amount, currency);
 
@@ -171,6 +184,8 @@ public class AccountService {
     /**
      * Retrage bani dintr-un cont
      */
+    @CachePut(value = "accounts", key = "#result.accountNumber")
+    @Transactional
     public Account withdraw(String accountNumber, BigDecimal amount, Currency currency) {
         validationService.validateWithdrawalAmount(amount, currency);
 
@@ -273,6 +288,8 @@ public class AccountService {
     /**
      * Blochează un cont
      */
+    @CacheEvict(value = "accounts", key = "#accountNumber")
+    @Transactional
     public Account blockAccount(String accountNumber) {
         Account account = findAccount(accountNumber);
 
@@ -284,16 +301,8 @@ public class AccountService {
         account.deactivate();
         Account blockedAccount = accountRepository.save(account);
 
-        /*/ Înregistrează evenimentul
-        Transaction transaction = new Transaction(
-                Transaction.TransactionType.ACCOUNT_DEACTIVATED,
-                BigDecimal.ZERO,
-                Currency.MDL,
-                "Cont blocat"
-        );
-        transaction.setSourceAccountNumber(accountNumber);
-        transaction.markAsCompleted();
-        transactionRepository.save(transaction);*/
+        // Înregistrează evenimentul
+
         Transaction transaction = new Transaction();
         transaction.setTransactionId("BLK" + System.currentTimeMillis());
         transaction.setType(Transaction.TransactionType.ACCOUNT_DEACTIVATED);
@@ -311,6 +320,8 @@ public class AccountService {
     /**
      * Deblochează un cont
      */
+    @CacheEvict(value = "accounts", key = "#accountNumber")
+    @Transactional
     public Account unblockAccount(String accountNumber) {
         Account account = findAccount(accountNumber);
 
@@ -322,16 +333,8 @@ public class AccountService {
         account.activate();
         Account unblockedAccount = accountRepository.save(account);
 
-        /*/ Înregistrează evenimentul
-        Transaction transaction = new Transaction(
-                Transaction.TransactionType.ACCOUNT_REACTIVATED,
-                BigDecimal.ZERO,
-                Currency.MDL,
-                "Cont deblocat"
-        );
-        transaction.setSourceAccountNumber(accountNumber);
-        transaction.markAsCompleted();
-        transactionRepository.save(transaction);*/
+        // Înregistrează evenimentul
+
         Transaction transaction = new Transaction();
         transaction.setTransactionId("UNB" + System.currentTimeMillis());
         transaction.setType(Transaction.TransactionType.ACCOUNT_REACTIVATED);
@@ -349,6 +352,8 @@ public class AccountService {
     /**
      * Actualizează limita zilnică de retragere
      */
+    @CachePut(value = "accounts", key = "#result.accountNumber")
+    @Transactional
     public Account updateDailyWithdrawalLimit(String accountNumber, BigDecimal newLimit) {
         validationService.validateWithdrawalLimit(newLimit);
 
@@ -368,8 +373,6 @@ public class AccountService {
         }
 
         Account account = findActiveAccount(accountNumber);
-        // Notă: În implementarea actuală, Account nu are setOwnerName
-        // Ar trebui să adăugăm această metodă sau să lucrăm prin Customer
 
         return accountRepository.save(account);
     }
@@ -386,6 +389,7 @@ public class AccountService {
     /**
      * Generează raport cu toate conturile inactive
      */
+    @Cacheable(value = "accounts", key = "'inactive'", unless = "#result == null")
     public List<Account> getInactiveAccounts() {
         return accountRepository.findInactiveAccounts();
     }
@@ -400,6 +404,7 @@ public class AccountService {
     /**
      * Returnează soldul total MDL al tuturor conturilor
      */
+    @Cacheable(value = "accounts", key = "'balance-total'", unless = "#result == null")
     public BigDecimal getTotalBankBalance() {
         return accountRepository.getTotalBalanceInMDL();
     }
@@ -407,6 +412,7 @@ public class AccountService {
     /**
      * Returnează numărul total de conturi
      */
+    @Cacheable(value = "accounts", key = "'count-total'", unless = "#result == null")
     public long getTotalAccountCount() {
         return accountRepository.count();
     }
@@ -414,6 +420,7 @@ public class AccountService {
     /**
      * Returnează numărul de conturi active
      */
+    @Cacheable(value = "accounts", key = "'count-active'", unless = "#result == null")
     public long getActiveAccountCount() {
         return accountRepository.findActiveAccounts().size();
     }
@@ -435,7 +442,7 @@ public class AccountService {
         return account.hasSufficientFunds(amount, currency);
     }
 
-    //////////////////////////////////////////////////////////
+    @Cacheable(value = "accounts", key = "'balance-per-currency'", unless = "#result == null")
     public Map<Currency, BigDecimal> getTotalBalancePerCurrency() {
         List<Account> allAccounts = accountRepository.findAll();
         Map<Currency, BigDecimal> totals = new HashMap<>();

@@ -14,37 +14,37 @@ import java.util.List;
 @Repository
 public interface JpaTransactionRepository extends JpaRepository<TransactionEntity, String> {
 
-    // Basic queries
+    //  Interogări de bază
     List<TransactionEntity> findByAccountAccountNumber(String accountNumber);
 
-    // Find by transaction type
+    // Găsește după tipul tranzacției
     List<TransactionEntity> findByTransactionType(String transactionType);
 
-    // Find by currency
+    // Găsește după monedă
     List<TransactionEntity> findByCurrency(String currency);
 
 
-    // Find by status
+    //  Găsește după stare
     List<TransactionEntity> findByStatus(String status);
 
-    // Find by amount range
+    //  Găsește după intervalul de sume
     List<TransactionEntity> findByAmountGreaterThanEqual(BigDecimal minAmount);
     List<TransactionEntity> findByAmountLessThanEqual(BigDecimal maxAmount);
     List<TransactionEntity> findByAmountBetween(BigDecimal minAmount, BigDecimal maxAmount);
 
-    // Find by date range
+    //  Găsește după intervalul de date
     List<TransactionEntity> findByTimestampAfter(LocalDateTime startDate);
     List<TransactionEntity> findByTimestampBefore(LocalDateTime endDate);
     List<TransactionEntity> findByTimestampBetween(LocalDateTime startDate, LocalDateTime endDate);
 
-    // Find by source/target account
+    //  Găsește după contul sursă/țintă
     List<TransactionEntity> findBySourceAccount(String sourceAccount);
     List<TransactionEntity> findByTargetAccount(String targetAccount);
 
-    // Find transactions between two accounts
+    //  Găsește tranzacții între două conturi
     List<TransactionEntity> findBySourceAccountAndTargetAccount(String sourceAccount, String targetAccount);
 
-    // Find by description containing text
+    //  Găsește după descrierea care conține text
     List<TransactionEntity> findByDescriptionContainingIgnoreCase(String text);
     List<TransactionEntity> findByAccountAccountNumberAndTransactionType(
             String accountNumber,
@@ -54,7 +54,7 @@ public interface JpaTransactionRepository extends JpaRepository<TransactionEntit
 
 
 
-    // Custom JPQL queries
+    // Interogări JPQL personalizate
     @Query("SELECT t FROM TransactionEntity t WHERE t.account.accountNumber = :accountNumber " +
             "AND t.timestamp BETWEEN :startDate AND :endDate " +
             "ORDER BY t.timestamp DESC")
@@ -68,7 +68,7 @@ public interface JpaTransactionRepository extends JpaRepository<TransactionEntit
     List<TransactionEntity> findLastTransactions(@Param("accountNumber") String accountNumber,
                                                  @Param("limit") int limit);
 
-    // Statistics queries
+    //  Interogări statistice
     @Query("SELECT COUNT(t) FROM TransactionEntity t WHERE t.account.accountNumber = :accountNumber")
     long countByAccount(@Param("accountNumber") String accountNumber);
 
@@ -82,7 +82,7 @@ public interface JpaTransactionRepository extends JpaRepository<TransactionEntit
             "GROUP BY t.transactionType")
     List<Object[]> countTransactionsByType(@Param("accountNumber") String accountNumber);
 
-    // Daily transaction volume
+    //  Volumul zilnic al tranzacțiilor
     @Query("SELECT DATE(t.timestamp), SUM(t.amount), COUNT(t) FROM TransactionEntity t " +
             "WHERE t.timestamp BETWEEN :startDate AND :endDate " +
             "GROUP BY DATE(t.timestamp) " +
@@ -90,14 +90,18 @@ public interface JpaTransactionRepository extends JpaRepository<TransactionEntit
     List<Object[]> getDailyTransactionVolume(@Param("startDate") LocalDateTime startDate,
                                              @Param("endDate") LocalDateTime endDate);
 
-    // Find largest transaction
+    //  Găsește cea mai mare tranzacție
     @Query("SELECT t FROM TransactionEntity t WHERE t.amount = " +
             "(SELECT MAX(t2.amount) FROM TransactionEntity t2 WHERE t2.account.accountNumber = :accountNumber)")
     TransactionEntity findLargestTransactionByAccount(@Param("accountNumber") String accountNumber);
 
-    // Find failed transactions in period
+    //  Găsește tranzacțiile eșuate în perioada respectivă
     @Query("SELECT t FROM TransactionEntity t WHERE t.status = 'FAILED' " +
             "AND t.timestamp BETWEEN :startDate AND :endDate")
     List<TransactionEntity> findFailedTransactionsInPeriod(@Param("startDate") LocalDateTime startDate,
                                                            @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT COUNT(t) FROM TransactionEntity t WHERE t.timestamp BETWEEN :start AND :end")
+    long countByTimestampBetween(@Param("start") LocalDateTime start,
+                                 @Param("end") LocalDateTime end);
 }

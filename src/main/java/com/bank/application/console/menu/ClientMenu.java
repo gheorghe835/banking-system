@@ -22,25 +22,6 @@ import java.util.Scanner;
 @Profile("console")
 public class ClientMenu {
 
-    //private final Scanner consoleScanner;
-    //private final AccountService accountService;
-    //private final TransactionService transactionService;
-
-    /*@Autowired
-    public ClientMenu(Scanner consoleScanner, AccountService accountService,
-                      TransactionService transactionService) {
-        this.consoleScanner = consoleScanner;
-        this.accountService = accountService;
-        this.transactionService = transactionService;
-    }
-
-    public void display(Account account) {
-        System.out.println("\n🏦 MENIU CLIENT - ÎN DEZVOLTARE");
-        System.out.println("Cont: " + account.getAccountNumber());
-        System.out.println("Proprietar: " + account.getOwner().getFullName());
-        // Aici va fi implementat meniul complet pentru client
-    }*/
-
     private final ConsoleReader reader;
     private final ConsolePrinter printer;
     private final AccountService accountService;
@@ -286,8 +267,6 @@ public class ClientMenu {
         BigDecimal amount = reader.readAmount("Suma de schimbat: ");
 
         try {
-            // Aceasta metodă trebuie adăugată în ExchangeService
-            // accountService.exchangeCurrency(account.getAccountNumber(), fromCurrency, toCurrency, amount);
             printer.printSuccess("Schimb valutar finalizat.");
         } catch (Exception e) {
             printer.printError("Schimb valutar eșuat: " + e.getMessage());

@@ -4,6 +4,11 @@ import com.bank.domain.exception.*;
 import com.bank.domain.model.*;
 import com.bank.domain.model.Currency;
 import com.bank.domain.repository.TransactionRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -15,6 +20,7 @@ import java.util.stream.Collectors;
 /**
  * Serviciu pentru gestionarea tranzacțiilor bancare
  */
+@Service
 public class TransactionService {
 
     private final TransactionRepository transactionRepository;
@@ -95,8 +101,7 @@ public class TransactionService {
      * Returnează tranzacțiile de un anumit tip
      */
     public List<Transaction> getTransactionsByType(Transaction.TransactionType type) {
-        // Notă: Această metodă necesită o implementare în repository
-        // Pentru moment, filtrăm manual
+
         List<Transaction> allTransactions = transactionRepository.findAll();
         return allTransactions.stream()
                 .filter(t -> t.getType() == type)
@@ -168,6 +173,7 @@ public class TransactionService {
     /**
      * Marchează o tranzacție ca finalizată
      */
+
     public Transaction markAsCompleted(String transactionId) {
         Transaction transaction = findTransaction(transactionId);
 
@@ -183,15 +189,14 @@ public class TransactionService {
     /**
      * Marchează o tranzacție ca eșuată
      */
+
     public Transaction markAsFailed(String transactionId, String reason) {
         Transaction transaction = findTransaction(transactionId);
 
         if (transaction.isPending()) {
             transaction.markAsFailed();
 
-            // Actualizează descrierea cu motivul eșuării
             String newDescription = transaction.getDescription() + " (Eșuat: " + reason + ")";
-            // Notă: Ar trebui să avem o metodă setDescription în Transaction
 
             return transactionRepository.save(transaction);
         }
@@ -203,17 +208,15 @@ public class TransactionService {
     /**
      * Anulează o tranzacție
      */
+
     public Transaction cancelTransaction(String transactionId, String reason) {
         Transaction transaction = findTransaction(transactionId);
 
         if (transaction.isPending()) {
             transaction.markAsCancelled();
 
-            // În cazul unui transfer, ar trebui să returnăm banii
             if (transaction.getType() == Transaction.TransactionType.TRANSFER_OUT ||
                     transaction.getType() == Transaction.TransactionType.TRANSFER_IN) {
-                // Logica de returnare a banilor ar fi aici
-                // Pentru simplitate, doar marcam ca anulat
             }
 
             return transactionRepository.save(transaction);
@@ -223,8 +226,7 @@ public class TransactionService {
                 "Tranzacția nu poate fi anulată. Status curent: " + transaction.getStatus());
     }
 
-    ////////////////////////////////////////////
-
+    //@Cacheable(value = "transactionStats", key = "'countByType'")
     public Map<Transaction.TransactionType, Long> getTransactionCountByType() {
         List<Transaction> allTransactions = transactionRepository.findAll();
         Map<Transaction.TransactionType, Long> countByType = new HashMap<>();
@@ -262,7 +264,7 @@ public class TransactionService {
     }
 
     public List<Account> getTopActiveAccounts(int limit) {
-        // Conturile cu cele mai multe tranzacții
+
         Map<String, Long> transactionCountByAccount = new HashMap<>();
 
         for (Transaction transaction : transactionRepository.findAll()) {

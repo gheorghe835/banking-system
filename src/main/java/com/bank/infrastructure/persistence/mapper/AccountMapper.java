@@ -25,7 +25,7 @@ public class AccountMapper {
         entity.setActive(account.isActive());
         entity.setDailyWithdrawalLimit(account.getDailyWithdrawalLimit());
         entity.setDailyWithdrawalUsed(account.getDailyWithdrawalUsed());
-        //ntity.setLastResetDate(account.getLastResetDate());
+        entity.setPasswordHash(account.getPasswordHash());
 
         // Setează solduri
         entity.setBalanceMDL(account.getBalance(Currency.MDL));
@@ -34,7 +34,7 @@ public class AccountMapper {
         entity.setBalanceGBP(account.getBalance(Currency.GBP));
         entity.setBalanceRON(account.getBalance(Currency.RON));
 
-        // Mapează owner (simplificat)////////////
+        // Mapează owner
         if (account.getOwner() != null) {
             CustomerEntity customerEntity = new CustomerEntity();
             customerEntity.setCustomerId(account.getOwner().getCustomerId());
@@ -71,9 +71,10 @@ public class AccountMapper {
         account.setDailyWithdrawalLimit(entity.getDailyWithdrawalLimit());
         account.setDailyWithdrawalUsed(entity.getDailyWithdrawalUsed());
         account.setLastResetDate(entity.getLastResetDate());
+        account.setPasswordHash(entity.getPasswordHash());
         account.setOwner(customer);
 
-        // 🔴 FOLOSEȘTE setBalance în loc de deposit
+        //  Construiește deposit
         account.setBalance(Currency.MDL, entity.getBalanceMDL() != null ? entity.getBalanceMDL() : BigDecimal.ZERO);
         account.setBalance(Currency.EUR, entity.getBalanceEUR() != null ? entity.getBalanceEUR() : BigDecimal.ZERO);
         account.setBalance(Currency.USD, entity.getBalanceUSD() != null ? entity.getBalanceUSD() : BigDecimal.ZERO);

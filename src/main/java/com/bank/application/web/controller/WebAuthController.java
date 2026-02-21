@@ -5,6 +5,7 @@ import com.bank.domain.model.BankManager;
 import com.bank.domain.service.AccountService;
 import com.bank.domain.service.AuthService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -12,6 +13,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import java.util.Collections;
 
 @Controller
 @RequestMapping("/web")
@@ -36,28 +42,34 @@ public class WebAuthController {
         return "login";
     }
 
+
     @PostMapping("/login")
-    @Transactional
     public String login(@RequestParam String username,
                         @RequestParam String password,
                         @RequestParam(required = false) boolean manager,
                         HttpSession session,
+                        HttpServletRequest request,
                         Model model) {
         try {
+            System.out.println("=== ÎNCERCARE AUTENTIFICARE ===");
+            System.out.println("Username: " + username);
+            System.out.println("Manager: " + manager);
+
             if (manager) {
                 BankManager bankManager = authService.authenticateManager(username, password);
-                session.setAttribute("manager", bankManager);
+                session.setAttribute("user", username);
                 session.setAttribute("userType", "MANAGER");
-                return "redirect:/web/admin/management";
+                return "redirect:/web/admin/management?user=" + username;
+
             } else {
                 Account account = authService.authenticateClient(username, password);
-                account.getOwner().getFullName();
-                session.setAttribute("account", account);
-                session.setAttribute("accountNumber", account.getAccountNumber());
+                session.setAttribute("user", account.getAccountNumber());
                 session.setAttribute("userType", "CLIENT");
-                return "redirect:/web/client/dashboard";
+                return "redirect:/web/client/dashboard?account=" + account.getAccountNumber();
             }
         } catch (Exception e) {
+            System.out.println("❌ EROARE LA AUTENTIFICARE: " + e.getMessage());
+            e.printStackTrace();
             model.addAttribute("error", "Autentificare eșuată: " + e.getMessage());
             model.addAttribute("manager", manager);
             return "login";

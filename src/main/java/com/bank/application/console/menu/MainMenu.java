@@ -202,29 +202,41 @@ public class MainMenu {
 
         try {
             // Preluare rate din ExchangeService
-            Map<Currency, BigDecimal> rates = exchangeService.getAllExchangeRates();
+            Map<String, BigDecimal> rates = exchangeService.getAllExchangeRatesAsString();
 
             System.out.println(" Moneda │ Cod │ Curs (MDL)");
             System.out.println(" ───────┼─────┼───────────");
 
-            for (Map.Entry<Currency, BigDecimal> entry : rates.entrySet()) {
-                Currency currency = entry.getKey();
+            for (Map.Entry<String, BigDecimal> entry : rates.entrySet()) {
+                String currencyCode = entry.getKey();
                 BigDecimal rate = entry.getValue();
 
                 // Nu afișăm MDL (rata 1.0)
-                if (currency != Currency.MDL) {
+                if (!"MDL".equals(currencyCode)) {
+                    // Pentru numele complet al monedei, ai nevoie de o mapare suplimentară
+                    String currencyName = getCurrencyName(currencyCode);
                     System.out.printf(" %-6s │ %-3s │ %.4f%n",
-                            currency.getName(), currency.getCode(), rate);
+                            currencyName, currencyCode, rate);
                 }
             }
 
             System.out.println("─".repeat(40));
+            // 🔴 Modifică și exemplul
             System.out.println(" 💡 Exemplu: 100 EUR = " +
                     exchangeService.convertToMDL(BigDecimal.valueOf(100), Currency.EUR).setScale(2) + " MDL");
 
         } catch (Exception e) {
-            // Fallback la rate hardcodate dacă serviciul nu e disponibil
             displayFallbackExchangeRates();
+        }
+    }
+    private String getCurrencyName(String code) {
+        switch (code) {
+            case "MDL": return "Leu Mold.";
+            case "EUR": return "Euro";
+            case "USD": return "Dolar";
+            case "GBP": return "Liră";
+            case "RON": return "Leu Rom.";
+            default: return code;
         }
     }
 
@@ -277,4 +289,6 @@ public class MainMenu {
             System.out.println("\n".repeat(30));
         }
     }
+
+
 }

@@ -26,7 +26,6 @@ public class SecurityProperties {
     public BruteForce getBruteForce() { return bruteForce; }
     public void setBruteForce(BruteForce bruteForce) { this.bruteForce = bruteForce; }
 
-    // Inner classes for nested properties
     public static class Jwt {
         private String secret = "default-secret-key-change-in-production";
         private Duration expiration = Duration.ofHours(24);

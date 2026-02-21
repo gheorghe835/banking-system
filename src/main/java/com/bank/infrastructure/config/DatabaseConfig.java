@@ -18,11 +18,6 @@ import java.util.Map;
 
 @Configuration
 @EnableTransactionManagement
-//@EnableJpaRepositories(
-//        basePackages = "com.bank.infrastructure.persistence.repository",
-//        entityManagerFactoryRef = "entityManagerFactory",
-//        transactionManagerRef = "transactionManeger"
-//)
 public class DatabaseConfig {
     @Value("${spring.datasource.url}")
     private String dataSourceUrl;

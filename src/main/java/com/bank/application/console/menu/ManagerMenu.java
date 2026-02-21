@@ -152,7 +152,7 @@ public class ManagerMenu {
         String email = reader.readEmail("Email: ");
         String phone = reader.readPhoneNumber("Telefon: ");
 
-        printer.printInfo("Tip cont: 1. CURRENT  2. SAVINGS  3. BUSINESS");
+        printer.printInfo("Tip cont: 1. CURRENT 2. SAVINGS 3. BUSINESS");
         int typeOption = reader.readIntInRange("Alegeți tipul: ", 1, 3);
         String accountType;
         switch (typeOption) {
@@ -164,12 +164,20 @@ public class ManagerMenu {
 
         BigDecimal initialBalance = reader.readAmount("Sold inițial (MDL): ");
 
-        try {
-            // TODO: Creează mai întâi customer, apoi cont
-            // Pentru moment, folosim un customer simplificat
-            Customer customer = new Customer(firstName, lastName, email, phone, LocalDate.now().minusYears(20), "ID" + System.currentTimeMillis());
+        // 🔐 CEREM PAROLA
+        String password = reader.readPassword("Parolă cont: ");
+        String confirmPassword = reader.readPassword("Confirmă parola: ");
 
-            Account account = accountService.createAccount(accountNumber, customer, accountType, initialBalance);
+        if (!password.equals(confirmPassword)) {
+            printer.printError("Parolele nu coincid!");
+            return;
+        }
+
+        try {
+            Customer customer = new Customer(firstName, lastName, email, phone,
+                    LocalDate.now().minusYears(20), "ID" + System.currentTimeMillis());
+
+            Account account = accountService.createAccount(accountNumber, customer, accountType, initialBalance, password);
             printer.printSuccess("Cont creat cu succes!");
             printer.printAccountDetails(account);
         } catch (Exception e) {
@@ -260,7 +268,7 @@ public class ManagerMenu {
     private void updateExchangeRates() {
         printer.printSection("ACTUALIZARE CURS VALUTAR");
 
-        Map<Currency, BigDecimal> currentRates = exchangeService.getAllExchangeRates();
+        Map<String, BigDecimal> currentRates = exchangeService.getAllExchangeRatesAsString();
 
         for (Currency currency : Currency.values()) {
             if (currency != Currency.MDL) {
@@ -295,8 +303,6 @@ public class ManagerMenu {
         printer.printInfo("Conturi inactive: " + (totalAccounts - activeAccounts));
         printer.printSuccess("Sold total banca: " + printer.formatCurrency(totalBalance, Currency.MDL));
 
-        // Sold pe valute
-        // Aceasta metodă necesită extindere în AccountService
     }
 
     // ============ 9. APLICARE DOBÂNDĂ ============
@@ -344,8 +350,6 @@ public class ManagerMenu {
         printer.printInfo("Total tranzacții: " + totalTransactions);
         printer.printInfo("Suma totală tranzacționată: " + printer.formatCurrency(totalAmount, Currency.MDL));
 
-        // Top 5 conturi după activitate
-        // Necesită metodă nouă în TransactionService
     }
 
     // ============ 12. GESTIUNE CLIENȚI ============

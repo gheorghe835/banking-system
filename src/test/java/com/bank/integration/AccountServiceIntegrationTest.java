@@ -41,8 +41,9 @@ class AccountServiceIntegrationTest {
 
         // 2. Creează un cont
         Account account = accountService.createAccount(
-                "1234567890123456", customer, "CURRENT", BigDecimal.valueOf(1000)
-        );
+                "1234567890123456", customer,
+                "CURRENT", BigDecimal.valueOf(1000),
+                        "Parola1234");
 
         // 3. Verifică în baza de date
         Account found = accountService.findAccount("1234567890123456");
@@ -60,7 +61,9 @@ class AccountServiceIntegrationTest {
         );
 
         Account account = accountService.createAccount(
-                "2345678901234567", customer, "SAVINGS", BigDecimal.valueOf(500)
+                "2345678901234567", customer,
+                "SAVINGS", BigDecimal.valueOf(500),
+                "Parola1234"
         );
 
         // 2. Depune bani
@@ -80,7 +83,9 @@ class AccountServiceIntegrationTest {
         );
 
         Account account = accountService.createAccount(
-                "3456789012345678", customer, "CURRENT", BigDecimal.valueOf(1000)
+                "3456789012345678", customer,
+                "CURRENT", BigDecimal.valueOf(1000),
+                "Parola1234"
         );
 
         // 2. Retrage bani
@@ -119,7 +124,7 @@ class AccountServiceIntegrationTest {
 
             System.out.println("Customer creat cu succes: " + customer.getCustomerId());
 
-            // restul codului...
+
 
         } catch (Exception e) {
             System.out.println("EROARE: " + e.getMessage());

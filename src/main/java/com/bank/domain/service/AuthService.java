@@ -1,20 +1,31 @@
 package com.bank.domain.service;
 
 import com.bank.domain.exception.*;
-import com.bank.domain.model.Account;
-import com.bank.domain.model.BankManager;
-import com.bank.domain.model.Customer;
+import com.bank.domain.model.*;
+import com.bank.domain.repository.AccountRepository;
+import com.bank.domain.repository.TransactionRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 
 /**
  * Serviciu pentru autentificare și autorizare
  */
+@Service
 public class AuthService {
 
     private final AccountService accountService;
+    private final TransactionRepository transactionRepository;
+    private final AccountRepository accountRepository;
     private final Map<String, Integer> failedLoginAttempts = new HashMap<>();
     private final Map<String, LocalDateTime> lockedAccounts = new HashMap<>();
 
@@ -26,8 +37,12 @@ public class AuthService {
     private static final String MANAGER_USERNAME = "admin";
     private static final String MANAGER_PASSWORD = "Admin1234";
 
-    public AuthService(AccountService accountService) {
+    public AuthService(AccountService accountService,
+                       TransactionRepository transactionRepository,
+                       AccountRepository accountRepository) {
         this.accountService = accountService;
+        this.transactionRepository = transactionRepository;
+        this.accountRepository = accountRepository;
     }
 
     // ===== AUTENTIFICARE CLIENT =====
@@ -53,13 +68,10 @@ public class AuthService {
                         "Contul este inactiv");
             }
 
-            // Verifică parola
-            // Notă: În implementarea reală, parola ar fi hash-uită
-            // Pentru demo, verificăm direct
-            if (!verifyAccountPassword(account, password)) {
+            if(!password.equals(account.getPasswordHash())){
                 handleFailedLoginAttempt(accountNumber);
                 throw new BankingSecurityException(BankingErrorCode.INVALID_CREDENTIALS,
-                        accountNumber, BankingSecurityException.SecurityAction.LOGIN_ATTEMPT);
+                        accountNumber,BankingSecurityException.SecurityAction.LOGIN_ATTEMPT);
             }
 
             // Reset failed attempts on successful login
@@ -77,38 +89,25 @@ public class AuthService {
         }
     }
 
-    /**
-     * Verifică parola unui cont (simplificat pentru demo)
-     */
-    private boolean verifyAccountPassword(Account account, String password) {
-        // În implementarea reală, ai avea hash-ul parolei în Account
-        // Pentru demo, presupunem că Account are o metodă verifyPassword
-        // care compară cu hash-ul stocat
-
-        // Implementare temporară: verifică o parolă simplă
-        // În practică, ar trebui să folosești BCrypt sau similar
-        String expectedPassword = "Parola1234"; // Parolă default pentru demo
-
-        return expectedPassword.equals(password);
-    }
-
     // ===== AUTENTIFICARE MANAGER =====
 
     /**
      * Autentifică un manager
      */
     public BankManager authenticateManager(String username, String password) {
+
         if (MANAGER_USERNAME.equals(username) && MANAGER_PASSWORD.equals(password)) {
-            return createDemoManager();
+            BankManager manager = createDemoManager();
+
+            manager.setPasswordHash(MANAGER_PASSWORD);
+
+            return manager;
         }
 
         throw new BankingSecurityException(BankingErrorCode.INVALID_CREDENTIALS,
                 username, BankingSecurityException.SecurityAction.LOGIN_ATTEMPT);
     }
 
-    /**
-     * Creează un manager de demo
-     */
     private BankManager createDemoManager() {
         BankManager manager = new BankManager(
                 MANAGER_USERNAME,
@@ -117,6 +116,9 @@ public class AuthService {
                 "admin@bank.com",
                 BankManager.AccessLevel.ADMIN
         );
+
+        manager.setPasswordHash(MANAGER_PASSWORD);
+
         return manager;
     }
 
@@ -146,6 +148,7 @@ public class AuthService {
     /**
      * Gestionează o încercare de login eșuată
      */
+
     private void handleFailedLoginAttempt(String accountNumber) {
         int attempts = failedLoginAttempts.getOrDefault(accountNumber, 0) + 1;
         failedLoginAttempts.put(accountNumber, attempts);
@@ -209,7 +212,9 @@ public class AuthService {
     /**
      * Schimbă parola unui cont
      */
-    public boolean changePassword(String accountNumber, String oldPassword, String newPassword) {
+    public boolean changePassword(String accountNumber,
+                                  String oldPassword,
+                                  String newPassword) {
         // Autentifică cu parola veche
         Account account = authenticateClient(accountNumber, oldPassword);
 
@@ -217,11 +222,20 @@ public class AuthService {
         ValidationService validationService = new ValidationService();
         validationService.validatePassword(newPassword);
 
-        // În implementarea reală, ai salva hash-ul noii parole în Account
-        // Pentru demo, doar returnăm succes
+        account.setPasswordHash(newPassword);
+        accountRepository.save(account);
+
 
         // Înregistrează evenimentul
-        // Ar trebui să creăm o tranzacție pentru schimbarea parolei
+        Transaction transaction = new Transaction(
+                Transaction.TransactionType.PASSWORD_CHANGE,
+                BigDecimal.ZERO,
+                Currency.MDL,
+                "Schimbare parolă"
+        );
+        transaction.setSourceAccountNumber(accountNumber);
+        transaction.markAsCompleted();
+        transactionRepository.save(transaction);
 
         return true;
     }
@@ -234,8 +248,14 @@ public class AuthService {
     public boolean hasAccessToAccount(String accountNumber, Customer customer) {
         Account account = accountService.findAccount(accountNumber);
 
-        // În implementarea simplă, verificăm doar dacă customerul este proprietarul
-        // În practică, ai avea o relație între Customer și Account
         return account.getOwner().equals(customer);
+    }
+
+    public BankManager findManagerByUsername(String username) {
+        if (MANAGER_USERNAME.equals(username)) {
+            return createDemoManager();
+        }
+        throw new BankingSecurityException(BankingErrorCode.MANAGER_NOT_FOUND,
+                username, BankingSecurityException.SecurityAction.ACCOUNT_ACCESS);
     }
 }

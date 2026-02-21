@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -30,17 +31,10 @@ public class JpaTransactionRepositoryAdapter implements TransactionRepository {
         this.transactionMapper = transactionMapper;
     }
 
-    /*@Override
-    public Transaction save(Transaction transaction) {
-        TransactionEntity entity = transactionMapper.toEntity(transaction);
-        TransactionEntity savedEntity = jpaTransactionRepository.save(entity);
-        return transactionMapper.toDomain(savedEntity);
-    }*/
     @Override
     public Transaction save(Transaction transaction) {
         TransactionEntity entity = transactionMapper.toEntity(transaction);
 
-        // 🔴 ATAȘEAZĂ CONTUL AICI
         if (transaction.getTargetAccountNumber() != null) {
             AccountEntity accountEntity = jpaAccountRepository
                     .findById(transaction.getTargetAccountNumber())
@@ -209,5 +203,13 @@ public class JpaTransactionRepositoryAdapter implements TransactionRepository {
     public BigDecimal getTotalTransactionAmount() {
         // Implementează după nevoie
         return BigDecimal.ZERO;
+    }
+
+    @Override
+    public long countByDate(LocalDate date) {
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+
+        return jpaTransactionRepository.countByTimestampBetween(startOfDay, endOfDay);
     }
 }

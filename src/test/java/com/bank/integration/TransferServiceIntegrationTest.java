@@ -43,8 +43,12 @@ class TransferServiceIntegrationTest {
         );
 
         // Creează conturi cu solduri
-        accountService.createAccount("1111111111111111", sender, "CURRENT", BigDecimal.valueOf(2000));
-        accountService.createAccount("2222222222222222", receiver, "SAVINGS", BigDecimal.valueOf(500));
+        accountService.createAccount("1111111111111111",
+                sender, "CURRENT", BigDecimal.valueOf(2000),
+                "Parola1234");
+        accountService.createAccount("2222222222222222",
+                receiver, "SAVINGS", BigDecimal.valueOf(500),
+                "Parola1234");
 
         // Transferă
         accountService.transfer("1111111111111111", "2222222222222222",
@@ -72,8 +76,10 @@ class TransferServiceIntegrationTest {
         );
 
         // Creează conturi - unul cu sold mic
-        accountService.createAccount("3333333333333333", sender, "CURRENT", BigDecimal.valueOf(100));
-        accountService.createAccount("4444444444444444", receiver, "SAVINGS", BigDecimal.valueOf(50));
+        accountService.createAccount("3333333333333333", sender,
+                "CURRENT", BigDecimal.valueOf(100),"Parola1234");
+        accountService.createAccount("4444444444444444", receiver,
+                "SAVINGS", BigDecimal.valueOf(50),"Parola1234");
 
         // Verifică că aruncă excepție
         assertThatThrownBy(() ->

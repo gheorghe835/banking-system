@@ -10,6 +10,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -66,6 +67,8 @@ class AccountRepositoryTest {
         testAccount.setDailyWithdrawalUsed(BigDecimal.ZERO);
         testAccount.setLastResetDate(LocalDate.now());
 
+        testAccount.setPasswordHash("Parola1234");
+
         entityManager.persistAndFlush(testAccount);
         entityManager.clear();
     }
@@ -91,6 +94,8 @@ class AccountRepositoryTest {
         secondAccount.setDailyWithdrawalLimit(BigDecimal.valueOf(2000));
         secondAccount.setDailyWithdrawalUsed(BigDecimal.ZERO);
         secondAccount.setLastResetDate(LocalDate.now());
+
+        secondAccount.setPasswordHash("Parola1234");
 
         entityManager.persistAndFlush(secondAccount);
         entityManager.clear();

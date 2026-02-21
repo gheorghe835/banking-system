@@ -2,6 +2,7 @@ package com.bank.domain.model;
 
 import com.bank.domain.exception.InsufficientFundsException;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,12 +14,14 @@ import java.util.Objects;
  * Clasa care reprezintă un cont bancar
  * Gestionează soldurile în multiple valute și operațiunile de bază
  */
-public class Account {
+public class Account implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private String accountNumber;           // Număr cont (16 cifre)
     private Customer owner;                 // Proprietarul contului
     private Map<Currency, BigDecimal> balances; // Solduri pe valute
-    private String accountType;             // Tip cont: CURRENT, SAVINGS, etc.
+    private String accountType;
+    private String passwordHash;// Tip cont: CURRENT, SAVINGS, etc.
     private LocalDate creationDate;
     private LocalDateTime lastLogin;
     private boolean isActive;
@@ -62,6 +65,13 @@ public class Account {
             throw new IllegalArgumentException("Soldul inițial nu poate fi negativ");
         }
         deposit(initialBalance, Currency.MDL);
+        this.passwordHash = "Parola1234";
+    }
+
+    public Account(String accountNumber, Customer owner, String accountType,
+                   BigDecimal initialBalance, String password) {  // ← PAROLĂ NOUĂ
+        this(accountNumber, owner, accountType, initialBalance);
+        this.passwordHash = password;  // În realitate, aici ar fi hash-uit
     }
 
     // Metode de inițializare
@@ -93,6 +103,13 @@ public class Account {
 
     public void setDailyWithdrawalUsed(BigDecimal dailyWithdrawalUsed) {
         this.dailyWithdrawalUsed = dailyWithdrawalUsed;
+    }
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     public void setLastResetDate(LocalDate lastResetDate) {

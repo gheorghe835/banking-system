@@ -2,15 +2,21 @@ package com.bank.domain.service;
 
 import com.bank.domain.exception.*;
 import com.bank.domain.model.*;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 
 /**
  * Serviciu pentru operațiuni de schimb valutar
  */
+@Service
 public class ExchangeService {
 
 
@@ -77,8 +83,6 @@ public class ExchangeService {
         BigDecimal exchangedAmount = calculateExchange(amount, fromCurrency, toCurrency);
 
         // Aplică comision
-        //BigDecimal commission = exchangedAmount.multiply(EXCHANGE_COMMISSION);
-        //exchangedAmount = exchangedAmount.subtract(commission);
         BigDecimal commission = calculateCommission(amount, fromCurrency, toCurrency);
         exchangedAmount = exchangedAmount.subtract(commission);
         // Efectuează schimbul
@@ -88,14 +92,10 @@ public class ExchangeService {
         // Depune în moneda destinație
         account.deposit(exchangedAmount, toCurrency);
 
-        // Salvează contul
-        // Notă: În practică, ai salva prin accountService
 
         // Înregistrează tranzacția
         String description = String.format("Schimb valutar %s -> %s (comision: %s %s)",
                 fromCurrency, toCurrency, commission.setScale(4, RoundingMode.HALF_UP), toCurrency);
-
-        // Ar trebui să creăm o tranzacție de tip EXCHANGE
 
         return account;
     }
@@ -103,24 +103,14 @@ public class ExchangeService {
     /**
      * Calculează suma schimbată între două monede
      */
-    /*public BigDecimal calculateExchange(BigDecimal amount, Currency fromCurrency,
-                                        Currency toCurrency) {
-        BigDecimal rateFrom = exchangeRates.get(fromCurrency);
-        BigDecimal rateTo = exchangeRates.get(toCurrency);
 
-        if (rateFrom == null || rateTo == null) {
-            throw new CurrencyExchangeException(fromCurrency, toCurrency, amount,
-                    "Rate de schimb indisponibile");
-        }
-
-        // Conversie: amount * (rateFrom / rateTo)
-        return amount.multiply(rateFrom).divide(rateTo, 4, RoundingMode.HALF_UP);
-    }*/
+    @Cacheable(value = "exchangeRates", key = "'calculate-' + #amount + '-' " +
+            "+ #fromCurrency.code + '-' + #toCurrency.code", unless = "#result == null")
     public BigDecimal calculateExchange(BigDecimal amount, Currency fromCurrency, Currency toCurrency) {
         BigDecimal rateFrom = exchangeRates.get(fromCurrency);
         BigDecimal rateTo = exchangeRates.get(toCurrency);
         BigDecimal result = amount.multiply(rateFrom).divide(rateTo, 4, RoundingMode.HALF_UP);
-        return result.setScale(2, RoundingMode.HALF_UP);  // ← ADAUGĂ ASTA!
+        return result.setScale(2, RoundingMode.HALF_UP);
     }
     /**
      * Calculează suma schimbată între două monede (cu string-uri)
@@ -137,6 +127,7 @@ public class ExchangeService {
     /**
      * Actualizează rata de schimb pentru o monedă
      */
+    @CacheEvict(value = "exchangeRates", allEntries = true)
     public void updateExchangeRate(Currency currency, BigDecimal newRate) {
         if (newRate.compareTo(BigDecimal.ZERO) <= 0) {
             throw new ValidationException("Rată invalidă")
@@ -149,6 +140,7 @@ public class ExchangeService {
     /**
      * Returnează rata de schimb pentru o monedă
      */
+    @Cacheable(value = "exchangeRates", key = "#currency.code", unless = "#result == null")
     public BigDecimal getExchangeRate(Currency currency) {
         BigDecimal rate = exchangeRates.get(currency);
 
@@ -163,14 +155,30 @@ public class ExchangeService {
     /**
      * Returnează toate ratele de schimb
      */
+    @Cacheable(value = "exchangeRates", key = "'all'", unless = "#result == null")
     public Map<Currency, BigDecimal> getAllExchangeRates() {
+        System.out.println("📦 Încărcăm cursurile DIN BAZA DE DATE...");
         return new HashMap<>(exchangeRates);
+    }
+    public Map<String, BigDecimal> getAllExchangeRatesAsString() {
+        System.out.println("📦 Încărcăm cursurile DIN BAZA DE DATE...");
+        Map<String, BigDecimal> result = new HashMap<>();
+        for (Map.Entry<Currency, BigDecimal> entry : exchangeRates.entrySet()) {
+            result.put(entry.getKey().getCode(), entry.getValue());
+        }
+        return result;
     }
 
     /**
      * Returnează rata de schimb între două monede
      */
+    @Cacheable(value = "exchangeRates", key = "#fromCurrency.code + '-' + #toCurrency.code", unless = "#result == null")
     public BigDecimal getExchangeRate(Currency fromCurrency, Currency toCurrency) {
+
+        System.out.println("📦 Încărcăm cursul de schimb " +
+                fromCurrency + " -> " + toCurrency +
+                " DIN BAZA DE DATE...");
+
         if (fromCurrency == toCurrency) {
             return BigDecimal.ONE;
         }
@@ -186,6 +194,8 @@ public class ExchangeService {
     /**
      * Converstește o sumă în MDL
      */
+    @Cacheable(value = "exchangeRates", key = "'convert-' + " +
+            " #amount + '-' + #fromCurrency.code + '-MDL'", unless = "#result == null")
     public BigDecimal convertToMDL(BigDecimal amount, Currency currency) {
         return amount.multiply(getExchangeRate(currency));
     }
@@ -234,14 +244,7 @@ public class ExchangeService {
     /**
      * Calculează comisionul pentru un schimb valutar
      */
-    /*public BigDecimal calculateCommission(BigDecimal amount,
-                                          Currency fromCurrency,
-                                          Currency toCurrency) {
-        BigDecimal exchangedAmount = calculateExchange(amount, fromCurrency, toCurrency);
-        return exchangedAmount.multiply(EXCHANGE_COMMISSION);
-    }*/
-
-    public BigDecimal calculateCommission(BigDecimal amount, Currency fromCurrency, Currency toCurrency) {
+     public BigDecimal calculateCommission(BigDecimal amount, Currency fromCurrency, Currency toCurrency) {
         // 1. Calculează suma schimbată (deja rotunjită)
         BigDecimal exchangedAmount = calculateExchange(amount, fromCurrency, toCurrency);
 
@@ -264,6 +267,7 @@ public class ExchangeService {
     /**
      * Actualizează multiple rate deodată
      */
+    @CacheEvict(value = "exchangeRates", allEntries = true)
     public void updateMultipleRates(Map<Currency, BigDecimal> newRates) {
         for (Map.Entry<Currency, BigDecimal> entry : newRates.entrySet()) {
             if (entry.getValue() != null && entry.getValue().compareTo(BigDecimal.ZERO) > 0) {
@@ -276,6 +280,7 @@ public class ExchangeService {
     /**
      * Resetează ratele la valorile implicite
      */
+    @CacheEvict(value = "exchangeRates", allEntries = true)
     public void resetToDefaultRates() {
         initializeExchangeRates();
         System.out.println("✅ Ratele de schimb au fost resetate la valorile implicite");

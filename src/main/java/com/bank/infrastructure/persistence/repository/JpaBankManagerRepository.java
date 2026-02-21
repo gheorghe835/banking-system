@@ -10,30 +10,30 @@ import java.util.Optional;
 @Repository
 public interface JpaBankManagerRepository extends JpaRepository<BankManagerEntity, String> {
 
-    // Basic queries
+    // Interogări de bază
     Optional<BankManagerEntity> findByUsername(String username);
     Optional<BankManagerEntity> findByEmail(String email);
 
-    // Find by access level
+    //  Găsește după nivelul de acces
     List<BankManagerEntity> findByAccessLevel(String accessLevel);
 
-    // Find by department
+    // Găsește după departament
     List<BankManagerEntity> findByDepartment(String department);
 
-    // Find active/inactive managers
+    //  Găsește manageri activi/inactivi
     List<BankManagerEntity> findByActiveTrue();
     List<BankManagerEntity> findByActiveFalse();
 
-    // Find by name
+    //  Găsește după nume
     List<BankManagerEntity> findByFirstNameContainingIgnoreCase(String firstName);
     List<BankManagerEntity> findByLastNameContainingIgnoreCase(String lastName);
     List<BankManagerEntity> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
             String firstName, String lastName);
 
-    // Check existence
+    // Verifica existenta
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
 
-    // Find managers with admin access
+    //  Găsește administratori cu acces de administrator
     List<BankManagerEntity> findByAccessLevelIn(List<String> adminLevels);
 }

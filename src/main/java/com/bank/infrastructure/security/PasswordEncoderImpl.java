@@ -9,9 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Implementare a PasswordEncoder folosind BCrypt
- */
+
 @Component
 public class PasswordEncoderImpl implements PasswordEncoder {
 
@@ -63,7 +61,7 @@ public class PasswordEncoderImpl implements PasswordEncoder {
         if (plainPassword == null || salt == null) {
             throw new IllegalArgumentException("Parola și salt-ul nu pot fi null");
         }
-        // BCrypt include salt-ul în hash
+
         return encode(plainPassword);
     }
 

@@ -4,706 +4,76 @@
     <meta charset="UTF-8">
     <title>Detalii Client</title>
     <link rel="stylesheet" href="/css/styles.css">
-    <style>
-        /* Stiluri moderne pentru pagina de detalii client */
-        :root {
-            --primary-color: #007bff;
-            --success-color: #28a745;
-            --warning-color: #ffc107;
-            --danger-color: #dc3545;
-            --dark-color: #2c3e50;
-            --light-color: #f8f9fa;
-            --border-radius: 15px;
-            --box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            --transition: all 0.3s ease;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            padding: 30px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .container:before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 5px;
-            background: linear-gradient(90deg, var(--primary-color), #764ba2, var(--success-color));
-        }
-
-        /* Header */
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .title-section {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 8px 15px;
-            background: var(--light-color);
-            color: var(--dark-color);
-            text-decoration: none;
-            border-radius: 50px;
-            font-size: 0.9em;
-            transition: var(--transition);
-        }
-
-        .back-link:hover {
-            background: #e9ecef;
-            transform: translateX(-3px);
-        }
-
-        .page-header h2 {
-            color: var(--dark-color);
-            font-size: 2em;
-            margin: 0;
-            border-bottom: 3px solid var(--primary-color);
-            padding-bottom: 10px;
-        }
-
-        .title-icon {
-            font-size: 2em;
-        }
-
-        /* Profil card */
-        .profile-header {
-            display: flex;
-            gap: 30px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            align-items: center;
-            background: linear-gradient(135deg, #667eea10, #764ba210);
-            padding: 30px;
-            border-radius: var(--border-radius);
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .profile-avatar {
-            width: 120px;
-            height: 120px;
-            background: linear-gradient(135deg, var(--primary-color), #764ba2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3.5em;
-            color: white;
-            box-shadow: 0 10px 20px rgba(0,123,255,0.3);
-        }
-
-        .profile-title {
-            flex: 1;
-        }
-
-        .profile-title h1 {
-            margin: 0 0 10px 0;
-            color: var(--dark-color);
-            font-size: 2em;
-        }
-
-        .profile-badges {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 5px 15px;
-            border-radius: 50px;
-            font-size: 0.9em;
-            font-weight: 500;
-        }
-
-        .badge.id {
-            background: #e3f2fd;
-            color: #007bff;
-        }
-
-        .badge.status {
-            background: #d4edda;
-            color: #28a745;
-        }
-
-        .badge.status.inactive {
-            background: #f8d7da;
-            color: #dc3545;
-        }
-
-        .badge.date {
-            background: #fff3e0;
-            color: #fd7e14;
-        }
-
-        /* Grid informații client */
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .info-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            border: 1px solid rgba(0,0,0,0.05);
-            transition: var(--transition);
-        }
-
-        .info-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        }
-
-        .info-card h3 {
-            margin: 0 0 15px 0;
-            color: var(--dark-color);
-            font-size: 1.1em;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .info-row {
-            display: flex;
-            margin-bottom: 12px;
-            padding-bottom: 12px;
-            border-bottom: 1px dashed #ecf0f1;
-        }
-
-        .info-row:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-
-        .info-label {
-            width: 120px;
-            color: #6c757d;
-            font-size: 0.9em;
-        }
-
-        .info-value {
-            flex: 1;
-            color: var(--dark-color);
-            font-weight: 500;
-        }
-
-        /* Secțiune conturi asociate */
-        .accounts-section {
-            margin-top: 40px;
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .section-header h3 {
-            color: var(--dark-color);
-            font-size: 1.3em;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .accounts-stats {
-            display: flex;
-            gap: 15px;
-        }
-
-        .stat-badge {
-            background: var(--light-color);
-            padding: 5px 12px;
-            border-radius: 50px;
-            font-size: 0.9em;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        /* Tabel conturi */
-        .table-container {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            margin-bottom: 30px;
-        }
-
-        .table-header {
-            background: linear-gradient(135deg, var(--dark-color), #34495e);
-            color: white;
-            padding: 15px 20px;
-        }
-
-        .table-header h3 {
-            margin: 0;
-            color: white;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        thead {
-            background: linear-gradient(135deg, var(--dark-color), #34495e);
-            color: white;
-        }
-
-        th {
-            padding: 15px 20px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 0.95em;
-        }
-
-        tbody tr {
-            border-bottom: 1px solid #ecf0f1;
-            transition: background-color 0.2s ease;
-        }
-
-        tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-
-        td {
-            padding: 15px 20px;
-            color: var(--dark-color);
-            vertical-align: top;
-        }
-
-        /* Badge tip cont */
-        .account-type {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 50px;
-            font-size: 0.85em;
-            font-weight: 600;
-        }
-
-        .account-type.current {
-            background: #e3f2fd;
-            color: #007bff;
-        }
-
-        .account-type.savings {
-            background: #e8f5e9;
-            color: #28a745;
-        }
-
-        .account-type.business {
-            background: #fff3e0;
-            color: #fd7e14;
-        }
-
-        /* Status badge */
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 50px;
-            font-size: 0.85em;
-            font-weight: 600;
-        }
-
-        .status-badge.active {
-            background: #d4edda;
-            color: #28a745;
-        }
-
-        .status-badge.inactive {
-            background: #f8d7da;
-            color: #dc3545;
-        }
-
-        /* Currency badge */
-        .currency-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.8em;
-            font-weight: 600;
-            min-width: 50px;
-            text-align: center;
-        }
-
-        .currency-badge.mdl {
-            background: #e3f2fd;
-            color: #007bff;
-        }
-
-        .currency-badge.eur {
-            background: #fff3e0;
-            color: #fd7e14;
-        }
-
-        .currency-badge.usd {
-            background: #e8f5e9;
-            color: #28a745;
-        }
-
-        .currency-badge.gbp {
-            background: #f8d7da;
-            color: #dc3545;
-        }
-
-        .currency-badge.ron {
-            background: #cce5ff;
-            color: #004085;
-        }
-
-        /* Sold amount */
-        .amount {
-            font-weight: 600;
-        }
-
-        /* Sold container */
-        .balances-container {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .balance-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 4px 0;
-        }
-
-        .total-row {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 2px dashed var(--light-color);
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-
-        /* Butoane */
-        .btn-small {
-            display: inline-block;
-            padding: 5px 10px;
-            background: var(--primary-color);
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            font-size: 0.85em;
-            transition: var(--transition);
-        }
-
-        .btn-small:hover {
-            background: #0056b3;
-        }
-
-        .btn-primary {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            background: linear-gradient(135deg, var(--primary-color), #0056b3);
-            color: white;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: 600;
-            transition: var(--transition);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0,123,255,0.3);
-        }
-
-        .btn-secondary {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            background: #6c757d;
-            color: white;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: 600;
-            transition: var(--transition);
-            margin-left: 10px;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-            }
-
-            .profile-header {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .table-container {
-                overflow-x: auto;
-            }
-
-            table {
-                min-width: 900px;
-            }
-        }
-    </style>
 </head>
 <body>
 <div class="container">
-    <!-- Header -->
-    <div class="page-header">
-        <div class="title-section">
-            <a href="/web/admin/customers" class="back-link">
-                ← Înapoi la lista clienți
-            </a>
-            <span class="title-icon">👤</span>
-            <h2>Detalii Client</h2>
-        </div>
+    <h2>Detalii Client</h2>
+
+    <div th:if="${success}" class="success">
+        <p th:text="${success}"></p>
     </div>
 
-    <!-- Profil header -->
-    <div class="profile-header">
-        <div class="profile-avatar">
-            👤
-        </div>
-        <div class="profile-title">
-            <h1 th:text="${customer.fullName}">Ion Popescu</h1>
-            <div class="profile-badges">
-                <span class="badge id">
-                    🆔 <span th:text="${customer.customerId}">CUST001</span>
-                </span>
-                <span class="badge status" th:classappend="${customer.active} ? '' : 'inactive'">
-                    <span th:text="${customer.active} ? '✅ Activ' : '❌ Inactiv'">Activ</span>
-                </span>
-                <span class="badge date">
-                    📅 Înregistrat: <span th:text="${#temporals.format(customer.registrationDate, 'dd.MM.yyyy')}">01.01.2024</span>
-                </span>
-            </div>
-        </div>
+    <div th:if="${error}" class="error">
+        <p th:text="${error}"></p>
     </div>
 
-    <!-- Grid informații client -->
-    <div class="info-grid">
-        <!-- Card informații personale -->
-        <div class="info-card">
-            <h3>👤 Informații Personale</h3>
-            <div class="info-row">
-                <span class="info-label">ID Client:</span>
-                <span class="info-value" style="color: var(--primary-color); font-weight: 600;" th:text="${customer.customerId}">CUST001</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Nume complet:</span>
-                <span class="info-value" th:text="${customer.fullName}">Ion Popescu</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Data nașterii:</span>
-                <span class="info-value" th:text="${#temporals.format(customer.birthDate, 'dd.MM.yyyy')}">01.01.1990</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">IDNP:</span>
-                <span class="info-value" th:text="${customer.identityNumber}">1234567890123</span>
-            </div>
-        </div>
-
-        <!-- Card informații contact -->
-        <div class="info-card">
-            <h3>📞 Informații Contact</h3>
-            <div class="info-row">
-                <span class="info-label">Email:</span>
-                <span class="info-value" th:text="${customer.email}">ion.popescu@email.com</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Telefon:</span>
-                <span class="info-value" th:text="${customer.phoneNumber}">+37369123456</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Adresă:</span>
-                <span class="info-value" th:text="${customer.address} ?: 'Nu este specificată'">Str. Exemplu, nr. 1</span>
-            </div>
-        </div>
-
-        <!-- Card informații suplimentare -->
-        <div class="info-card">
-            <h3>📋 Informații Suplimentare</h3>
-            <div class="info-row">
-                <span class="info-label">Data înregistrării:</span>
-                <span class="info-value" th:text="${#temporals.format(customer.registrationDate, 'dd.MM.yyyy HH:mm')}">01.01.2024 10:30</span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Status cont:</span>
-                <span class="info-value">
-                    <span class="status-badge" th:classappend="${customer.active} ? 'active' : 'inactive'"
-                          th:text="${customer.active} ? 'Activ' : 'Inactiv'">Activ</span>
-                </span>
-            </div>
-            <div class="info-row">
-                <span class="info-label">Total conturi:</span>
-                <span class="info-value" th:text="${#lists.size(accounts)}">3</span>
-            </div>
-        </div>
+    <div class="customer-info">
+        <p><strong>ID Client:</strong> <span th:text="${customer.customerId}"></span></p>
+        <p><strong>Nume:</strong> <span th:text="${customer.fullName}"></span></p>
+        <p><strong>Email:</strong> <span th:text="${customer.email}"></span></p>
+        <p><strong>Telefon:</strong> <span th:text="${customer.phoneNumber}"></span></p>
+        <p><strong>Data nașterii:</strong> <span th:text="${#temporals.format(customer.birthDate, 'dd.MM.yyyy')}"></span></p>
+        <p><strong>IDNP:</strong> <span th:text="${customer.identityNumber}"></span></p>
+        <p><strong>Adresă:</strong> <span th:text="${customer.address} ?: '-'"></span></p>
+        <p><strong>Data înregistrării:</strong> <span th:text="${#temporals.format(customer.registrationDate, 'dd.MM.yyyy HH:mm')}"></span></p>
+        <p><strong>Status:</strong>
+            <span th:text="${customer.active} ? 'Activ' : 'Inactiv'"
+                  th:class="${customer.active} ? 'active' : 'inactive'"></span>
+        </p>
     </div>
 
-    <!-- Secțiune conturi asociate -->
-    <div class="accounts-section">
-        <div class="section-header">
-            <h3>🏦 Conturi asociate</h3>
-            <div class="accounts-stats" th:if="${accounts != null and not #lists.isEmpty(accounts)}">
-                <span class="stat-badge">
-                    📊 Total: <span th:text="${#lists.size(accounts)}">3</span>
-                </span>
-            </div>
-        </div>
+    <h3>Conturi asociate</h3>
+    <div th:if="${accounts.empty}" class="info">
+        <p>Clientul nu are conturi bancare.</p>
+    </div>
 
-        <!-- Tabel conturi -->
-        <div class="table-container">
-            <table>
-                <thead>
-                <tr>
-                    <th>Număr Cont</th>
-                    <th>Tip</th>
-                    <th>Solduri disponibile</th>
-                    <th>Status</th>
-                    <th>Acțiuni</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="account : ${accounts}" th:unless="${#lists.isEmpty(accounts)}">
-                    <td>
-                        <strong th:text="${account.accountNumber}">1234567890123456</strong>
-                    </td>
-                    <td>
-                        <span class="account-type"
-                              th:classappend="|${account.accountType.toString().toLowerCase()}|"
-                              th:text="${account.accountType == 'CURRENT' ? '💳 Curent' :
-                                       (account.accountType == 'SAVINGS' ? '💰 Economii' :
-                                       (account.accountType == 'BUSINESS' ? '🏢 Business' : account.accountType))}">
-                            Curent
-                        </span>
-                    </td>
-                    <td>
-                        <!-- Definim cursurile de schimb -->
-                        <th:block th:with="eurRate=19.45, usdRate=17.55, gbpRate=22.10, ronRate=4.00">
-                            <div class="balances-container">
-                                <!-- Iterăm prin toate soldurile disponibile -->
-                                <th:block th:each="balanceEntry : ${account.allBalances}">
-                                    <div class="balance-row">
-                                        <span class="currency-badge"
-                                              th:classappend="${balanceEntry.key.toString().toLowerCase()}"
-                                              th:text="${balanceEntry.key}">
-                                            MDL
-                                        </span>
-                                        <span class="amount"
-                                              th:text="${#numbers.formatDecimal(balanceEntry.value, 0, 'COMMA', 2, 'POINT')} + ' ' + ${balanceEntry.key}">
-                                            1,000.00 MDL
-                                        </span>
-                                        <!-- Afișăm echivalentul în MDL pentru fiecare valută -->
-                                        <span style="color: #6c757d; font-size: 0.85em; margin-left: 10px;">
-                                            (≈
-                                            <span th:text="${#numbers.formatDecimal(
-                                                balanceEntry.key == 'MDL' ? balanceEntry.value :
-                                                (balanceEntry.key == 'EUR' ? balanceEntry.value * eurRate :
-                                                (balanceEntry.key == 'USD' ? balanceEntry.value * usdRate :
-                                                (balanceEntry.key == 'GBP' ? balanceEntry.value * gbpRate :
-                                                (balanceEntry.key == 'RON' ? balanceEntry.value * ronRate : balanceEntry.value)))),
-                                                0, 'COMMA', 2, 'POINT')} + ' MDL')">
-                                                1,000.00 MDL
-                                            </span>
-                                        </span>
-                                    </div>
-                                </th:block>
+    <div th:each="account : ${accounts}" class="account-section">
+        <h4>Cont: <span th:text="${account.accountNumber}"></span>
+            (<span th:text="${account.accountType}"></span>)
+            <span th:text="${account.active} ? '🟢 Activ' : '🔴 Inactiv'"
+                  th:class="${account.active} ? 'active' : 'inactive'"></span>
+        </h4>
 
-                                <!-- Total în MDL -->
-                                <div class="balance-row total-row">
-                                    <strong>Total în MDL:</strong>
-                                    <strong th:text="${#numbers.formatDecimal(account.totalBalanceInMDL, 0, 'COMMA', 2, 'POINT')} + ' MDL'">
-                                        25,750.50 MDL
-                                    </strong>
-                                </div>
-                            </div>
-                        </th:block>
-                    </td>
-                    <td>
-                        <span class="status-badge"
-                              th:classappend="${account.active} ? 'active' : 'inactive'"
-                              th:text="${account.active} ? '✅ Activ' : '❌ Inactiv'">
-                            Activ
-                        </span>
-                    </td>
-                    <td>
-                        <a th:href="@{/web/admin/accounts/{id}(id=${account.accountNumber})}"
-                           class="btn-small">
-                            Detalii
-                        </a>
-                    </td>
-                </tr>
-                <tr th:if="${accounts == null or #lists.isEmpty(accounts)}">
-                    <td colspan="5" style="text-align: center; padding: 40px;">
-                        Clientul nu are conturi asociate
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
+        <table class="balances-table">
+            <thead>
+            <tr>
+                <th>Monedă</th>
+                <th>Sold</th>
+                <th>Echivalent MDL</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="entry : ${account.allBalances}">
+                <td th:text="${entry.key}"></td>
+                <td th:text="${#numbers.formatDecimal(entry.value, 0, 2)} + ' ' + ${entry.key}"></td>
+                <!-- Calcul corect pentru echivalentul în MDL -->
+                <td th:text="${#numbers.formatDecimal(entry.value, 0, 2)} + ' ' + ${entry.key}"></td>
+            <tr class="total-row">
+                <td colspan="2"><strong>Total în MDL:</strong></td>
+                <td><strong th:text="${#numbers.formatDecimal(account.totalBalanceInMDL, 0, 2)} + ' MDL'"></strong></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 
-        <!-- Butoane acțiune -->
-        <div style="display: flex; gap: 10px; justify-content: flex-end;">
-            <a href="/web/admin/customers" class="btn-secondary">
-                ← Înapoi
-            </a>
-            <a th:href="@{/web/admin/accounts/create(customerId=${customer.customerId})}"
-               class="btn-primary">
-                ✨ Crează cont nou
-            </a>
-        </div>
+    <div class="actions">
+        <a th:href="@{/web/admin/customers/edit/{id}(id=${customer.customerId}, user=${param.user})}" class="btn">✏️ Editează Client</a>
+        <a th:href="@{/web/admin/customers/toggle/{id}(id=${customer.customerId}, user=${param.user})}"
+           class="btn" th:classappend="${customer.active} ? 'btn-warning' : 'btn-success'"
+           th:text="${customer.active} ? '🔒 Dezactivează' : '🔓 Activează'"></a>
+        <a th:href="@{/web/admin/customers(user=${param.user})}" class="btn-secondary">Înapoi la listă</a>
     </div>
 </div>
+
 </body>
 </html>

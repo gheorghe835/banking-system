@@ -41,11 +41,21 @@ public class AdminController {
             @RequestParam String accountNumber,
             @RequestParam String customerId,
             @RequestParam String accountType,
-            @RequestParam BigDecimal initialBalance) {
+            @RequestParam BigDecimal initialBalance,
+            @RequestParam String password) {
 
-        Customer customer = customerService.findCustomerById(customerId);
-        Account account = accountService.createAccount(accountNumber, customer, accountType, initialBalance);
-        return ResponseEntity.ok(webAccountMapper.toDto(account));
+        try {
+            Customer customer = customerService.findCustomerById(customerId);
+
+            Account account = accountService.createAccount(
+                    accountNumber, customer, accountType, initialBalance, password
+            );
+
+            return ResponseEntity.ok(webAccountMapper.toDto(account));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @DeleteMapping("/accounts/{accountNumber}")

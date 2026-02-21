@@ -60,7 +60,11 @@ class TransactionRepositoryTest {
         testAccount.setDailyWithdrawalLimit(BigDecimal.valueOf(5000));
         testAccount.setDailyWithdrawalUsed(BigDecimal.ZERO);
         testAccount.setLastResetDate(LocalDate.now());
+
+        testAccount.setPasswordHash("Parola1234");
+
         entityManager.persistAndFlush(testAccount);
+
 
         // Creează tranzacție
         TransactionEntity transaction = new TransactionEntity();
@@ -87,5 +91,5 @@ class TransactionRepositoryTest {
         assertThat(sum).isEqualByComparingTo(BigDecimal.valueOf(1000));
     }
 
-    // Restul testelor rămân la fel...
+
 }

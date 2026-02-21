@@ -4,6 +4,10 @@ import com.bank.domain.exception.ValidationException;
 import com.bank.domain.model.Account;
 import com.bank.domain.model.Currency;
 import com.bank.domain.model.Customer;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -12,15 +16,15 @@ import java.util.regex.Pattern;
 /**
  * Serviciu pentru validarea datelor în sistemul bancar
  */
+@Service
 public class ValidationService {
 
-    // Patterns for validation
     private static final Pattern ACCOUNT_NUMBER_PATTERN = Pattern.compile("^[0-9]{16}$");
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d).{6,}$");
     private static final Pattern EMAIL_PATTERN =  Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
-    private static final Pattern PHONE_PATTERN = Pattern.compile("^\\+?[0-9]{9,15}$");    private static final Pattern IDENTITY_NUMBER_PATTERN = Pattern.compile("^[0-9]{13}$");
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^\\+?[0-9]{9,15}$");
+    private static final Pattern IDENTITY_NUMBER_PATTERN = Pattern.compile("^[0-9]{13}$");
 
-    // Validation constants
     public static final int MIN_ACCOUNT_NUMBER_LENGTH = 16;
     public static final int MAX_ACCOUNT_NUMBER_LENGTH = 16;
     public static final int MIN_PASSWORD_LENGTH = 6;
@@ -51,6 +55,16 @@ public class ValidationService {
         }
     }
 
+    public boolean isValidAccountNumber(String accountNumber) {
+        if (accountNumber == null || accountNumber.trim().isEmpty()) {
+            return false;
+        }
+        if (accountNumber.length() != 16) {
+            return false;
+        }
+        return ACCOUNT_NUMBER_PATTERN.matcher(accountNumber).matches();
+    }
+
     /**
      * Validează o parolă
      */
@@ -75,6 +89,18 @@ public class ValidationService {
         }
     }
 
+    public boolean isValidPassword(String password) {
+        System.out.println("🔍 Validare parolă executată pentru: " + password);
+
+        if (password == null || password.trim().isEmpty()) {
+            return false;
+        }
+        if (password.length() < MIN_PASSWORD_LENGTH) {
+            return false;
+        }
+        return PASSWORD_PATTERN.matcher(password).matches();
+    }
+
     /**
      * Validează un email
      */
@@ -82,6 +108,13 @@ public class ValidationService {
         if (email == null || !EMAIL_PATTERN.matcher(email).matches()) {
             throw ValidationException.withError("email", "Adresa de email este invalidă", email);
         }
+    }
+
+    public boolean isValidEmail(String email) {
+        System.out.println("🔍 Validare email executată pentru: " + email);
+
+        if (email == null) return false;
+        return EMAIL_PATTERN.matcher(email).matches();
     }
 
     /**
@@ -93,6 +126,13 @@ public class ValidationService {
         }
     }
 
+    public boolean isValidPhoneNumber(String phoneNumber) {
+        System.out.println("🔍 Validare telefon executată pentru: " + phoneNumber);
+
+        if (phoneNumber == null) return false;
+        return PHONE_PATTERN.matcher(phoneNumber).matches();
+    }
+
     /**
      * Validează un număr de identitate (IDNP/CNP)
      */
@@ -100,6 +140,13 @@ public class ValidationService {
         if (identityNumber == null || !IDENTITY_NUMBER_PATTERN.matcher(identityNumber).matches()) {
             throw ValidationException.withError("identityNumber", "Număr de identitate invalid", identityNumber);
         }
+    }
+
+    public boolean isValidIdentityNumber(String identityNumber) {
+        System.out.println("🔍 Validare IDNP executată pentru: " + identityNumber);
+
+        if (identityNumber == null) return false;
+        return IDENTITY_NUMBER_PATTERN.matcher(identityNumber).matches();
     }
 
     /**
@@ -121,6 +168,14 @@ public class ValidationService {
         }
     }
 
+    public boolean isValidBirthDate(LocalDate birthDate) {
+        System.out.println("🔍 Validare dată naștere executată pentru: " + birthDate);
+
+        if (birthDate == null) return false;
+        LocalDate eighteenYearsAgo = LocalDate.now().minusYears(18);
+        return !birthDate.isAfter(eighteenYearsAgo);
+    }
+
     /**
      * Validează o sumă pentru depunere
      */
@@ -131,6 +186,13 @@ public class ValidationService {
                             MIN_DEPOSIT_AMOUNT, currency),
                     amount);
         }
+    }
+
+    public boolean isValidDepositAmount(BigDecimal amount, Currency currency) {
+        System.out.println("🔍 Validare sumă depunere executată pentru: " + amount + " " + currency);
+
+        if (amount == null) return false;
+        return amount.compareTo(MIN_DEPOSIT_AMOUNT) >= 0;
     }
 
     /**
@@ -156,6 +218,10 @@ public class ValidationService {
         }
     }
 
+    public boolean isValidBalance(BigDecimal balance) {
+        return balance != null && balance.compareTo(MIN_BALANCE) >= 0;
+    }
+
     /**
      * Validează o limită de retragere zilnică
      */
@@ -165,6 +231,10 @@ public class ValidationService {
                     String.format("Limita zilnică trebuie să fie minim %s MDL", MIN_WITHDRAWAL_LIMIT),
                     limit);
         }
+    }
+
+    public boolean isValidWithdrawalLimit(BigDecimal limit) {
+        return limit != null && limit.compareTo(MIN_WITHDRAWAL_LIMIT) >= 0;
     }
 
     /**
@@ -207,16 +277,28 @@ public class ValidationService {
         }
     }
 
+    public boolean isValidCurrency(String currencyCode) {
+        try {
+            Currency.fromCode(currencyCode);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
     /**
      * Returnează lista monedelor valide
      */
-    private String getValidCurrencies() {
+    public String getValidCurrencies() {
         StringBuilder sb = new StringBuilder();
         for (Currency currency : Currency.values()) {
             sb.append(currency.getCode()).append(", ");
         }
         return sb.substring(0, sb.length() - 2);
     }
+
+
+
 
     /**
      * Validează un cont (verifică doar datele de bază)
@@ -268,5 +350,19 @@ public class ValidationService {
         if (exception.hasErrors()) {
             throw exception;
         }
+    }
+
+    public boolean isValidCustomerName(String firstName, String lastName) {
+        boolean valid = true;
+
+        if (firstName == null || firstName.trim().length() < 2 || firstName.length() > 50) {
+            valid = false;
+        }
+
+        if (lastName == null || lastName.trim().length() < 2 || lastName.length() > 50) {
+            valid = false;
+        }
+
+        return valid;
     }
 }

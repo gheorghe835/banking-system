@@ -4,449 +4,96 @@
     <meta charset="UTF-8">
     <title>Banca Comercială</title>
     <link rel="stylesheet" href="/css/styles.css">
-    <style>
-        /* Stiluri suplimentare pentru pagina principală */
-        :root {
-            --primary-color: #007bff;
-            --success-color: #28a745;
-            --warning-color: #ffc107;
-            --dark-color: #2c3e50;
-            --light-color: #f8f9fa;
-        }
-
-        /* Layout principal cu două coloane */
-        .main-layout {
-            display: flex;
-            gap: 30px;
-            align-items: flex-start;
-        }
-
-        .content-left {
-            flex: 2;
-        }
-
-        .sidebar-right {
-            flex: 1;
-            min-width: 280px;
-        }
-
-        /* Hero Section */
-        .hero-section {
-            background: linear-gradient(135deg, #667eea10, #764ba210);
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .hero-section h1 {
-            font-size: 2.5em;
-            color: var(--dark-color);
-            margin-bottom: 15px;
-        }
-
-        .hero-description {
-            color: #6c757d;
-            font-size: 1em;
-            line-height: 1.6;
-        }
-
-        /* Sidebar - Curs Valutar Compact */
-        .exchange-sidebar {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            border: 1px solid rgba(0,0,0,0.05);
-            position: sticky;
-            top: 20px;
-        }
-
-        .exchange-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--light-color);
-        }
-
-        .exchange-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .exchange-title h3 {
-            margin: 0;
-            font-size: 1.1em;
-            color: var(--dark-color);
-        }
-
-        .last-updated {
-            font-size: 0.75em;
-            color: #6c757d;
-            background: var(--light-color);
-            padding: 3px 8px;
-            border-radius: 50px;
-            white-space: nowrap;
-        }
-
-        /* Listă cursuri compactă */
-        .rates-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-
-        .rate-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 12px;
-            background: var(--light-color);
-            border-radius: 8px;
-            transition: all 0.2s ease;
-        }
-
-        .rate-item:hover {
-            background: #e9ecef;
-            transform: translateX(-3px);
-        }
-
-        .rate-currency {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-weight: 600;
-            font-size: 0.9em;
-            color: var(--dark-color);
-        }
-
-        .rate-currency span {
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: white;
-            border-radius: 50%;
-            font-size: 0.9em;
-        }
-
-        .rate-value {
-            font-weight: 700;
-            font-size: 0.95em;
-            color: var(--primary-color);
-        }
-
-        .rate-change {
-            font-size: 0.75em;
-            padding: 2px 6px;
-            border-radius: 50px;
-            margin-left: 8px;
-        }
-
-        .rate-change.positive {
-            background: #d4edda;
-            color: #28a745;
-        }
-
-        .rate-change.negative {
-            background: #f8d7da;
-            color: #dc3545;
-        }
-
-        /* Buton refresh mic */
-        .refresh-btn {
-            width: 100%;
-            background: none;
-            border: 1px solid var(--primary-color);
-            color: var(--primary-color);
-            padding: 8px 12px;
-            border-radius: 50px;
-            font-size: 0.85em;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            margin-top: 10px;
-        }
-
-        .refresh-btn:hover {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .refresh-btn.rotating i {
-            animation: rotate 1s linear infinite;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        /* Auto-refresh info */
-        .auto-refresh {
-            font-size: 0.7em;
-            color: #6c757d;
-            text-align: center;
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px dashed var(--light-color);
-        }
-
-        /* Secțiune autentificare */
-        .auth-section {
-            background: linear-gradient(135deg, #667eea05, #764ba205);
-            border-radius: 12px;
-            padding: 25px;
-            margin-top: 20px;
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .auth-section h2 {
-            font-size: 1.5em;
-            margin-bottom: 10px;
-            color: var(--dark-color);
-        }
-
-        .auth-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .auth-btn {
-            flex: 1;
-            padding: 12px 20px;
-            font-size: 0.95em;
-            text-align: center;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .auth-btn.client {
-            background: linear-gradient(135deg, var(--primary-color), #0056b3);
-            color: white;
-        }
-
-        .auth-btn.manager {
-            background: linear-gradient(135deg, #28a745, #218838);
-            color: white;
-        }
-
-        .auth-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .main-layout {
-                flex-direction: column;
-            }
-
-            .sidebar-right {
-                width: 100%;
-            }
-
-            .exchange-sidebar {
-                position: static;
-            }
-
-            .auth-buttons {
-                flex-direction: column;
-            }
-        }
-    </style>
 </head>
 <body>
-<div class="container">
-    <!-- Layout principal cu două coloane -->
-    <div class="main-layout">
-        <!-- Coloana stângă - Conținut principal -->
-        <div class="content-left">
-            <!-- Hero Section -->
-            <div class="hero-section">
-                <h1>🏦 Banca Comercială</h1>
-                <p class="hero-description">
-                    Partenerul tău de încredere în gestionarea finanțelor personale și ale afacerii tale.
-                    Cu o experiență de peste 20 de ani în domeniul bancar.
-                </p>
-            </div>
 
-            <!-- Secțiune Bun Venit și Autentificare -->
-            <div class="auth-section">
-                <h2>Bun venit!</h2>
-                <p>Alege opțiunea de autentificare:</p>
+<header class="main-header">
+    <div class="header-left">
+        <h1>🏦 Banca Comercială</h1>
+        <p class="bank-description">
+            Banca Comercială este partenerul tău de încredere
+            în gestionarea finanțelor personale și ale afacerii tale.
+            Cu o experiență de peste 20 de ani în domeniul bancar,
+            oferim soluții personalizate pentru toate nevoile tale financiare.        </p>
+    </div>
 
-                <div class="auth-buttons">
-                    <a href="/web/login" class="auth-btn client">
-                        👤 Client
-                    </a>
-                    <a href="/web/login?manager=true" class="auth-btn manager">
-                        👔 Manager
-                    </a>
-                </div>
-            </div>
-
-            <!-- Mesaj de logout -->
-            <div th:if="${param.logout}" class="message success" style="margin-top: 20px;">
-                <p>Te-ai deconectat cu succes!</p>
-            </div>
+    <div class="header-right">
+        <div class="date-time">
+            <span id="date"></span>
+            <span id="time"></span>
         </div>
 
-        <!-- Coloana dreaptă - Sidebar Curs Valutar -->
-        <div class="sidebar-right">
-            <div class="exchange-sidebar">
-                <div class="exchange-header">
-                    <div class="exchange-title">
-                        <span>💱</span>
-                        <h3>Curs Valutar</h3>
-                    </div>
-                    <div class="last-updated" id="lastUpdated">
-                        <span>🕒</span> <span>actualizat</span>
-                    </div>
-                </div>
+        <div class="auth-buttons">
+            <a th:href="@{/web/login}" class="btn login-btn">
+                Autentificare Client
+            </a>
 
-                <!-- Listă cursuri compactă -->
-                <div class="rates-list" id="exchangeRates">
-                    <div class="rate-item">
-                        <div class="rate-currency">
-                            <span>🇪🇺</span> EUR
-                        </div>
-                        <div style="display: flex; align-items: center;">
-                            <span class="rate-value" id="eurRate">19.45</span>
-                            <span class="rate-change positive" id="eurChange">+0.05%</span>
-                        </div>
-                    </div>
-
-                    <div class="rate-item">
-                        <div class="rate-currency">
-                            <span>🇺🇸</span> USD
-                        </div>
-                        <div style="display: flex; align-items: center;">
-                            <span class="rate-value" id="usdRate">17.55</span>
-                            <span class="rate-change negative" id="usdChange">-0.03%</span>
-                        </div>
-                    </div>
-
-                    <div class="rate-item">
-                        <div class="rate-currency">
-                            <span>🇬🇧</span> GBP
-                        </div>
-                        <div style="display: flex; align-items: center;">
-                            <span class="rate-value" id="gbpRate">22.10</span>
-                            <span class="rate-change positive" id="gbpChange">+0.12%</span>
-                        </div>
-                    </div>
-
-                    <div class="rate-item">
-                        <div class="rate-currency">
-                            <span>🇷🇴</span> RON
-                        </div>
-                        <div style="display: flex; align-items: center;">
-                            <span class="rate-value" id="ronRate">4.00</span>
-                            <span class="rate-change" id="ronChange">0.00%</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Buton refresh -->
-                <button class="refresh-btn" onclick="refreshRates()" id="refreshBtn">
-                    <i>🔄</i> Actualizează cursurile
-                </button>
-
-                <!-- Auto-refresh info -->
-                <div class="auto-refresh">
-                    Actualizare automată la 30 sec
-                </div>
-            </div>
+            <a th:href="@{/web/login(manager=true)}" class="btn register-btn">
+                Autentificare Manager
+            </a>
         </div>
     </div>
-</div>
+</header>
+
+
+<section class="advertisement">
+    <h2>Ofertă Specială</h2>
+    <ul class="offers-list">
+        <li>✨ Cont curent cu 0 comisioane de administrare</li>
+        <li>💳 Card de credit cu cashback 5% la cumpărături</li>
+        <li>🏠 Credite ipotecare cu dobândă fixă pe 5 ani</li>
+        <li>📱 Aplicație mobile banking premium</li>
+        <li>💰 Depozite la termen cu dobândă promotională</li>
+    </ul>
+</section>
+
+
+<section class="exchange-rate">
+    <h2>Curs Valutar</h2>
+
+    <table class="modern-table exchange-table">
+        <thead>
+        <tr>
+            <th>Monedă</th>
+            <th>Curs (MDL)</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>EUR</td>
+            <td>19.75</td>
+        </tr>
+        <tr>
+            <td>USD</td>
+            <td>18.30</td>
+        </tr>
+        <tr>
+            <td>RON</td>
+            <td>4.05</td>
+        </tr>
+        <tr>
+            <td>GBP</td>
+            <td>23.10</td>
+        </tr>
+        </tbody>
+    </table>
+</section>
+
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Încărcare inițială a cursurilor
-        loadExchangeRates();
+    function updateDateTime() {
+        const now = new Date();
 
-        // Auto-refresh la fiecare 30 secunde
-        setInterval(loadExchangeRates, 30000);
-    });
+        const date = now.toLocaleDateString();
+        const time = now.toLocaleTimeString();
 
-    // Funcție pentru încărcarea cursurilor
-    function loadExchangeRates() {
-        const refreshBtn = document.getElementById('refreshBtn');
-        if (refreshBtn) {
-            refreshBtn.classList.add('rotating');
-        }
-
-        // Simulare încărcare date de la server
-        setTimeout(() => {
-            // Aici ar trebui să faci un fetch către API-ul real
-            const rates = {
-                eur: (19.45 + (Math.random() * 0.1 - 0.05)).toFixed(4),
-                usd: (17.55 + (Math.random() * 0.1 - 0.05)).toFixed(4),
-                gbp: (22.10 + (Math.random() * 0.1 - 0.05)).toFixed(4),
-                ron: (4.00 + (Math.random() * 0.02 - 0.01)).toFixed(4)
-            };
-
-            // Actualizare valori
-            document.getElementById('eurRate').textContent = rates.eur;
-            document.getElementById('usdRate').textContent = rates.usd;
-            document.getElementById('gbpRate').textContent = rates.gbp;
-            document.getElementById('ronRate').textContent = rates.ron;
-
-            // Calcul și afișare variații
-            updateChanges(rates);
-
-            // Actualizare timestamp
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            document.querySelector('#lastUpdated span:last-child').textContent = timeStr;
-
-            if (refreshBtn) {
-                refreshBtn.classList.remove('rotating');
-            }
-        }, 500);
+        document.getElementById("date").innerText = date;
+        document.getElementById("time").innerText = time;
     }
 
-    // Funcție pentru actualizarea variațiilor
-    function updateChanges(newRates) {
-        const changes = {
-            eur: (Math.random() * 0.2 - 0.1).toFixed(2),
-            usd: (Math.random() * 0.2 - 0.1).toFixed(2),
-            gbp: (Math.random() * 0.2 - 0.1).toFixed(2),
-            ron: (Math.random() * 0.1 - 0.05).toFixed(2)
-        };
-
-        for (let [currency, change] of Object.entries(changes)) {
-            const element = document.getElementById(`${currency}Change`);
-            if (element) {
-                const changeValue = parseFloat(change);
-                element.textContent = (changeValue > 0 ? '+' : '') + changeValue + '%';
-                element.className = 'rate-change';
-                if (changeValue > 0) {
-                    element.classList.add('positive');
-                } else if (changeValue < 0) {
-                    element.classList.add('negative');
-                }
-            }
-        }
-    }
-
-    // Funcție pentru refresh manual
-    function refreshRates() {
-        loadExchangeRates();
-    }
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
 </script>
+
 </body>
 </html>

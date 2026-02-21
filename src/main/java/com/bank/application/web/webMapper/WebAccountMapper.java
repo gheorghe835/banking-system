@@ -50,10 +50,6 @@ public class WebAccountMapper {
             return null;
         }
 
-        // Notă: Această metodă este mai complexă pentru că Account are nevoie de Customer
-        // De obicei nu convertim direct din DTO în Domain, ci folosim service-ul
-        // Aceasta este doar o schiță - în practică vei folosi createAccount din service
-
         Account account = new Account();
         account.setAccountNumber(dto.getAccountNumber());
         account.setAccountType(dto.getAccountType());
@@ -61,13 +57,11 @@ public class WebAccountMapper {
         account.setActive(dto.isActive());
         account.setDailyWithdrawalLimit(dto.getDailyWithdrawalLimit());
 
-        // Owner-ul trebuie setat separat din baza de date
-
         return account;
     }
 
     /**
-     * Versiune simplificată pentru răspunsuri rapide (fără solduri detaliate)
+     * Versiune pentru răspunsuri rapide
      */
     public AccountDTO toSimpleDto(Account account) {
         if (account == null) {
@@ -80,7 +74,7 @@ public class WebAccountMapper {
         dto.setAccountType(account.getAccountType());
         dto.setActive(account.isActive());
 
-        // Doar soldul total în MDL
+        // soldul total în MDL
         Map<String, BigDecimal> simpleBalance = new HashMap<>();
         simpleBalance.put("TOTAL_MDL", account.getTotalBalanceInMDL());
         dto.setBalances(simpleBalance);

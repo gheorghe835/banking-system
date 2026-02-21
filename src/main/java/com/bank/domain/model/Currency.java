@@ -1,5 +1,8 @@
 package com.bank.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 /**
  * Enum pentru valutele suportate în sistemul bancar
  * Fiecare monedă are un cod ISO și o rată de schimb implicită față de MDL
@@ -27,6 +30,7 @@ public enum Currency {
         return name;
     }
 
+    @JsonValue
     public String getCode() {
         return this.name();
     }
@@ -37,6 +41,7 @@ public enum Currency {
 
     // Metode utilitare
     // Găsește Currency după cod
+    @JsonCreator
     public static Currency fromCode(String code) {
         if (code == null) {
             throw new IllegalArgumentException("Codul valutar nu poate fi null");

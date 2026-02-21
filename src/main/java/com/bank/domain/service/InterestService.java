@@ -7,6 +7,10 @@ import com.bank.domain.model.Currency;
 import com.bank.domain.model.Transaction;
 import com.bank.domain.repository.AccountRepository;
 import com.bank.domain.repository.TransactionRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -18,16 +22,8 @@ import java.util.List;
 
 /**
  * Serviciu pentru calculul și aplicarea dobânzilor bancare
- *
- * <p>Responsabilități principale:</p>
- * <ul>
- *   <li>Calculul dobânzilor pentru diferite tipuri de conturi</li>
- *   <li>Aplicarea periodică a dobânzilor</li>
- *   <li>Înregistrarea tranzacțiilor de dobândă</li>
- *   <li>Generarea de rapoarte și statistici</li>
- *   <li>Gestiunea ratelor dobânzilor</li>
- * </ul>
  */
+@Service
 public class InterestService {
 
     private final AccountRepository accountRepository;
@@ -47,10 +43,6 @@ public class InterestService {
 
     /**
      * Constructor pentru InterestService
-     *
-     * @param accountRepository Repository pentru conturi
-     * @param transactionRepository Repository pentru tranzacții
-     * @param accountService Serviciul pentru conturi
      */
     public InterestService(AccountRepository accountRepository,
                            TransactionRepository transactionRepository,
@@ -66,11 +58,6 @@ public class InterestService {
 
     /**
      * Calculează dobânda pentru un cont pentru o perioadă specificată
-     *
-     * @param account Contul pentru care se calculează dobânda
-     * @param days Numărul de zile pentru care se calculează dobânda
-     * @param annualRate Rata anuală a dobânzii (în procente)
-     * @return Suma dobânzii calculate
      */
     public BigDecimal calculateInterest(Account account, int days, double annualRate) {
         // Validare input
@@ -114,10 +101,6 @@ public class InterestService {
 
     /**
      * Calculează dobânda pentru un cont folosind rata potrivită tipului de cont
-     *
-     * @param account Contul pentru care se calculează dobânda
-     * @param days Numărul de zile pentru care se calculează dobânda
-     * @return Suma dobânzii calculate
      */
     public BigDecimal calculateInterestForAccount(Account account, int days) {
         double annualRate = getInterestRateForAccountType(account.getAccountType());
@@ -126,9 +109,6 @@ public class InterestService {
 
     /**
      * Returnează rata de dobândă în funcție de tipul contului
-     *
-     * @param accountType Tipul contului
-     * @return Rata anuală a dobânzii (în procente)
      */
     private double getInterestRateForAccountType(String accountType) {
         if (accountType == null) {
@@ -145,11 +125,6 @@ public class InterestService {
 
     /**
      * Calculează dobânda pentru o perioadă specificată
-     *
-     * @param account Contul pentru care se calculează dobânda
-     * @param startDate Data de început
-     * @param endDate Data de sfârșit
-     * @return Suma dobânzii calculate
      */
     public BigDecimal calculateInterestForPeriod(Account account, LocalDate startDate, LocalDate endDate) {
         if (startDate == null || endDate == null) {
@@ -170,12 +145,8 @@ public class InterestService {
 
     /**
      * Aplică dobânda zilnică pentru un cont
-     *
-     * @param account Contul pentru care se aplică dobânda
-     * @param date Data pentru care se aplică dobânda
-     * @return Suma dobânzii aplicate
      */
-    private BigDecimal applyDailyInterest(Account account, LocalDate date) {
+    public BigDecimal applyDailyInterest(Account account, LocalDate date) {
         // Calculează dobânda pentru o zi
         BigDecimal dailyInterest = calculateInterestForAccount(account, 1);
 
@@ -196,6 +167,11 @@ public class InterestService {
     /**
      * Aplică dobânda la toate conturile active (pentru ziua curentă)
      */
+    @Caching(evict = {
+            @CacheEvict(value = "interestCalculations", allEntries = true),
+            @CacheEvict(value = "interestProjections", allEntries = true),
+            @CacheEvict(value = "interestReports", allEntries = true)
+    })
     public void applyInterestToAllAccounts() {
         List<Account> activeAccounts = accountRepository.findActiveAccounts();
         LocalDate today = LocalDate.now();
@@ -235,10 +211,9 @@ public class InterestService {
 
     /**
      * Aplică dobânda pentru o perioadă specificată
-     *
-     * @param startDate Data de început
-     * @param endDate Data de sfârșit
      */
+
+    @CacheEvict(value = "interestCalculations", allEntries = true)
     public void applyInterestForPeriod(LocalDate startDate, LocalDate endDate) {
         if (startDate == null || endDate == null) {
             throw new IllegalArgumentException("Datele nu pot fi null");
@@ -300,9 +275,6 @@ public class InterestService {
 
     /**
      * Înregistrează o tranzacție de dobândă - IMPLEMENTARE COMPLETĂ
-     *
-     * @param account Contul care primește dobânda
-     * @param interest Suma dobânzii
      */
     private void recordInterestTransaction(Account account, BigDecimal interest) {
         try {
@@ -345,7 +317,7 @@ public class InterestService {
 
         } catch (Exception e) {
             // Logare eroare
-            System.err.printf("❌ Eroare la înregistrarea dobânzii pentru contul %s: %s%n",
+            System.err.printf(" Eroare la înregistrarea dobânzii pentru contul %s: %s%n",
                     account.getAccountNumber(),
                     e.getMessage());
 
@@ -400,9 +372,6 @@ public class InterestService {
 
     /**
      * Calculează dobânda totală care va fi plătită pentru toate conturile
-     *
-     * @param days Numărul de zile pentru proiecție
-     * @return Dobânda totală proiectată
      */
     public BigDecimal calculateTotalInterestProjection(int days) {
         List<Account> activeAccounts = accountRepository.findActiveAccounts();
@@ -461,9 +430,6 @@ public class InterestService {
 
     /**
      * Găsește conturile care primesc cea mai mare dobândă
-     *
-     * @param limit Numărul maxim de conturi de returnat
-     * @return Lista conturilor sortate după dobânda primită
      */
     public List<Account> getTopInterestEarners(int limit) {
         List<Account> activeAccounts = accountRepository.findActiveAccounts();
@@ -479,8 +445,6 @@ public class InterestService {
 
     /**
      * Afișează topul investitorilor (cei care primesc cea mai mare dobândă)
-     *
-     * @param topN Numărul de conturi de afișat
      */
     public void displayTopInterestEarners(int topN) {
         List<Account> topEarners = getTopInterestEarners(topN);
@@ -532,9 +496,6 @@ public class InterestService {
 
     /**
      * Verifică dacă un cont primește dobândă
-     *
-     * @param account Contul de verificat
-     * @return true dacă contul primește dobândă, false altfel
      */
     public boolean isEarningInterest(Account account) {
         if (account == null || !account.isActive()) {
@@ -547,11 +508,6 @@ public class InterestService {
 
     /**
      * Calculează cât timp e nevoie pentru a ajunge la o anumită sumă prin dobândă
-     *
-     * @param account Contul pentru calcul
-     * @param targetAmount Suma țintă
-     * @param annualRate Rata anuală a dobânzii (opțional, dacă null se folosește rata contului)
-     * @return Numărul de zile necesare, sau -1 dacă nu se poate calcula
      */
     public int calculateTimeToTarget(Account account, BigDecimal targetAmount, Double annualRate) {
         if (account == null || targetAmount == null) {
@@ -588,9 +544,8 @@ public class InterestService {
 
     /**
      * Aplică dobânda pentru un cont specific (pentru test/manual)
-     *
-     * @param accountNumber Numărul contului
      */
+
     public void applyInterestToSingleAccount(String accountNumber) {
         try {
             Account account = accountService.findActiveAccount(accountNumber);
@@ -618,10 +573,6 @@ public class InterestService {
 
     /**
      * Calculează dobânda pentru o perioadă specifică (în zile)
-     *
-     * @param account Contul pentru calcul
-     * @param days Numărul de zile
-     * @return Suma dobânzii
      */
     public BigDecimal calculateInterestForPeriod(Account account, int days) {
         if (days <= 0) {
@@ -633,9 +584,6 @@ public class InterestService {
 
     /**
      * Obține rata de dobândă pentru un tip de cont
-     *
-     * @param accountType Tipul contului
-     * @return Rata anuală a dobânzii
      */
     public double getInterestRate(String accountType) {
         return getInterestRateForAccountType(accountType);

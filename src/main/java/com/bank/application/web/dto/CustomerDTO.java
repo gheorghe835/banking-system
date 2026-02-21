@@ -17,7 +17,10 @@ public class CustomerDTO {
     private boolean active;
 
     // Constructor gol
-    public CustomerDTO() {}
+    public CustomerDTO() {
+        this.registrationDate = LocalDateTime.now();
+        this.active = true;
+    }
 
     // Getters și Setters
     public String getCustomerId() { return customerId; }

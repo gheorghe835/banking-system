@@ -11,46 +11,46 @@ import java.util.Optional;
 @Repository
 public interface JpaCustomerRepository extends JpaRepository<CustomerEntity, String> {
 
-    // Find by email
+    // Găsește prin e-mail
     Optional<CustomerEntity> findByEmail(String email);
 
-    // Find by identity number
+    // Găsește după numărul de identificare
     Optional<CustomerEntity> findByIdentityNumber(String identityNumber);
 
-    // Find by phone number
+    // Găsește după numărul de telefon
     Optional<CustomerEntity> findByPhoneNumber(String phoneNumber);
 
-    // Find active customers
+// Găsește clienți activi
     List<CustomerEntity> findByActiveTrue();
 
-    // Find inactive customers
+    // Găsește clienți inactivi
     List<CustomerEntity> findByActiveFalse();
 
-    // Find by last name (case insensitive)
+    //  Găsește după nume (fără distincție între majuscule și minuscule)
     List<CustomerEntity> findByLastNameContainingIgnoreCase(String lastName);
 
-    // Find by full name search
+    //  Găsește după căutarea numelui complet
     List<CustomerEntity> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(
             String firstName, String lastName);
 
-    // Find customers born after a date
+    // Găsește clienți născuți după o anumită dată
     List<CustomerEntity> findByBirthDateAfter(LocalDate date);
 
-    // Find customers born before a date
+    // Găsește clienți născuți înainte de o anumită dată
     List<CustomerEntity> findByBirthDateBefore(LocalDate date);
 
-    // Find customers by age range
+    // Găsește clienți după intervalul de vârstă
     List<CustomerEntity> findByBirthDateBetween(LocalDate startDate, LocalDate endDate);
 
-    // Check if email exists
+    //  Verifica dacă există o adresă de e-mail
     boolean existsByEmail(String email);
 
-    // Check if identity number exists
+    // Verifica dacă există un număr de identificare
     boolean existsByIdentityNumber(String identityNumber);
 
-    // Count active customers
+    // Numără clienții activi
     long countByActiveTrue();
 
-    // Count inactive customers
+    // Numără clienții inactivi
     long countByActiveFalse();
 }

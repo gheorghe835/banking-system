@@ -36,9 +36,8 @@ class CustomerAccountIntegrationTest {
         );
 
         // 2. Creează două conturi pentru același client
-        accountService.createAccount("5555555555555555", customer, "CURRENT", BigDecimal.valueOf(1000));
-        accountService.createAccount("6666666666666666", customer, "SAVINGS", BigDecimal.valueOf(5000));
-
+        accountService.createAccount("5555555555555555", customer, "CURRENT", BigDecimal.valueOf(1000), "Parola1234");
+        accountService.createAccount("6666666666666666", customer, "SAVINGS", BigDecimal.valueOf(5000), "Parola1234");
         // 3. Găsește toate conturile clientului
         List<Account> accounts = accountService.getCustomerAccounts(customer.getCustomerId());
 
@@ -54,7 +53,9 @@ class CustomerAccountIntegrationTest {
                 java.time.LocalDate.of(1989, 8, 5), "0123456789012"
         );
 
-        accountService.createAccount("7777777777777777", customer, "CURRENT", BigDecimal.valueOf(2000));
+        accountService.createAccount("7777777777777777", customer,
+                "CURRENT", BigDecimal.valueOf(2000),
+        "Parola1234");
 
         // 2. Dezactivează clientul
         customerService.deactivateCustomer(customer.getCustomerId());

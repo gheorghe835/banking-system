@@ -5,6 +5,8 @@ import com.bank.domain.exception.BankingSecurityException;
 import com.bank.domain.model.Account;
 import com.bank.domain.model.BankManager;
 import com.bank.domain.model.Customer;
+import com.bank.domain.repository.AccountRepository;
+import com.bank.domain.repository.TransactionRepository;
 import com.bank.domain.service.AccountService;
 import com.bank.domain.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +28,10 @@ class AuthServiceTest {
 
     @Mock
     private AccountService accountService;
+    @Mock
+    private TransactionRepository transactionRepository;
+    @Mock
+    private AccountRepository accountRepository;
 
     private AuthService authService;
 
@@ -36,7 +42,9 @@ class AuthServiceTest {
 
     @BeforeEach
     void setUp() {
-        authService = new AuthService(accountService);
+        authService = new AuthService(accountService,
+                                      transactionRepository,
+                                       accountRepository);
 
         Customer customer = new Customer();
         customer.setFirstName("Ion");
@@ -46,7 +54,7 @@ class AuthServiceTest {
         testAccount.deposit(BigDecimal.valueOf(1000), Currency.MDL);
     }
 
-    @Test
+    /*@Test
     void authenticateClient_CorrectCredentials_ShouldReturnAccount() {
         when(accountService.findAccount(ACCOUNT_NUMBER)).thenReturn(testAccount);
 
@@ -54,6 +62,23 @@ class AuthServiceTest {
 
         assertThat(authenticated).isNotNull();
         assertThat(authenticated.getAccountNumber()).isEqualTo(ACCOUNT_NUMBER);
+    }*/
+    @Test
+    void authenticateClient_CorrectCredentials_ShouldReturnAccount() {
+        String accountNumber = "1234567890123456";
+        String password = "Parola1234";
+
+        Account mockAccount = new Account();
+        mockAccount.setAccountNumber(accountNumber);
+        mockAccount.setPasswordHash(password);
+
+        when(accountService.findAccount(accountNumber)).thenReturn(mockAccount);
+        when(accountService.findActiveAccount(accountNumber)).thenReturn(mockAccount);
+
+        Account result = authService.authenticateClient(accountNumber, password);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getAccountNumber()).isEqualTo(accountNumber);
     }
 
     @Test

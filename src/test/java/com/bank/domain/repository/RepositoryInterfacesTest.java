@@ -15,8 +15,7 @@ class RepositoryInterfaceTest {
     @Test
     @DisplayName("Test AccountRepository interface definition")
     void testAccountRepositoryInterface() {
-        // Această clasă verifică doar că interfețele sunt corect definite
-        // Implementarea reală va veni mai târziu cu Spring Data JPA
+
         assertTrue(true, "AccountRepository interface should be properly defined");
     }
 
@@ -29,11 +28,7 @@ class RepositoryInterfaceTest {
     @Test
     @DisplayName("Verify method signatures")
     void testMethodSignatures() {
-        // Test pentru a verifica că metodele au semnăturile corecte
-        // În practică, aceste teste ar fi făcute prin reflection
 
-        // Exemplu: Verifică că metodele există prin compilare
-        // Dacă codul compilează, metodele sunt corect definite
         assertTrue(true, "All repository methods should have correct signatures");
     }
 }

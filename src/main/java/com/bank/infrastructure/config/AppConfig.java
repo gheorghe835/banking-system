@@ -28,8 +28,10 @@ public class AppConfig {
     }
 
     @Bean
-    public AuthService authService(AccountService accountService) {
-        return new AuthService(accountService);
+    public AuthService authService(AccountService accountService,
+                                   TransactionRepository transactionRepository,
+                                   AccountRepository accountRepository) {
+        return new AuthService(accountService,transactionRepository,accountRepository);
     }
 
     @Bean

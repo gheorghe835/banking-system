@@ -49,6 +49,9 @@ public class AccountEntity {
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
 
+    @Column(name = "password_hash", length = 100, nullable = false)
+    private String passwordHash;
+
     @Column(name = "daily_withdrawal_limit", precision = 10, scale = 2, nullable = false)
     private BigDecimal dailyWithdrawalLimit = BigDecimal.valueOf(5000);
 
@@ -102,6 +105,14 @@ public class AccountEntity {
 
     public void setAccountType(String accountType) {
         this.accountType = accountType;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
     public BigDecimal getBalanceMDL() {

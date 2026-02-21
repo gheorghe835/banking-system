@@ -1,5 +1,6 @@
 package com.bank.domain.model;
 
+import com.bank.domain.exception.InsufficientFundsException;
 import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -79,7 +80,7 @@ class DomainModelTest {
         assertEquals(BigDecimal.valueOf(1300), account.getBalance(Currency.MDL));
 
         // Test sold insuficient
-        assertThrows(IllegalArgumentException.class,
+        assertThrows(InsufficientFundsException.class,
                 () -> account.withdraw(BigDecimal.valueOf(2000), Currency.MDL));
     }
 

@@ -1,5 +1,6 @@
 package com.bank.domain.model;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -8,7 +9,8 @@ import java.util.Objects;
  * Clasa care reprezintă un client al băncii
  * Conține informații personale și de contact
  */
-public class Customer {
+public class Customer implements Serializable {
+    private static final long serialVersionUID = 1L;
 
     private String customerId;
     private String firstName;
@@ -29,14 +31,15 @@ public class Customer {
 
     public Customer(String firstName, String lastName, String email,
                     String phoneNumber, LocalDate birthDate, String identityNumber) {
-        this();
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.phoneNumber = phoneNumber;
         this.birthDate = birthDate;
         this.identityNumber = identityNumber;
-        generateCustomerId();
+        this.customerId = "CUST" + System.currentTimeMillis(); // generare ID
+        this.registrationDate = LocalDateTime.now();
+        this.isActive = true;
     }
 
     // Metodă pentru generare ID client (simplificată)
@@ -190,12 +193,7 @@ public class Customer {
         return String.format("Customer[ID=%s, Name=%s %s, Email=%s, Active=%s]",
                 customerId, firstName, lastName, email, isActive);
     }
-
-    //////////////////
     public boolean hasActiveAccounts() {
-        // În arhitectura actuală, Customer nu știe de conturile sale
-        // Această metodă va fi implementată când vom avea nevoie de ea
-        // Deocamdată, returnăm false și delegăm verificarea la AccountService
-        return false;
+       return false;
     }
 }

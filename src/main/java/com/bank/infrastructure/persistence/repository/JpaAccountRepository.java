@@ -17,42 +17,42 @@ import java.util.Optional;
 @Repository
 public interface JpaAccountRepository extends JpaRepository<AccountEntity, String> {
 
-    // Basic queries
+    // Interogări de bază
     Optional<AccountEntity> findByAccountNumber(String accountNumber);
     boolean existsByAccountNumber(String accountNumber);
 
-    // Find by customer
+    //  Găsește după client
     List<AccountEntity> findByOwner(CustomerEntity owner);
     List<AccountEntity> findByOwnerCustomerId(String customerId);
 
-    // Find by account type
+    //  Găsește după tipul de cont
     List<AccountEntity> findByAccountType(String accountType);
 
-    // Find active/inactive accounts
+    // Găsește conturi active/inactive
     List<AccountEntity> findByActiveTrue();
     List<AccountEntity> findByActiveFalse();
 
-    // Find by balance ranges
+    //  Găsește după intervale de echilibru
     List<AccountEntity> findByBalanceMDLGreaterThanEqual(BigDecimal minBalance);
     List<AccountEntity> findByBalanceMDLLessThanEqual(BigDecimal maxBalance);
     List<AccountEntity> findByBalanceMDLBetween(BigDecimal minBalance, BigDecimal maxBalance);
 
-    // Find by creation date
+    //  Găsește după data creării
     List<AccountEntity> findByCreationDateAfter(LocalDate date);
     List<AccountEntity> findByCreationDateBefore(LocalDate date);
     List<AccountEntity> findByCreationDateBetween(LocalDate startDate, LocalDate endDate);
 
-    // Find by last login
+    //Găsește după ultima conectare
     List<AccountEntity> findByLastLoginIsNotNull();
     List<AccountEntity> findByLastLoginIsNull();
 
-    // Find accounts with foreign currency
+    //  Găsește conturi cu valută străină
     List<AccountEntity> findByBalanceEURGreaterThan(BigDecimal zero);
     List<AccountEntity> findByBalanceUSDGreaterThan(BigDecimal zero);
     List<AccountEntity> findByBalanceGBPGreaterThan(BigDecimal zero);
     List<AccountEntity> findByBalanceRONGreaterThan(BigDecimal zero);
 
-    // Custom queries with JPQL
+    //  Interogări personalizate cu JPQL
     @Query("SELECT a FROM AccountEntity a WHERE a.owner.firstName LIKE %:name% OR a.owner.lastName LIKE %:name%")
     List<AccountEntity> findByOwnerNameContaining(@Param("name") String name);
 
@@ -66,7 +66,7 @@ public interface JpaAccountRepository extends JpaRepository<AccountEntity, Strin
             @Param("gbpRate") BigDecimal gbpRate,
             @Param("ronRate") BigDecimal ronRate);
 
-    // Statistics queries
+    //  Interogări statistice
     @Query("SELECT COUNT(a) FROM AccountEntity a WHERE a.active = true")
     long countActiveAccounts();
 
@@ -82,7 +82,7 @@ public interface JpaAccountRepository extends JpaRepository<AccountEntity, Strin
     @Query("SELECT MIN(a.balanceMDL) FROM AccountEntity a WHERE a.balanceMDL > 0")
     BigDecimal findMinMDLBalance();
 
-    // Update queries
+    //  Actualizează interogările
     @Modifying
     @Query("UPDATE AccountEntity a SET a.active = :active WHERE a.accountNumber = :accountNumber")
     int updateAccountStatus(@Param("accountNumber") String accountNumber,
@@ -98,7 +98,7 @@ public interface JpaAccountRepository extends JpaRepository<AccountEntity, Strin
             "WHERE a.lastResetDate < CURRENT_DATE")
     int resetDailyWithdrawalLimits();
 
-    // Native SQL query example
+    //  Exemplu de interogare SQL nativă
     @Query(value = "SELECT * FROM accounts WHERE " +
             "(balance_mdl + balance_eur * :eurRate + balance_usd * :usdRate + " +
             "balance_gbp * :gbpRate + balance_ron * :ronRate) = " +

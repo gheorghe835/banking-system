@@ -103,9 +103,6 @@ public class WebTransactionMapper {
     public TransactionDTO toDetailedDto(Transaction transaction) {
         TransactionDTO dto = toDto(transaction);
 
-        // Poți adăuga detalii suplimentare aici dacă e nevoie
-        // De exemplu, numele proprietarilor pentru conturile sursă/destinație
-
         return dto;
     }
 }

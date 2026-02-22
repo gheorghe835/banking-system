@@ -9,6 +9,12 @@
 <div class="container">
     <h2>Lista Conturi Bancare</h2>
 
+    <div class="actions-bar">
+        <a th:href="@{/web/admin/accounts/create(user=${param.user})}" class="btn btn-success">
+            ➕ Adaugă Cont Nou
+        </a>
+        <a th:href="@{/web/admin/management(user=${param.user})}" class="btn-secondary">Înapoi</a>
+    </div>
     <table>
         <thead>
         <tr>

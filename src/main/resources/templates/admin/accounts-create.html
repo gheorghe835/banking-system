@@ -4,8 +4,124 @@
     <meta charset="UTF-8">
     <title>Creare Cont Bancar Nou</title>
     <link rel="stylesheet" href="/css/styles.css">
-    <script src="/js/app.js"></script>
 
+    <script>
+        function toggleClientSection(type) {
+            const existingSection = document.getElementById('existing-client-section');
+            const newSection = document.getElementById('new-client-section');
+
+            if (type === 'existing') {
+                existingSection.classList.remove('hidden');
+                newSection.classList.add('hidden');
+
+                // Dezactivează câmpurile clientului nou
+                document.querySelectorAll('#new-client-section input, #new-client-section select').forEach(field => {
+                    field.disabled = true;
+                });
+                document.querySelectorAll('#existing-client-section select').forEach(field => {
+                    field.disabled = false;
+                });
+
+            } else {
+                existingSection.classList.add('hidden');
+                newSection.classList.remove('hidden');
+
+                // Activează câmpurile clientului nou
+                document.querySelectorAll('#new-client-section input, #new-client-section select').forEach(field => {
+                    field.disabled = false;
+                });
+                document.querySelectorAll('#existing-client-section select').forEach(field => {
+                    field.disabled = true;
+                });
+            }
+        }
+
+        function confirmCreate() {
+            // Verifică tipul client
+            const clientType = document.querySelector('input[name="clientType"]:checked').value;
+
+            // Validări comune
+            const accountType = document.getElementById('accountType').value;
+            const initialBalance = document.getElementById('initialBalance').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (!accountType) {
+                alert('❌ Selectați tipul contului!');
+                return false;
+            }
+
+            if (!initialBalance || parseFloat(initialBalance) < 0) {
+                alert('❌ Soldul inițial trebuie să fie un număr pozitiv!');
+                return false;
+            }
+
+            if (!password) {
+                alert('❌ Parola este obligatorie!');
+                return false;
+            }
+
+            if (password.length < 6) {
+                alert('❌ Parola trebuie să aibă minim 6 caractere!');
+                return false;
+            }
+
+            if (password !== confirmPassword) {
+                alert('❌ Parolele nu coincid!');
+                return false;
+            }
+
+            // Validări pentru client existent
+            if (clientType === 'existing') {
+                const customerId = document.getElementById('customerId').value;
+                if (!customerId) {
+                    alert('❌ Selectați un client existent!');
+                    return false;
+                }
+            }
+
+            // Validări pentru client nou
+            if (clientType === 'new') {
+                const firstName = document.getElementById('firstName').value;
+                const lastName = document.getElementById('lastName').value;
+                const email = document.getElementById('email').value;
+                const phoneNumber = document.getElementById('phoneNumber').value;
+                const birthDate = document.getElementById('birthDate').value;
+                const identityNumber = document.getElementById('identityNumber').value;
+
+                if (!firstName || !lastName || !email || !phoneNumber || !birthDate || !identityNumber) {
+                    alert('❌ Toate câmpurile pentru client nou sunt obligatorii!');
+                    return false;
+                }
+
+                // Validare email simplă
+                if (!email.includes('@') || !email.includes('.')) {
+                    alert('❌ Adresă de email invalidă!');
+                    return false;
+                }
+
+                // Validare telefon
+                if (!phoneNumber.match(/^[0-9+\-\s]{10,15}$/)) {
+                    alert('❌ Număr de telefon invalid!');
+                    return false;
+                }
+
+                // Validare IDNP (13 cifre)
+                if (!identityNumber.match(/^\d{13}$/)) {
+                    alert('❌ IDNP trebuie să conțină exact 13 cifre!');
+                    return false;
+                }
+            }
+
+            // Confirmare finală
+            return confirm('✅ Sunteți sigur că doriți să creați acest cont bancar?');
+        }
+
+        // Inițializare la încărcarea paginii
+        window.onload = function() {
+            toggleClientSection('existing');
+        };
+    </script>
 </head>
 <body>
 <div class="container">
@@ -15,16 +131,24 @@
         <p th:text="${error}"></p>
     </div>
 
-    <form th:action="@{/web/admin/accounts/create}" method="post">
+    <form th:action="@{/web/admin/accounts/create}" method="post" onsubmit="return confirmCreate()">
+        <input type="hidden" name="user" th:value="${param.user}" />
+
+        <!-- Număr cont generat automat -->
+        <div class="generated-account">
+            <label>🏦 Număr Cont Generat:</label>
+            <p><strong th:text="${generatedAccountNumber}"></strong></p>
+            <input type="hidden" name="accountNumber" th:value="${generatedAccountNumber}" />
+        </div>
 
         <!-- ========================================= -->
         <!-- SECȚIUNEA 1: ALEGERE TIP CLIENT -->
         <!-- ========================================= -->
         <div class="client-type-selector">
-            <h3>Clientul:</h3>
+            <h3>Tip Client:</h3>
             <label>
                 <input type="radio" name="clientType" value="existing" checked onclick="toggleClientSection('existing')">
-                Există deja în sistem
+                Client existent
             </label>
             <label>
                 <input type="radio" name="clientType" value="new" onclick="toggleClientSection('new')">
@@ -50,47 +174,47 @@
         </div>
 
         <!-- ========================================= -->
-        <!-- SECȚIUNEA 3: CLIENT NOU (ASCUNSĂ INIȚIAL) -->
+        <!-- SECȚIUNEA 3: CLIENT NOU -->
         <!-- ========================================= -->
         <div id="new-client-section" class="new-client-section hidden">
             <h3>Date Client Nou</h3>
 
             <div class="form-group">
                 <label for="firstName">Prenume:</label>
-                <input type="text" id="firstName" name="firstName">
+                <input type="text" id="firstName" name="firstName" disabled>
             </div>
 
             <div class="form-group">
                 <label for="lastName">Nume:</label>
-                <input type="text" id="lastName" name="lastName">
+                <input type="text" id="lastName" name="lastName" disabled>
             </div>
 
             <div class="form-group">
                 <label for="email">Email:</label>
-                <input type="email" id="email" name="email">
+                <input type="email" id="email" name="email" disabled>
             </div>
 
             <div class="form-group">
                 <label for="phoneNumber">Telefon:</label>
                 <input type="tel" id="phoneNumber" name="phoneNumber"
-                       pattern="[0-9+\s]{10,15}">
+                       pattern="[0-9+\s]{10,15}" disabled>
                 <small class="hint">Ex: +37369123456 sau 069123456</small>
             </div>
 
             <div class="form-group">
                 <label for="birthDate">Data Nașterii:</label>
-                <input type="date" id="birthDate" name="birthDate">
+                <input type="date" id="birthDate" name="birthDate" disabled>
             </div>
 
             <div class="form-group">
                 <label for="identityNumber">IDNP (13 cifre):</label>
                 <input type="text" id="identityNumber" name="identityNumber"
-                       pattern="[0-9]{13}" maxlength="13">
+                       pattern="[0-9]{13}" maxlength="13" disabled>
             </div>
 
             <div class="form-group">
                 <label for="address">Adresă:</label>
-                <textarea id="address" name="address" rows="2"></textarea>
+                <textarea id="address" name="address" rows="3" disabled></textarea>
             </div>
         </div>
 
@@ -98,13 +222,6 @@
         <!-- SECȚIUNEA 4: DATELE CONTULUI (COMUNE) -->
         <!-- ========================================= -->
         <h3>Datele Contului</h3>
-
-        <div class="form-group">
-            <label for="accountNumber">Număr Cont (16 cifre):</label>
-            <input type="text" id="accountNumber" name="accountNumber"
-                   pattern="[0-9]{16}" maxlength="16" required>
-            <small class="hint">16 cifre, fără spații</small>
-        </div>
 
         <div class="form-group">
             <label for="accountType">Tip Cont:</label>
@@ -118,78 +235,27 @@
         <div class="form-group">
             <label for="initialBalance">Sold Inițial (MDL):</label>
             <input type="number" id="initialBalance" name="initialBalance"
-                   step="0.01" min="0" value="0">
+                   step="0.01" min="0" value="0" required>
         </div>
 
-        <button type="submit" class="btn">Crează Cont</button>
-        <a href="/web/admin/management" class="btn-secondary">Anulează</a>
+        <div class="form-group">
+            <label for="password">Parolă cont:</label>
+            <input type="password" id="password" name="password"
+                   minlength="6" required>
+            <small class="hint">Minim 6 caractere</small>
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword">Confirmă parola:</label>
+            <input type="password" id="confirmPassword" name="confirmPassword"
+                   minlength="6" required>
+        </div>
+
+        <div class="button-group">
+            <button type="submit" class="btn btn-primary">✅ Crează Cont</button>
+            <a th:href="@{/web/admin/accounts(user=${param.user})}" class="btn btn-secondary">❌ Anulează</a>
+        </div>
     </form>
 </div>
-<div class="form-group">
-    <label for="password">Parolă cont:</label>
-    <input type="password" id="password" name="password"
-           minlength="6" required>
-    <small class="hint">Minim 6 caractere, va fi criptată în baza de date</small>
-</div>
-
-<div class="form-group">
-    <label for="confirmPassword">Confirmă parola:</label>
-    <input type="password" id="confirmPassword" name="confirmPassword"
-           minlength="6" required>
-</div>
-
-
-<script>
-    function toggleClientSection(type) {
-        const existingSection = document.getElementById('existing-client-section');
-        const newSection = document.getElementById('new-client-section');
-
-        if (type === 'existing') {
-            existingSection.classList.remove('hidden');
-            newSection.classList.add('hidden');
-
-            // Dezactivează câmpurile clientului nou
-            document.querySelectorAll('#new-client-section input, #new-client-section select').forEach(field => {
-                field.disabled = true;
-            });
-            document.querySelectorAll('#existing-client-section select').forEach(field => {
-                field.disabled = false;
-            });
-
-        } else {
-            existingSection.classList.add('hidden');
-            newSection.classList.remove('hidden');
-
-            // Activează câmpurile clientului nou
-            document.querySelectorAll('#new-client-section input, #new-client-section select').forEach(field => {
-                field.disabled = false;
-            });
-            document.querySelectorAll('#existing-client-section select').forEach(field => {
-                field.disabled = true;
-            });
-        }
-    }
-
-    // Inițializare la încărcarea paginii
-    document.addEventListener('DOMContentLoaded', function() {
-        toggleClientSection('existing');
-    });
-</script>
-<script>
-    document.querySelector('form').addEventListener('submit', function(e) {
-        const password = document.getElementById('password').value;
-        const confirm = document.getElementById('confirmPassword').value;
-
-        if (password !== confirm) {
-            e.preventDefault();
-            alert('Parolele nu coincid!');
-        }
-
-        if (password.length < 6) {
-            e.preventDefault();
-            alert('Parola trebuie să aibă minim 6 caractere!');
-        }
-    });
-</script>
 </body>
 </html>

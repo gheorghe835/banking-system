@@ -17,6 +17,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Serviciu pentru gestionarea conturilor bancare
@@ -53,7 +54,8 @@ public class AccountService {
     @Transactional
     public Account createAccount(String accountNumber, Customer owner,
                                  String accountType, BigDecimal initialBalance,
-                                 String password) {  // ← PARAMETRU NOU
+                                 String password) {
+
 
         validationService.validateAccountNumber(accountNumber);
         validationService.validateCustomer(owner);
@@ -66,7 +68,9 @@ public class AccountService {
 
         Account account = new Account(accountNumber, owner, accountType, initialBalance);
 
+        System.out.println("📝 Încerc să salvez contul: " + accountNumber);
         Account savedAccount = accountRepository.save(account);
+        System.out.println("✅ Cont salvat cu ID: " + savedAccount.getAccountNumber());
 
         if (initialBalance.compareTo(BigDecimal.ZERO) > 0) {
             Transaction transaction = new Transaction(
@@ -79,6 +83,8 @@ public class AccountService {
             transaction.markAsCompleted();
             transactionRepository.save(transaction);
         }
+
+
 
         return savedAccount;
     }
@@ -543,6 +549,22 @@ public class AccountService {
         transactionRepository.save(transaction);
 
         return updatedAccount;
+    }
+
+    private String generateUniqueAccountNumber() {
+        String accountNumber;
+        do {
+            accountNumber = new Random().ints(0, 10)
+                    .limit(16)
+                    .mapToObj(Integer::toString)
+                    .collect(Collectors.joining());
+        } while (accountRepository.existsByAccountNumber(accountNumber));
+        return accountNumber;
+    }
+
+    @Cacheable(value = "accounts", key = "'exists-' + #accountNumber", unless = "#result == null")
+    public boolean existsByAccountNumber(String accountNumber) {
+        return accountRepository.existsByAccountNumber(accountNumber);
     }
 
 }

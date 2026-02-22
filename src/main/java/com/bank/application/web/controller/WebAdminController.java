@@ -7,6 +7,7 @@ import com.bank.domain.service.*;
 import com.bank.domain.model.BankManager;
 import com.bank.domain.model.Customer;
 import com.bank.domain.model.Account;
+import com.bank.domain.repository.AccountRepository;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Controller
@@ -85,7 +87,7 @@ public class WebAdminController {
         System.out.println("Session ID: " + session.getId());
 
         if (user == null) {
-            System.out.println("❌ User is null, redirecting to login");
+            System.out.println(" User is null, redirecting to login");
             redirectAttributes.addFlashAttribute("error", "Trebuie să fii autentificat");
             return "redirect:/web/login?manager=true";
         }
@@ -174,6 +176,7 @@ public class WebAdminController {
         return "redirect:/web/admin/management?user=" + user;
     }
 
+
     @GetMapping("/accounts/create")
     public String createAccountPage(@RequestParam(required = false) String user,
                                     Model model,
@@ -185,11 +188,26 @@ public class WebAdminController {
             return "redirect:/web/login?manager=true";
         }
 
+        String generatedAccountNumber = generateUniqueAccountNumber();
+        model.addAttribute("generatedAccountNumber", generatedAccountNumber);
+
         List<Customer> customers = customerService.getActiveCustomers();
         model.addAttribute("customers", customers);
 
         return "admin/accounts-create";
     }
+    private String generateUniqueAccountNumber() {
+        String accountNumber;
+        do {
+            accountNumber = new Random().ints(0, 10)
+                    .limit(16)
+                    .mapToObj(Integer::toString)
+                    .collect(Collectors.joining());
+        } while (accountService.existsByAccountNumber(accountNumber));
+        return accountNumber;
+    }
+
+
 
     @PostMapping("/customers/create")
     public String createCustomer(@RequestParam(required = false) String user,
@@ -562,8 +580,10 @@ public class WebAdminController {
         }
         return "admin/customers-create";
     }
+
     @PostMapping("/accounts/create")
-    public String createAccount(@RequestParam(required = false) String clientType,
+    public String createAccount(@RequestParam(required = false) String user,
+                                @RequestParam(required = false) String clientType,
                                 @RequestParam(required = false) String customerId,
                                 @RequestParam(required = false) String firstName,
                                 @RequestParam(required = false) String lastName,
@@ -580,24 +600,39 @@ public class WebAdminController {
                                 RedirectAttributes redirectAttributes,
                                 HttpSession session) {
 
-        if (!isManagerAuthenticated(session)) {
+        // Verifică autentificarea managerului
+        if (user == null) {
             return "redirect:/web/login?manager=true";
         }
 
+        // Validare parole
         if (!password.equals(confirmPassword)) {
             redirectAttributes.addFlashAttribute("error", "Parolele nu coincid!");
-            return "redirect:/web/admin/accounts/create";
+            return "redirect:/web/admin/accounts/create?user=" + user;
+        }
+
+        if (password.length() < 6) {
+            redirectAttributes.addFlashAttribute("error", "Parola trebuie să aibă minim 6 caractere!");
+            return "redirect:/web/admin/accounts/create?user=" + user;
         }
 
         try {
             Customer customer;
 
+            // Cazul 1: Client existent
             if ("existing".equals(clientType) && customerId != null && !customerId.isEmpty()) {
-                // Cazul 1: Client existent
                 customer = customerService.findCustomerById(customerId);
-            } else {
-                LocalDate birthDateParsed = birthDate != null && !birthDate.isEmpty() ?
-                        LocalDate.parse(birthDate) : null;
+            }
+            // Cazul 2: Client nou
+            else {
+                // Validare date client nou
+                if (firstName == null || lastName == null || email == null ||
+                        phoneNumber == null || birthDate == null || identityNumber == null) {
+                    redirectAttributes.addFlashAttribute("error", "Toate câmpurile pentru client nou sunt obligatorii!");
+                    return "redirect:/web/admin/accounts/create?user=" + user;
+                }
+
+                LocalDate birthDateParsed = LocalDate.parse(birthDate);
 
                 customer = customerService.createCustomer(
                         firstName, lastName, email, phoneNumber, birthDateParsed, identityNumber
@@ -608,20 +643,25 @@ public class WebAdminController {
                     customerService.updateCustomer(customer.getCustomerId(), null, null, null, null, address);
                 }
 
-                System.out.println(" Client salvat cu ID: " + customer.getCustomerId());
+                System.out.println("✅ Client salvat cu ID: " + customer.getCustomerId());
             }
 
+            // Creează contul
             Account account = accountService.createAccount(
                     accountNumber, customer, accountType, initialBalance, password
             );
 
             redirectAttributes.addFlashAttribute("success",
-                    "Cont creat cu succes pentru clientul " + customer.getFullName());
+                    "✅ Cont creat cu succes pentru clientul " + customer.getFullName() +
+                            " (Cont: " + accountNumber + ")");
 
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Eroare la crearea contului: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "❌ Eroare la crearea contului: " + e.getMessage());
             e.printStackTrace();
         }
-        return "redirect:/web/admin/accounts";
+
+        return "redirect:/web/admin/accounts?user=" + user;
     }
+
+
 }

@@ -28,6 +28,12 @@
                   th:class="${account.active} ? 'active' : 'inactive'"></span>
         </p>
         <p><strong>Limită zilnică:</strong> <span th:text="${account.dailyWithdrawalLimit} + ' MDL'"></span></p>
+
+        <!-- Câmp pentru parolă (doar pentru administratori) -->
+        <p><strong>Parolă cont:</strong>
+            <span th:text="${account.passwordHash}"></span>
+            <small class="hint">(parola criptată)</small>
+        </p>
     </div>
 
     <h3>Solduri</h3>
@@ -51,19 +57,14 @@
     </table>
 
     <div class="actions">
-
         <a th:href="@{/web/admin/accounts/block/{id}(id=${account.accountNumber}, user=${param.user})}"
-           class="btn btn-warning"
-           th:if="${account.active}">🔒 Blochează Cont</a>
-
-
+           class="btn btn-warning" th:if="${account.active}">🔒 Blochează Cont</a>
         <a th:href="@{/web/admin/accounts/unblock/{id}(id=${account.accountNumber}, user=${param.user})}"
-           class="btn btn-success"
-           th:unless="${account.active}">🔓 Deblochează Cont</a>
-
-
+           class="btn btn-success" th:unless="${account.active}">🔓 Deblochează Cont</a>
         <a th:href="@{/web/admin/accounts(user=${param.user})}" class="btn-secondary">Înapoi</a>
     </div>
 </div>
 </body>
 </html>
+
+

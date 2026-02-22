@@ -50,7 +50,7 @@ public class JpaAccountRepositoryAdapter implements AccountRepository {
 
     @Override
     public boolean existsByAccountNumber(String accountNumber) {
-        return jpaAccountRepository.existsById(accountNumber);
+        return jpaAccountRepository.existsByAccountNumber(accountNumber);
     }
 
     @Override
